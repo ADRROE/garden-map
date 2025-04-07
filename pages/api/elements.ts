@@ -16,7 +16,7 @@ function saveElements(elements: GardenElement[]) {
   fs.writeFileSync(dataFilePath, JSON.stringify(elements, null, 2));
 }
 
-export default function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   let elements = readElements();
 
   switch (req.method) {

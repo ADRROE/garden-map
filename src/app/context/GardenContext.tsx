@@ -17,18 +17,11 @@ export const GardenProvider = ({ children }: { children: React.ReactNode }) => {
   const placeElement = (x: number, y: number) => {
     if (!selectedElement) return;
   
-    const newElement: GardenElement = {
-      ...selectedElement,
-      id: crypto.randomUUID(),
-      x: x - (selectedElement.width ?? 40) / 2,
-      y: y - (selectedElement.height ?? 40) / 2,
-    };
-  
-    setElements((prev) => [...prev, newElement]);
-    setSelectedElement(null); // Reset cursor after placing
-    document.body.style.cursor = "default"; // ✅ Reset cursor
-
+    createElement(selectedElement, x - (selectedElement.width ?? 40) / 2, y - (selectedElement.height ?? 40) / 2);
+    setSelectedElement(null);
+    document.body.style.cursor = "default";
   };
+
   useEffect(() => {
     const fetchElements = async() => {
         const res = await fetch("/api/elements");
@@ -38,19 +31,6 @@ export const GardenProvider = ({ children }: { children: React.ReactNode }) => {
     };
     fetchElements();
   }, [])
-  
-//   // Load from localStorage
-//   useEffect(() => {
-//     const savedElements = localStorage.getItem("gardenElements");
-//     if (savedElements) {
-//       setElements(JSON.parse(savedElements));
-//     }
-//   }, []);
-
-//   // Save to localStorage
-//   useEffect(() => {
-//     localStorage.setItem("gardenElements", JSON.stringify(elements));
-//   }, [elements]);
 
   const createElement: CreateElementFn = async(menuElement, x, y) => {
     const newElement: GardenElement = { 
