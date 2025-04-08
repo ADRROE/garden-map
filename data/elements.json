@@ -1,1 +1,24 @@
-[]
+[
+  {
+    "id": "1edecde4-6e16-41a7-95cd-3017046375eb",
+    "name": "canopy27",
+    "icon": "/icons/canopy27.png",
+    "cursor": "/icons/canopy27-sm.png",
+    "category": "vegetation",
+    "x": 63.099999999999795,
+    "y": 271.0339356944023,
+    "width": 33.1433880757055,
+    "height": 25.363416522692887
+  },
+  {
+    "id": "24d3027d-573d-4623-a974-e31bb6b59888",
+    "name": "canopy18",
+    "icon": "/icons/canopy18.png",
+    "cursor": "/icons/canopy18-sm.png",
+    "category": "vegetation",
+    "x": 188.1532808078914,
+    "y": 292.4846764968477,
+    "width": 54.344898746095566,
+    "height": 48.1136992917335
+  }
+]

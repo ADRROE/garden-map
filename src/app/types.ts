@@ -3,25 +3,23 @@ export interface MenuElement {
     name: string;
     icon: string;
     cursor?: string;
-    width?: number;
-    height?: number;
     category: string;
   }
 
 export interface GardenElement extends MenuElement {
   x: number;
   y: number;
-  width?: number;
-  height?: number;
+  width: number;
+  height: number;
   wcvpId?: string;
   rhsId?: string;
   datePlanted?: Date;
   price?: number;
 }
 
-export type CreateElementFn = (element: Omit<GardenElement, "x" | "y">, x: number, y: number) => void;
+export type CreateElementFn = (element: Omit<GardenElement, "x" | "y" | "width" | "height"> , x: number, y: number, width: number, height: number) => void;
 
-export type UpdateElementFn = (updatedElement: Partial<GardenElement>) => void;
+export type UpdateElementFn = (updatedElement: { id: string } & Partial<GardenElement>) => void;
 
 export interface GardenContextType {
   elements: GardenElement[];
@@ -29,7 +27,7 @@ export interface GardenContextType {
   createElement: CreateElementFn;
   updateElement: UpdateElementFn;
   selectElement: (element: MenuElement | null) => void;
-  placeElement: (x: number, y: number) => void;
+  placeElement: (x: number, y: number, width: number, height: number) => void;
   deleteElement: (id: string) => void;
 }
 
@@ -38,7 +36,7 @@ export type ClickHandler = (event: React.MouseEvent) => void;
 
 export interface DraggableElementProps {
   element: GardenElement;
-  onUpdate: (updatedElement: Partial<GardenElement>) => void;
+  onUpdate: (updatedElement: { id: string } & Partial<GardenElement>) => void;
   onSelect: () => void;
   onDelete: (id: string) => void;
   isSelected: boolean;

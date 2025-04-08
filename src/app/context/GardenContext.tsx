@@ -1,6 +1,7 @@
 "use client";
 import { createContext, useContext, useState, useEffect } from "react";
 import { GardenElement, MenuElement, CreateElementFn, UpdateElementFn, GardenContextType } from "../types";
+import { createElementAPI, updateElementAPI, deleteElementAPI } from "../services/elementsService";
 
 const GardenContext = createContext<GardenContextType | undefined>(undefined);
 
@@ -12,58 +13,62 @@ export const GardenProvider = ({ children }: { children: React.ReactNode }) => {
   const selectElement = (menuElement: MenuElement | null) => {
     setSelectedElement(menuElement);
   };
-  
+
   // Function to place the element on the map
-  const placeElement = (x: number, y: number) => {
+  const placeElement = (x: number, y: number, width: number, height: number) => {
     if (!selectedElement) return;
-  
-    createElement(selectedElement, x - (selectedElement.width ?? 40) / 2, y - (selectedElement.height ?? 40) / 2);
+
+    createElement(selectedElement, x - 40 / 2, y - 40 / 2, 40, 40);
     setSelectedElement(null);
     document.body.style.cursor = "default";
   };
 
   useEffect(() => {
-    const fetchElements = async() => {
-        const res = await fetch("/api/elements");
-        const data: GardenElement[] = await res.json();
-        console.log(data);
-        setElements(data);
+    const fetchElements = async () => {
+      const res = await fetch("/api/elements");
+      const data: GardenElement[] = await res.json();
+      setElements(data);
     };
     fetchElements();
   }, [])
 
-  const createElement: CreateElementFn = async(menuElement, x, y) => {
-    const newElement: GardenElement = { 
-        ...menuElement,
-        id: crypto.randomUUID(),
-        x,
-        y
-     };
-     await fetch("/api/elements", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify(newElement)
-     });
+  const createElement: CreateElementFn = async (menuElement, x, y, width, height) => {
+    const newElement: GardenElement = {
+      ...menuElement,
+      id: crypto.randomUUID(),
+      x,
+      y,
+      width,
+      height,
+    };
     setElements((prev) => [...prev, newElement]);
+    try {
+      await createElementAPI(newElement);
+    } catch (error) {
+      console.error("Failed to create element on server", error);
+    }
   };
 
-  const updateElement: UpdateElementFn = async(updatedElement) => {
-    await fetch ("/api/elements", {
-        method: "PUT",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify(updatedElement)
-    });
+  const updateElement: UpdateElementFn = async (updatedElement) => {
+    console.log("Updating element:", updatedElement);
     setElements((prev) =>
-    prev.map((el) =>
-    el.id === updatedElement.id ? { ...el, ...updatedElement } : el
-    ));
+      prev.map((el) =>
+        el.id === updatedElement.id ? { ...el, ...updatedElement } : el
+      ));
+    try {
+      await updateElementAPI(updatedElement);
+    } catch (error) {
+      console.error("Failed to update element on server", error);
+    }
   };
 
-  const deleteElement = async(id: string) => {
-    await fetch (`/api/elements?id=${id}`, {
-        method: "DELETE"
-    });
-    setElements(prev => prev.filter((el) => el.id !== id) )
+  const deleteElement = async (id: string) => {
+    setElements(prev => prev.filter((el) => el.id !== id))
+    try {
+      await deleteElementAPI(id);
+    } catch (error) {
+      console.error("Failed to create element on server", error);
+    }
   };
 
   return (

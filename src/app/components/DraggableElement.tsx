@@ -1,88 +1,104 @@
-"use client";
-
 import React, { useRef, useEffect } from "react";
-import { Image, Transformer, Group, Text } from "react-konva";
+import { Group, Image, Transformer, Text } from "react-konva";
 import useImage from "use-image";
 import { DraggableElementProps } from "../types";
 
-
 const DraggableElement: React.FC<DraggableElementProps> = ({ element, onUpdate, onSelect, isSelected, onDelete }) => {
-    const [image] = useImage(element.icon); // Load icon as image
-
+    const [image] = useImage(element.icon);
+    const groupRef = useRef<any>(null);
     const imageRef = useRef<any>(null);
     const transformerRef = useRef<any>(null);
 
     useEffect(() => {
-        if (isSelected && transformerRef.current) {
-            transformerRef.current.nodes([imageRef.current]);
+        if (isSelected && transformerRef.current && groupRef.current) {
+            transformerRef.current.nodes([groupRef.current]);
             transformerRef.current.getLayer().batchDraw();
         }
     }, [isSelected]);
 
     const handleTransformEnd = () => {
-        const node = imageRef.current;
-        const scaleX = node.scaleX();
-        const scaleY = node.scaleY();
-        
+        const groupNode = groupRef.current;
+        if (!groupNode) return;
+
+        // Get the client rectangle, which reflects the visual (transformed) size
+        const newBox = groupNode.getClientRect({ skipTransform: false });
+        const newWidth = newBox.width;
+        const newHeight = newBox.height;
+
+        // Reset the group's scale to 1 (this "commits" the transformation)
+        groupNode.scaleX(1);
+        groupNode.scaleY(1);
+
+        // Now update the backend and state with the new dimensions.
         onUpdate({
             id: element.id,
-            width: node.width() * scaleX,
-            height: node.height() * scaleY,
-        })
-
-        node.scaleX(1);
-        node.scaleY(1);
-    }
+            width: newWidth,
+            height: newHeight,
+        });
+    };
 
     return (
         <>
-      <Group
-        x={element.x}
-        y={element.y}
-        draggable
-        onClick={onSelect}
-        onDragEnd={(e) =>
-          onUpdate({ id: element.id, x: e.target.x(), y: e.target.y() })
-        }
-        onTransformEnd={handleTransformEnd}
-      >
-        <Image
-          ref={imageRef}
-          image={image}
-          width={element.width ?? 40}
-          height={element.height ?? 40}
-          alt="Draggable element"
-        />
-        {isSelected && (
-          <Text
-            text="✕"
-            fontSize={14}
-            fontStyle="bold"
-            fill="red"
-            onClick={(e) => {
-              e.cancelBubble = true; // prevent selecting the element itself
-              onDelete(element.id);
-            }}
-            listening={true}
-            width={20}
-            height={20}
-          />
-        )}
-      </Group>
-        {isSelected && 
-            <Transformer
-            ref={transformerRef}
-            boundBoxFunc={(oldBox, newBox) => {
-                if (newBox.width < 20 || newBox.height < 20) {
-                  return oldBox;
+            <Group
+                ref={groupRef}
+                x={element.x}
+                y={element.y}
+                draggable
+                onClick={onSelect}
+                onDragEnd={(e) =>
+                    onUpdate({ id: element.id, x: e.target.x(), y: e.target.y() })
                 }
-                return newBox;
-              }}>
-            
-            </Transformer>}
-        
+                onTransformEnd={handleTransformEnd}
+            >
+                <Image
+                    ref={imageRef}
+                    image={image}
+                    width={element.width ?? 40}
+                    height={element.height ?? 40}
+                    alt="Draggable element"
+                />
+                {isSelected && (
+                    <Text
+                        text="✕"
+                        fontSize={14}
+                        fontStyle="bold"
+                        fill="red"
+                        onClick={(e) => {
+                            e.cancelBubble = true; // prevent selecting the element itself
+                            onDelete(element.id);
+                        }}
+                        listening={true}
+                        width={20}
+                        height={20}
+                        x={(element.width ?? 40) - 10} // position in top-right of image
+                        y={-5}
+                    />
+                )}
+            </Group>
+            {isSelected && (
+                <Transformer
+                    ref={transformerRef}
+                    boundBoxFunc={(oldBox, newBox) => {
+                        if (newBox.width < 20 || newBox.height < 20) {
+                            return oldBox;
+                        }
+                        return newBox;
+                    }}
+                />
+            )}
         </>
     );
 };
 
-export default DraggableElement;
+function areEqual(prevProps: DraggableElementProps, nextProps: DraggableElementProps) {
+  return (
+    prevProps.element.id === nextProps.element.id &&
+    prevProps.element.x === nextProps.element.x &&
+    prevProps.element.y === nextProps.element.y &&
+    prevProps.element.width === nextProps.element.width &&
+    prevProps.element.height === nextProps.element.height &&
+    prevProps.isSelected === nextProps.isSelected
+  );
+}
+
+export default React.memo(DraggableElement, areEqual);
