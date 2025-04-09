@@ -1,0 +1,16 @@
+### Directory structure to be created:
+# backend/
+# ├── app/
+# │   ├── main.py
+# │   ├── database.py
+# │   ├── models.py
+# │   ├── schemas.py
+# │   ├── crud.py
+# │   └── api/
+# │       └── elements.py
+# ├── alembic/ (optional for migrations)
+# ├── Dockerfile
+# ├── docker-compose.yml
+# └── .env
+
+# === app/main.py ===
