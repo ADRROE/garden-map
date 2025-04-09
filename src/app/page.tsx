@@ -22,7 +22,7 @@ export default function Home() {
   return (
     <div className="flex h-screen">
       {/* Sidebar */}
-      <div className="w-80 shrink-0">
+      <div className="w-80 shrink-0 h-screen overflow-y-auto">
         <ElementPicker />
       </div>
 

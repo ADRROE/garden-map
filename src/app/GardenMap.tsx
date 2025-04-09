@@ -23,6 +23,27 @@ const GardenMap: React.FC<GardenMapProps> = ({ dimensions }) => {
     const bgWidth = 2500;
     const bgHeight = 2253;
 
+    const handleDrag= (pos) => {
+        const stage = stageRef.current;
+        if (!stage) return pos;
+
+        const scale = stage?.scaleX() ?? 1;
+        
+        const maxX = 0;
+        const maxY = 0;
+        
+        const scaledWidth = bgWidth * scale;
+        const scaledHeight = bgHeight * scale;
+
+        const minX = Math.min(dimensions.width - scaledWidth, 0);
+        const minY = Math.min(dimensions.height - scaledHeight, 0);
+
+        return {
+            x: Math.max(Math.min(maxX, pos.x), minX),
+            y: Math.max(Math.min(maxY, pos.y), minY)
+        }
+    }
+
     const handleWheel = (e: KonvaEventObject<WheelEvent>) => {
         e.evt.preventDefault();
 
@@ -96,6 +117,7 @@ const GardenMap: React.FC<GardenMapProps> = ({ dimensions }) => {
                     onWheel={handleWheel}
                     onMouseDown={handleStageMouseDown}
                     draggable
+                    dragBoundFunc={(pos) => handleDrag(pos)}
                     className="border border-gray-300"
                     ref={stageRef}
                 >
@@ -135,7 +157,7 @@ const GardenMap: React.FC<GardenMapProps> = ({ dimensions }) => {
                         ))}
                     </Layer>
                 </Stage>
-            )};
+            )}
                                 {propMenu && (
                         <PropMenu
                             element={propMenu}

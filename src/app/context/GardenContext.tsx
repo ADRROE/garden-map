@@ -22,7 +22,7 @@ export const GardenProvider = ({ children }: { children: React.ReactNode }) => {
     const width = selectedElement.defaultWidth ?? 40;
     const height = selectedElement.defaultHeight ?? 40;
 
-    createElement(selectedElement, x - 40 / 2, y - 40 / 2, width, height);
+    createElement(selectedElement, x - width / 2, y - height / 2, width, height);
     setSelectedElement(null);
     document.body.style.cursor = "default";
   };
