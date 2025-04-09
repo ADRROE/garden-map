@@ -41,15 +41,6 @@ const ElementPicker = () => {
 
                 </button>
             ))}
-            <button
-                onClick={() => {
-                    localStorage.removeItem("gardenElements");
-                    window.location.reload(); // Refresh the page to clear the state
-                }}
-                className="bg-red-500 text-white p-2 rounded-md"
-            >
-                Reset Garden
-            </button>
         </aside>
     );
 };

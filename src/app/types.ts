@@ -2,6 +2,8 @@ export interface MenuElement {
     id: string;
     name: string;
     icon: string;
+    defaultWidth?: number;
+    defaultHeight?: number;
     cursor?: string;
     category: string;
   }
@@ -9,6 +11,7 @@ export interface MenuElement {
 export interface GardenElement extends MenuElement {
   x: number;
   y: number;
+  location?: string;
   width: number;
   height: number;
   wcvpId?: string;
@@ -27,7 +30,7 @@ export interface GardenContextType {
   createElement: CreateElementFn;
   updateElement: UpdateElementFn;
   selectElement: (element: MenuElement | null) => void;
-  placeElement: (x: number, y: number, width: number, height: number) => void;
+  placeElement: (x: number, y: number) => void;
   deleteElement: (id: string) => void;
 }
 

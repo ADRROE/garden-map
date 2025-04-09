@@ -2,6 +2,7 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import { GardenElement, MenuElement, CreateElementFn, UpdateElementFn, GardenContextType } from "../types";
 import { createElementAPI, updateElementAPI, deleteElementAPI } from "../services/elementsService";
+import { translatePosition } from "../utils";
 
 const GardenContext = createContext<GardenContextType | undefined>(undefined);
 
@@ -15,10 +16,13 @@ export const GardenProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   // Function to place the element on the map
-  const placeElement = (x: number, y: number, width: number, height: number) => {
+  const placeElement = (x: number, y: number) => {
     if (!selectedElement) return;
 
-    createElement(selectedElement, x - 40 / 2, y - 40 / 2, 40, 40);
+    const width = selectedElement.defaultWidth ?? 40;
+    const height = selectedElement.defaultHeight ?? 40;
+
+    createElement(selectedElement, x - 40 / 2, y - 40 / 2, width, height);
     setSelectedElement(null);
     document.body.style.cursor = "default";
   };
@@ -38,6 +42,7 @@ export const GardenProvider = ({ children }: { children: React.ReactNode }) => {
       id: crypto.randomUUID(),
       x,
       y,
+      location: translatePosition(x, y),
       width,
       height,
     };

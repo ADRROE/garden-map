@@ -2,6 +2,8 @@ import React, { useRef, useEffect } from "react";
 import { Group, Image, Transformer, Text } from "react-konva";
 import useImage from "use-image";
 import { DraggableElementProps } from "../types";
+import { translatePosition } from "../utils";
+import { KonvaEventObject } from "konva/lib/Node";
 
 const DraggableElement: React.FC<DraggableElementProps> = ({ element, onUpdate, onSelect, isSelected, onDelete }) => {
     const [image] = useImage(element.icon);
@@ -37,6 +39,17 @@ const DraggableElement: React.FC<DraggableElementProps> = ({ element, onUpdate, 
         });
     };
 
+    const handleDragEnd = (e: KonvaEventObject<DragEvent>) => {
+        const newX = e.target.x();
+        const newY = e.target.y();
+        onUpdate({
+            id: element.id,
+            x: newX,
+            y: newY,
+            location: translatePosition(newX, newY),
+        });
+    };
+
     return (
         <>
             <Group
@@ -45,9 +58,7 @@ const DraggableElement: React.FC<DraggableElementProps> = ({ element, onUpdate, 
                 y={element.y}
                 draggable
                 onClick={onSelect}
-                onDragEnd={(e) =>
-                    onUpdate({ id: element.id, x: e.target.x(), y: e.target.y() })
-                }
+                onDragEnd={handleDragEnd}
                 onTransformEnd={handleTransformEnd}
             >
                 <Image

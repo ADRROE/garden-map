@@ -8,7 +8,6 @@ import useImage from "use-image";
 import DraggableElement from "./components/DraggableElement";
 import PropMenu from "./components/PropMenu";
 import { useGarden } from "./context/GardenContext";
-import { translatePosition } from "./utils";
 import { GardenElement } from "./types";
 
 interface GardenMapProps {
@@ -69,13 +68,9 @@ const GardenMap: React.FC<GardenMapProps> = ({ dimensions }) => {
         const scale = stage.scaleX(); // assuming uniform
         const x = (pointer.x - stage.x()) / scale;
         const y = (pointer.y - stage.y()) / scale;
-        const width = 40 / scale
-        const height = 40 / scale
-
-        console.log(translatePosition(x, y));
 
         if (selectedElement && clickedOnEmpty) {
-            placeElement(x, y, width, height);
+            placeElement(x, y);
             document.body.style.cursor = "default";
             return;
         }

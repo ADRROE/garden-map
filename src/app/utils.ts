@@ -11,5 +11,5 @@ export const translatePosition = (x: number, y: number) => {
     const col = Math.floor((x-20)/20)+1;
     const row = (Math.floor((y-20)/20)+2).toString();
 
-    return [toColumnLetter(col), row]
+    return `${toColumnLetter(col)}${row}`
 };
