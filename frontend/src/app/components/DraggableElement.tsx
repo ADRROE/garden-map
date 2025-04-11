@@ -1,5 +1,8 @@
 import React, { useRef, useEffect } from "react";
 import { Group, Image, Transformer, Text } from "react-konva";
+import type { Group as KonvaGroup } from "konva/lib/Group";
+import type { Image as KonvaImage } from "konva/lib/shapes/Image";
+import type { Transformer as KonvaTransformer } from "konva/lib/shapes/Transformer";
 import useImage from "use-image";
 import { DraggableElementProps } from "../types";
 import { translatePosition } from "../utils";
@@ -7,29 +10,30 @@ import { KonvaEventObject } from "konva/lib/Node";
 
 const DraggableElement: React.FC<DraggableElementProps> = ({ element, onUpdate, onSelect, isSelected, onDelete }) => {
     const [image] = useImage(element.icon);
-    const groupRef = useRef<any>(null);
-    const imageRef = useRef<any>(null);
-    const transformerRef = useRef<any>(null);
+    const groupRef = useRef<KonvaGroup>(null);
+    const imageRef = useRef<KonvaImage>(null);
+    const transformerRef = useRef<KonvaTransformer>(null);
 
     useEffect(() => {
-        if (isSelected && transformerRef.current && groupRef.current) {
-            transformerRef.current.nodes([groupRef.current]);
-            transformerRef.current.getLayer().batchDraw();
-        }
-    }, [isSelected]);
+        if (!isSelected || !transformerRef.current || !groupRef.current) return;
+
+        transformerRef.current.nodes([groupRef.current]);
+        transformerRef.current.getLayer()?.batchDraw();
+        
+    }, [isSelected, element.width, element.height]);
 
     const handleTransformEnd = () => {
         const groupNode = groupRef.current;
         if (!groupNode) return;
 
-        // Get the client rectangle, which reflects the visual (transformed) size
-        const newBox = groupNode.getClientRect({ skipTransform: false });
-        const newWidth = newBox.width;
-        const newHeight = newBox.height;
-
-        // Reset the group's scale to 1 (this "commits" the transformation)
-        groupNode.scaleX(1);
-        groupNode.scaleY(1);
+        const scaleX = groupNode.scaleX();
+        const scaleY = groupNode.scaleY();
+        
+        const newWidth = (element.width ?? element.defaultWidth) * scaleX;
+        const newHeight = (element.height ?? element.defaultHeight) * scaleY;
+        
+        // Reset scale
+        groupNode.scale({ x: 1, y: 1 });
 
         // Now update the backend and state with the new dimensions.
         onUpdate({

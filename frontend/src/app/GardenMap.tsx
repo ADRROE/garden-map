@@ -22,16 +22,17 @@ const GardenMap: React.FC<GardenMapProps> = ({ dimensions }) => {
     const baseGridSize = 19.95;
     const bgWidth = 2500;
     const bgHeight = 2253;
+    const stage = stageRef.current
 
-    const handleDrag= (pos) => {
-        const stage = stageRef.current;
+
+    const handleDrag = (pos: {x: number, y: number}) => {
         if (!stage) return pos;
 
         const scale = stage?.scaleX() ?? 1;
-        
+
         const maxX = 0;
         const maxY = 0;
-        
+
         const scaledWidth = bgWidth * scale;
         const scaledHeight = bgHeight * scale;
 
@@ -47,7 +48,6 @@ const GardenMap: React.FC<GardenMapProps> = ({ dimensions }) => {
     const handleWheel = (e: KonvaEventObject<WheelEvent>) => {
         e.evt.preventDefault();
 
-        const stage = stageRef.current;
         if (!stage) return;
 
         const scale = stage?.scaleX() ?? 1;
@@ -77,7 +77,6 @@ const GardenMap: React.FC<GardenMapProps> = ({ dimensions }) => {
     const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
 
     const handleStageMouseDown = (e: KonvaEventObject<MouseEvent>) => {
-        const stage = e.target.getStage();
         if (!stage) return;
 
         const clickedOnEmpty =
@@ -104,7 +103,21 @@ const GardenMap: React.FC<GardenMapProps> = ({ dimensions }) => {
     };
 
     const [propMenu, setPropMenu] = useState<GardenElement | null>(null);
+    const [propMenuPosition, setPropMenuPosition] = useState<{ x: number; y: number } | null>(null);
 
+    const onDraggableElementSelect = () => {
+        if (!stage) return;
+      
+        const pointer = stage.getPointerPosition();
+        if (!pointer) return;
+      
+        const containerRect = stage.container().getBoundingClientRect();
+      
+        setPropMenuPosition({
+          x: containerRect.left + pointer.x,
+          y: containerRect.top + pointer.y,
+        });
+    }
 
     const [bgImage] = useImage("/grid.jpg")
 
@@ -148,6 +161,7 @@ const GardenMap: React.FC<GardenMapProps> = ({ dimensions }) => {
                                 onSelect={() => {
                                     setSelectedNodeId(element.id);
                                     setPropMenu(element);
+                                    onDraggableElementSelect();
                                 }}
                                 onDelete={(id: string) => {
                                     deleteElement(id);
@@ -158,21 +172,30 @@ const GardenMap: React.FC<GardenMapProps> = ({ dimensions }) => {
                     </Layer>
                 </Stage>
             )}
-                                {propMenu && (
-                        <PropMenu
-                            element={propMenu}
-                            onUpdate={(updatedData) => {
-                                updateElement(updatedData);
-                                // also update local state if needed
-                                setPropMenu((prev) =>
-                                    prev && prev.id === updatedData.id
-                                        ? { ...prev, ...updatedData }
-                                        : prev
-                                );
-                            }}
-                            onClose={() => setPropMenu(null)}
-                        />
-                    )}
+            {propMenu && propMenuPosition &&(
+                  <div
+                  style={{
+                    position: 'absolute',
+                    top: Math.min(propMenuPosition.y, window.innerHeight - 200), // clamp if too close to bottom
+                    left: Math.min(propMenuPosition.x, window.innerWidth - 300), // clamp if too close to right
+                    zIndex: 1000,
+                  }}
+                >
+                <PropMenu
+                    element={propMenu}
+                    onUpdate={(updatedData) => {
+                        updateElement(updatedData);
+                        // also update local state if needed
+                        setPropMenu((prev) =>
+                            prev && prev.id === updatedData.id
+                                ? { ...prev, ...updatedData }
+                                : prev
+                        );
+                    }}
+                    onClose={() => setPropMenu(null)}
+                />
+                </div>
+            )}
         </div>
     );
 };
