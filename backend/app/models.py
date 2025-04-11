@@ -1,14 +1,22 @@
-from sqlalchemy import Column, Integer, String, Float
+from sqlalchemy import Column, Integer, String, Float, DateTime
 from app.database import Base
 
 class GardenElement(Base):
     __tablename__ = "garden_elements"
 
     id = Column(String(36), primary_key=True, index=True)
-    type = Column(String(255), nullable=False)
+    name = Column(String(255), nullable=False)  # frontend uses 'name', not 'type'
     icon = Column(String(255))
     x = Column(Float)
     y = Column(Float)
     width = Column(Float)
     height = Column(Float)
-    location = Column(String(255))
+    location = Column(String(255), nullable=True)
+    default_width = Column(Float, nullable=True)
+    default_height = Column(Float, nullable=True)
+    cursor = Column(String(255), nullable=True)
+    category = Column(String(255))
+    wcvp_id = Column(String(255), nullable=True)
+    rhs_id = Column(String(255), nullable=True)
+    date_planted = Column(DateTime, nullable=True)
+    price = Column(Float, nullable=True)

@@ -3,6 +3,7 @@ import { createContext, useContext, useState, useEffect } from "react";
 import { GardenElement, MenuElement, CreateElementFn, UpdateElementFn, GardenContextType } from "../types";
 import { createElementAPI, updateElementAPI, deleteElementAPI } from "../services/elementsService";
 import { translatePosition } from "../utils";
+import { fetchElements } from "../services/elementsService";
 
 const GardenContext = createContext<GardenContextType | undefined>(undefined);
 
@@ -28,13 +29,11 @@ export const GardenProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   useEffect(() => {
-    const fetchElements = async () => {
-      const res = await fetch("/api/elements");
-      const data: GardenElement[] = await res.json();
-      setElements(data);
-    };
-    fetchElements();
-  }, [])
+    fetchElements().then((data) => {
+        console.log("Fetched elements:", data); // 👈 helpful for debugging
+        setElements(data);
+    });
+}, []);
 
   const createElement: CreateElementFn = async (menuElement, x, y, width, height) => {
     const newElement: GardenElement = {

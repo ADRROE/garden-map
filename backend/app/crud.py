@@ -21,5 +21,8 @@ def update_element(db: Session, id: str, updates: schemas.GardenElementUpdate):
 
 def delete_element(db: Session, id: str):
     db_element = db.query(models.GardenElement).filter(models.GardenElement.id == id).first()
-    db.delete(db_element)
-    db.commit()
+    if db_element:
+        db.delete(db_element)
+        db.commit()
+        return db_element
+    return None  # If the element isn't found, return None

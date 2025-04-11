@@ -1,21 +1,60 @@
-from pydantic import BaseModel
-from typing import Optional
+from pydantic import BaseModel, Field
+from datetime import datetime
+
 
 class GardenElementBase(BaseModel):
-    type: str
-    icon: Optional[str]
+    id: str
+    name: str
+    icon: str
     x: float
     y: float
     width: float
     height: float
-    location: Optional[str]
+    location: str | None = None
+    default_width: float | None = Field(default=None, alias="defaultWidth")
+    default_height: float | None = Field(default=None, alias="defaultHeight")
+    cursor: str | None = None
+    category: str
+    wcvp_id: str | None = Field(default=None, alias="wcvpId")
+    rhs_id: str | None = Field(default=None, alias="rhsId")
+    date_planted: datetime | None = Field(default=None, alias="datePlanted")
+    price: float | None = None
+
+    class Config:
+        orm_mode = True
+        allow_population_by_field_name = True
+        populate_by_name = True  # supports both aliases and real names
+        json_encoders = {
+            datetime: lambda v: v.isoformat()
+        }
+
 
 class GardenElementCreate(GardenElementBase):
-    id: str
-
-class GardenElementUpdate(GardenElementBase):
     pass
 
-class GardenElementInDB(GardenElementCreate):
+
+class GardenElement(GardenElementBase):
+    pass
+
+
+class GardenElementUpdate(BaseModel):
+    id: str
+    name: str | None = None
+    icon: str | None = None
+    x: float | None = None
+    y: float | None = None
+    width: float | None = None
+    height: float | None = None
+    location: str | None = None
+    default_width: float | None = Field(default=None, alias="defaultWidth")
+    default_height: float | None = Field(default=None, alias="defaultHeight")
+    cursor: str | None = None
+    category: str | None = None
+    wcvp_id: str | None = Field(default=None, alias="wcvpId")
+    rhs_id: str | None = Field(default=None, alias="rhsId")
+    date_planted: datetime | None = Field(default=None, alias="datePlanted")
+    price: float | None = None
+
     class Config:
-        from_attributes = True
+        allow_population_by_field_name = True
+        populate_by_name = True

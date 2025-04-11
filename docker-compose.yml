@@ -1,0 +1,35 @@
+version: '3.9'
+
+services:
+  db:
+    image: mariadb:latest
+    environment:
+      MARIADB_DATABASE: garden
+      MARIADB_USER: gardenuser
+      MARIADB_PASSWORD: gardenpass
+      MARIADB_ROOT_PASSWORD: rootpass
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+
+  backend:
+    build: ./backend
+    depends_on:
+      - db
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+
+volumes:
+  db_data:
