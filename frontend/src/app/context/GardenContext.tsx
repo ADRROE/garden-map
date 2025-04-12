@@ -4,6 +4,11 @@ import { GardenElement, MenuElement, CreateElementFn, UpdateElementFn, GardenCon
 import { createElementAPI, updateElementAPI, deleteElementAPI } from "../services/elementsService";
 import { translatePosition } from "../utils";
 import { fetchElements } from "../services/elementsService";
+import { v4 as uuidv4 } from 'uuid';
+
+function generateUUID() {
+  return uuidv4();
+}
 
 const GardenContext = createContext<GardenContextType | undefined>(undefined);
 
@@ -38,7 +43,7 @@ export const GardenProvider = ({ children }: { children: React.ReactNode }) => {
   const createElement: CreateElementFn = async (menuElement, x, y, width, height) => {
     const newElement: GardenElement = {
       ...menuElement,
-      id: crypto.randomUUID(),
+      id: generateUUID(),
       x,
       y,
       location: translatePosition(x, y),
