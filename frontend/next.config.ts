@@ -1,7 +1,6 @@
-import webpack from 'webpack';
-import { resolve } from 'path';
+const webpack = require('webpack');
 
-const nextConfig: import('next').NextConfig = {
+const nextConfig = {
   reactStrictMode: true,
   env: {
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000",
@@ -9,7 +8,7 @@ const nextConfig: import('next').NextConfig = {
   webpack: (config) => {
     config.resolve.fallback = {
       ...config.resolve.fallback,
-      crypto: require.resolve('crypto-browserify'), // this still needs to be required
+      crypto: require.resolve('crypto-browserify'),
     };
 
     config.plugins.push(
@@ -23,4 +22,4 @@ const nextConfig: import('next').NextConfig = {
   },
 };
 
-export default nextConfig;
+module.exports = nextConfig;
