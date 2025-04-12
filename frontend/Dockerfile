@@ -14,6 +14,7 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /app
 
 COPY package.json package-lock.json* ./
+RUN npm install crypto-browserify process buffer
 RUN npm install
 
 COPY . .
