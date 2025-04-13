@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Float, DateTime
+from sqlalchemy import Column, Integer, String, Float, DateTime, JSON
 from app.database import Base
 
 class GardenElement(Base):
@@ -12,7 +12,7 @@ class GardenElement(Base):
     width = Column(Float)
     height = Column(Float)
     location = Column(String(255), nullable=True)
-    coverage = Column(String(255), nullable=True)
+    coverage = Column(JSON, nullable=True)
     default_width = Column(Float, nullable=True)
     default_height = Column(Float, nullable=True)
     cursor = Column(String(255), nullable=True)
