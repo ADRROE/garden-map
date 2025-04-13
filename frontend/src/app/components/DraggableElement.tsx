@@ -5,7 +5,7 @@ import type { Image as KonvaImage } from "konva/lib/shapes/Image";
 import type { Transformer as KonvaTransformer } from "konva/lib/shapes/Transformer";
 import useImage from "use-image";
 import { DraggableElementProps } from "../types";
-import { translatePosition } from "../utils";
+import { translatePosition, toColumnLetter, getCoveredCells } from "../utils";
 import { KonvaEventObject } from "konva/lib/Node";
 
 const DraggableElement: React.FC<DraggableElementProps> = ({ element, onUpdate, onSelect, isSelected, onDelete }) => {
@@ -31,6 +31,8 @@ const DraggableElement: React.FC<DraggableElementProps> = ({ element, onUpdate, 
         
         const newWidth = (element.width ?? element.defaultWidth) * scaleX;
         const newHeight = (element.height ?? element.defaultHeight) * scaleY;
+        const position = translatePosition(element.x, element.y);
+        const coverage = getCoveredCells(position[0], position[1], element.width/19.5, element.height/19.5);
         
         // Reset scale
         groupNode.scale({ x: 1, y: 1 });
@@ -40,17 +42,21 @@ const DraggableElement: React.FC<DraggableElementProps> = ({ element, onUpdate, 
             id: element.id,
             width: newWidth,
             height: newHeight,
+            coverage: coverage
         });
     };
 
     const handleDragEnd = (e: KonvaEventObject<DragEvent>) => {
         const newX = e.target.x();
         const newY = e.target.y();
+        const position = translatePosition(newX, newY);
+        const coverage = getCoveredCells(position[0], position[1], element.width/19.5, element.height/19.5);
         onUpdate({
             id: element.id,
             x: newX,
             y: newY,
-            location: translatePosition(newX, newY),
+            location: `${toColumnLetter(position[0])}${position[1]}`,
+            coverage: coverage,
         });
     };
 

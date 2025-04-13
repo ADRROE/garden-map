@@ -15,6 +15,7 @@ class GardenElementBase(BaseModel):
     default_height: float | None = Field(default=None, alias="defaultHeight")
     cursor: str | None = None
     category: str
+    sub_category: str
     wcvp_id: str | None = Field(default=None, alias="wcvpId")
     rhs_id: str | None = Field(default=None, alias="rhsId")
     date_planted: datetime | None = Field(default=None, alias="datePlanted")
@@ -46,10 +47,12 @@ class GardenElementUpdate(BaseModel):
     width: float | None = None
     height: float | None = None
     location: str | None = None
+    coverage: str | None = None
     default_width: float | None = Field(default=None, alias="defaultWidth")
     default_height: float | None = Field(default=None, alias="defaultHeight")
     cursor: str | None = None
     category: str | None = None
+    sub_category: str | None = None
     wcvp_id: str | None = Field(default=None, alias="wcvpId")
     rhs_id: str | None = Field(default=None, alias="rhsId")
     date_planted: datetime | None = Field(default=None, alias="datePlanted")

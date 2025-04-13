@@ -2,7 +2,7 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import { GardenElement, MenuElement, CreateElementFn, UpdateElementFn, GardenContextType } from "../types";
 import { createElementAPI, updateElementAPI, deleteElementAPI } from "../services/elementsService";
-import { translatePosition } from "../utils";
+import { translatePosition, toColumnLetter, getCoveredCells } from "../utils";
 import { fetchElements } from "../services/elementsService";
 import { v4 as uuidv4 } from 'uuid';
 
@@ -41,14 +41,18 @@ export const GardenProvider = ({ children }: { children: React.ReactNode }) => {
 }, []);
 
   const createElement: CreateElementFn = async (menuElement, x, y, width, height) => {
+    const position = translatePosition(x, y);
+    const location = `${toColumnLetter(position[0])}${position[1]}`;
+    const coverage = getCoveredCells(position[0], position[1], width/19.5, height/19.5);
     const newElement: GardenElement = {
       ...menuElement,
       id: generateUUID(),
       x,
       y,
-      location: translatePosition(x, y),
+      location: location,
       width,
       height,
+      coverage: coverage
     };
     setElements((prev) => [...prev, newElement]);
     try {

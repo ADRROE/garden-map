@@ -6,6 +6,7 @@ export interface MenuElement {
     defaultHeight?: number;
     cursor?: string;
     category: string;
+    subCategory: string;
   }
 
 export interface GardenElement extends MenuElement {
@@ -14,6 +15,7 @@ export interface GardenElement extends MenuElement {
   location?: string;
   width: number;
   height: number;
+  coverage?: string[];
   wcvpId?: string;
   rhsId?: string;
   datePlanted?: Date;
