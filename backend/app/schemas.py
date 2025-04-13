@@ -11,6 +11,7 @@ class GardenElementBase(BaseModel):
     width: float
     height: float
     location: str | None = None
+    coverage: str | None = None
     default_width: float | None = Field(default=None, alias="defaultWidth")
     default_height: float | None = Field(default=None, alias="defaultHeight")
     cursor: str | None = None
