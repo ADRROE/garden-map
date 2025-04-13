@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, List
 from datetime import datetime
 
 
@@ -11,7 +11,7 @@ class GardenElementBase(BaseModel):
     width: float
     height: float
     location: str | None = None
-    coverage: str | None = None
+    coverage: List[str] | None = None
     default_width: float | None = Field(default=None, alias="defaultWidth")
     default_height: float | None = Field(default=None, alias="defaultHeight")
     cursor: str | None = None
@@ -48,7 +48,7 @@ class GardenElementUpdate(BaseModel):
     width: float | None = None
     height: float | None = None
     location: str | None = None
-    coverage: str | None = None
+    coverage: List[str] | None = None
     default_width: float | None = Field(default=None, alias="defaultWidth")
     default_height: float | None = Field(default=None, alias="defaultHeight")
     cursor: str | None = None
