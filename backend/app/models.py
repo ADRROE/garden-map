@@ -2,7 +2,7 @@ from sqlalchemy import Column, Integer, String, Float, DateTime, JSON
 from app.database import Base
 
 class GardenElement(Base):
-    __tablename__ = "garden_elements"
+    __tablename__ = "t_garden_map"
 
     id = Column(String(36), primary_key=True, index=True)
     name = Column(String(255), nullable=False)  # frontend uses 'name', not 'type'

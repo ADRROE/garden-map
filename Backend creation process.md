@@ -43,7 +43,7 @@ Base = declarative_base()
 Defines the actual database table via SQLAlchemy ORM class:
 ```python
 class GardenElement(Base):
-    __tablename__ = "garden_elements"
+    __tablename__ = "t_garden_map"
     id = Column(String, primary_key=True)
     name = Column(String)
     ...

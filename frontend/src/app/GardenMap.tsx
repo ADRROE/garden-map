@@ -23,6 +23,7 @@ const GardenMap: React.FC<GardenMapProps> = ({ dimensions }) => {
     const bgWidth = 2500;
     const bgHeight = 2253;
     const stage = stageRef.current
+    const [locked, setLocked] = useState(true)
 
 
     const handleDrag = (pos: {x: number, y: number}) => {
@@ -89,10 +90,11 @@ const GardenMap: React.FC<GardenMapProps> = ({ dimensions }) => {
         const x = (pointer.x - stage.x()) / scale;
         const y = (pointer.y - stage.y()) / scale;
 
-        if (selectedElement && clickedOnEmpty) {
-            placeElement(x, y);
-            document.body.style.cursor = "default";
-            return;
+        if (selectedElement && clickedOnEmpty && !locked) {
+            const name = window.prompt("Friendly name?", "")
+            if (!name) return document.body.style.cursor = "default";
+            placeElement(name, x, y);
+            return document.body.style.cursor = "default";
         }
 
         if (clickedOnEmpty) {
@@ -100,6 +102,7 @@ const GardenMap: React.FC<GardenMapProps> = ({ dimensions }) => {
             setPropMenu(null);
             document.body.style.cursor = "default";
         }
+
     };
 
     const [propMenu, setPropMenu] = useState<GardenElement | null>(null);
@@ -119,7 +122,9 @@ const GardenMap: React.FC<GardenMapProps> = ({ dimensions }) => {
         });
     }
 
-    const [bgImage] = useImage("/grid.jpg")
+    const [bgImage] = useImage("/grid.jpg");
+    const [lockedImage] = useImage("/icons/locked.png");
+    const [unlockedImage] = useImage("/icons/unlocked.png");
 
     return (
         <div className="flex-1 relative">
@@ -151,6 +156,8 @@ const GardenMap: React.FC<GardenMapProps> = ({ dimensions }) => {
                                 />
                             ))
                         ))}
+                        {locked && <Image image={lockedImage} onClick={() => setLocked(false)} alt="lock" />}
+                        {!locked && <Image image={unlockedImage} onClick={() => setLocked(true)} alt="unlock" />}
                         {/* Render Elements from Context */}
                         {elements.map((element) => (
                             <DraggableElement

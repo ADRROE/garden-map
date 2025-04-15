@@ -51,6 +51,7 @@ const DraggableElement: React.FC<DraggableElementProps> = ({ element, onUpdate, 
         const newY = e.target.y();
         const position = translatePosition(newX, newY);
         const coverage = getCoveredCells(position[0], position[1], element.width/19.5, element.height/19.5);
+
         onUpdate({
             id: element.id,
             x: newX,

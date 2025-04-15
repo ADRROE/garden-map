@@ -99,7 +99,7 @@ const ElementMenu = () => {
               draggable
               onClick={() => handleClick(element)}
             >
-              <img src={element.icon} alt={element.name} className="w-6 h-6" />
+              <img src={element.icon} className="w-6 h-6" />
             </button>
           ))
         ) : (

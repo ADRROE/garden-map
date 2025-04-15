@@ -1,6 +1,5 @@
 export interface MenuElement {
     id: string;
-    name: string;
     icon: string;
     defaultWidth?: number;
     defaultHeight?: number;
@@ -10,6 +9,7 @@ export interface MenuElement {
   }
 
 export interface GardenElement extends MenuElement {
+  name?: string;
   x: number;
   y: number;
   location?: string;
@@ -22,7 +22,7 @@ export interface GardenElement extends MenuElement {
   price?: number;
 }
 
-export type CreateElementFn = (element: Omit<GardenElement, "x" | "y" | "width" | "height"> , x: number, y: number, width: number, height: number) => void;
+export type CreateElementFn = (element: Omit<GardenElement, "name" | "x" | "y" | "width" | "height"> , name: string, x: number, y: number, width: number, height: number) => void;
 
 export type UpdateElementFn = (updatedElement: { id: string } & Partial<GardenElement>) => void;
 
@@ -32,7 +32,7 @@ export interface GardenContextType {
   createElement: CreateElementFn;
   updateElement: UpdateElementFn;
   selectElement: (element: MenuElement | null) => void;
-  placeElement: (x: number, y: number) => void;
+  placeElement: (name: string | null, x: number, y: number) => void;
   deleteElement: (id: string) => void;
 }
 

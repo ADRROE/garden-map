@@ -22,13 +22,13 @@ export const GardenProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   // Function to place the element on the map
-  const placeElement = (x: number, y: number) => {
+  const placeElement = (name: string | null, x: number, y: number) => {
     if (!selectedElement) return;
 
     const width = selectedElement.defaultWidth ?? 40;
     const height = selectedElement.defaultHeight ?? 40;
-
-    createElement(selectedElement, x - width / 2, y - height / 2, width, height);
+    
+    createElement(selectedElement, name || "unknown", x - width / 2, y - height / 2, width, height);
     setSelectedElement(null);
     document.body.style.cursor = "default";
   };
@@ -40,13 +40,14 @@ export const GardenProvider = ({ children }: { children: React.ReactNode }) => {
     });
 }, []);
 
-  const createElement: CreateElementFn = async (menuElement, x, y, width, height) => {
+  const createElement: CreateElementFn = async (menuElement, name, x, y, width, height) => {
     const position = translatePosition(x, y);
     const location = `${toColumnLetter(position[0])}${position[1]}`;
     const coverage = getCoveredCells(position[0], position[1], width/19.5, height/19.5);
     const newElement: GardenElement = {
       ...menuElement,
       id: generateUUID(),
+      name,
       x,
       y,
       location: location,
