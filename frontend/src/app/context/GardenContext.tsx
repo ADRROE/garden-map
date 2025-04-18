@@ -21,14 +21,16 @@ export const GardenProvider = ({ children }: { children: React.ReactNode }) => {
     setSelectedElement(menuElement);
   };
 
+  const [pendingPosition, setPendingPosition] = useState<{x: number, y: number} | null>(null);
+
   // Function to place the element on the map
-  const placeElement = (name: string | null, x: number, y: number) => {
+  const placeElement = (x: number, y: number, name: string) => {
     if (!selectedElement) return;
 
     const width = selectedElement.defaultWidth ?? 40;
     const height = selectedElement.defaultHeight ?? 40;
     
-    createElement(selectedElement, name || "unknown", x - width / 2, y - height / 2, width, height);
+    createElement(selectedElement, name, x - width / 2, y - height / 2, width, height);
     setSelectedElement(null);
     document.body.style.cursor = "default";
   };
@@ -97,7 +99,7 @@ export const GardenProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   return (
-    <GardenContext.Provider value={{ elements, selectedElement, createElement, updateElement, selectElement, placeElement, deleteElement }}>
+    <GardenContext.Provider value={{ elements, selectedElement, pendingPosition, setSelectedElement, setPendingPosition, createElement, updateElement, selectElement, placeElement, deleteElement }}>
       {children}
     </GardenContext.Provider>
   );

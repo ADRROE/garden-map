@@ -17,7 +17,7 @@ interface GardenMapProps {
 const GardenMap: React.FC<GardenMapProps> = ({ dimensions }) => {
 
     const stageRef = useRef<KonvaStage | null>(null);
-    const { elements, selectedElement, updateElement, placeElement, deleteElement } = useGarden(); // ✅ Get elements from context
+    const { elements, selectedElement, pendingPosition, setSelectedElement,  setPendingPosition, updateElement, placeElement, deleteElement } = useGarden(); // ✅ Get elements from context
 
     const baseGridSize = 19.95;
     const bgWidth = 2500;
@@ -26,12 +26,12 @@ const GardenMap: React.FC<GardenMapProps> = ({ dimensions }) => {
     const [locked, setLocked] = useState(true)
 
 
-    const handleDrag = (pos: {x: number, y: number}) => {
+    const handleDrag = (pos: { x: number, y: number }) => {
         if (!stage) return pos;
 
         const scale = stage?.scaleX() ?? 1;
 
-        const maxX = 0;
+        const maxX = 20;
         const maxY = 0;
 
         const scaledWidth = bgWidth * scale;
@@ -52,11 +52,17 @@ const GardenMap: React.FC<GardenMapProps> = ({ dimensions }) => {
         if (!stage) return;
 
         const scale = stage?.scaleX() ?? 1;
+
         const pointer = stage.getPointerPosition();
         if (!pointer) return;
 
         const scaleBy = 1.05;
-        const newScale = e.evt.deltaY > 0 ? scale / scaleBy : scale * scaleBy;
+
+        let newScale = e.evt.deltaY > 0 ? scale / scaleBy : scale * scaleBy;
+
+        const MIN_SCALE = 0.5;
+        newScale = Math.max(newScale, MIN_SCALE);
+
 
         // Calculate the difference in position before and after scaling
         const mousePointTo = {
@@ -91,18 +97,14 @@ const GardenMap: React.FC<GardenMapProps> = ({ dimensions }) => {
         const y = (pointer.y - stage.y()) / scale;
 
         if (selectedElement && clickedOnEmpty && !locked) {
-            const name = window.prompt("Friendly name?", "")
-            if (!name) return document.body.style.cursor = "default";
-            placeElement(name, x, y);
-            return document.body.style.cursor = "default";
+            setPendingPosition({ x, y });
+            setNameModalOpen(true);
         }
-
         if (clickedOnEmpty) {
             setSelectedNodeId(null);
             setPropMenu(null);
             document.body.style.cursor = "default";
         }
-
     };
 
     const [propMenu, setPropMenu] = useState<GardenElement | null>(null);
@@ -110,21 +112,24 @@ const GardenMap: React.FC<GardenMapProps> = ({ dimensions }) => {
 
     const onDraggableElementSelect = () => {
         if (!stage) return;
-      
+
         const pointer = stage.getPointerPosition();
         if (!pointer) return;
-      
+
         const containerRect = stage.container().getBoundingClientRect();
-      
+
         setPropMenuPosition({
-          x: containerRect.left + pointer.x,
-          y: containerRect.top + pointer.y,
+            x: containerRect.left + pointer.x,
+            y: containerRect.top + pointer.y,
         });
-    }
+    };
+
+    const [nameModalOpen, setNameModalOpen] = useState(false);
+    const [inputName, setInputName] = useState("");
 
     const [bgImage] = useImage("/grid.jpg");
-    const [lockedImage] = useImage("/icons/locked.png");
-    const [unlockedImage] = useImage("/icons/unlocked.png");
+    const lockedImage = "/icons/locked.png";
+    const unlockedImage = "/icons/unlocked.png";
 
     return (
         <div className="flex-1 relative">
@@ -156,8 +161,6 @@ const GardenMap: React.FC<GardenMapProps> = ({ dimensions }) => {
                                 />
                             ))
                         ))}
-                        {locked && <Image image={lockedImage} onClick={() => setLocked(false)} alt="lock" />}
-                        {!locked && <Image image={unlockedImage} onClick={() => setLocked(true)} alt="unlock" />}
                         {/* Render Elements from Context */}
                         {elements.map((element) => (
                             <DraggableElement
@@ -171,36 +174,103 @@ const GardenMap: React.FC<GardenMapProps> = ({ dimensions }) => {
                                     onDraggableElementSelect();
                                 }}
                                 onDelete={(id: string) => {
+                                    if (locked) return;
                                     deleteElement(id);
                                     setSelectedNodeId(null); // deselect after deletion
+                                    setPropMenu(null);
+                                    setLocked(true);
                                 }}
                             />
                         ))}
                     </Layer>
+                    <Layer name="zonelayer">
+
+                    </Layer>
                 </Stage>
             )}
-            {propMenu && propMenuPosition &&(
-                  <div
-                  style={{
-                    position: 'absolute',
-                    top: Math.min(propMenuPosition.y, window.innerHeight - 200), // clamp if too close to bottom
-                    left: Math.min(propMenuPosition.x, window.innerWidth - 300), // clamp if too close to right
-                    zIndex: 1000,
-                  }}
-                >
-                <PropMenu
-                    element={propMenu}
-                    onUpdate={(updatedData) => {
-                        updateElement(updatedData);
-                        // also update local state if needed
-                        setPropMenu((prev) =>
-                            prev && prev.id === updatedData.id
-                                ? { ...prev, ...updatedData }
-                                : prev
-                        );
+            {locked &&
+                <img
+                    src={lockedImage}
+                    style={{
+                        position: 'absolute',
+                        scale: 0.15,
+                        top: -250,
+                        left: -160,
+                        zIndex: 10, // Must be higher than Konva container
+                        cursor: 'pointer',
                     }}
-                    onClose={() => setPropMenu(null)}
-                />
+                    onClick={() => setLocked(false)}
+                    alt="lockedIcon" />
+            }
+            {!locked &&
+                <img
+                    src={unlockedImage}
+                    style={{
+                        position: 'absolute',
+                        scale: 0.15,
+                        top: -250,
+                        left: -160,
+                        zIndex: 10, // Must be higher than Konva container
+                        cursor: 'pointer',
+                    }}
+                    onClick={() => setLocked(true)}
+                    alt="unlockedIcon" />}
+            {propMenu && propMenuPosition && (
+                <div
+                    style={{
+                        position: 'absolute',
+                        top: Math.min(propMenuPosition.y, window.innerHeight - 200), // clamp if too close to bottom
+                        left: Math.min(propMenuPosition.x, window.innerWidth - 300), // clamp if too close to right
+                        zIndex: 1000,
+                    }}
+                >
+                    <PropMenu
+                        element={propMenu}
+                        onUpdate={(updatedData) => {
+                            updateElement(updatedData);
+                            // also update local state if needed
+                            setPropMenu((prev) =>
+                                prev && prev.id === updatedData.id
+                                    ? { ...prev, ...updatedData }
+                                    : prev
+                            );
+                        }}
+                        onClose={() => setPropMenu(null)}
+                    />
+                </div>
+            )}
+            {nameModalOpen && pendingPosition && (
+                <div className="bg-background text-foreground fixed inset-0 z-50 flex items-center justify-center">
+                    {/* Backdrop */}
+                    <div
+                        className="absolute inset-0 bg-white/60 backdrop-blur-md bg-opacity-50"
+                        onClick={() => {
+                            setNameModalOpen(false);
+                            setSelectedElement(null);
+                            }
+                        }
+                    />
+
+                    {/* Modal Content */}
+                        <div className="relative z-10 bg-white shadow-xl p-6 w-full max-w-sm mx-4 animate-fade-in border-2">
+                            <h2 className="text-lg font-sans font-semibold mb-4">Name</h2>
+                            <input 
+                                value={inputName}
+                                onChange={(e) => setInputName(e.target.value)}
+                                className="w-full px-4 py-2 border bg-amber-50 border-black mb-4" />
+                            <div className="flex justify-start space-x-2">
+                                <button
+                                    onClick={() =>{
+                                        placeElement(pendingPosition.x, pendingPosition.y, inputName);
+                                        setNameModalOpen(false);
+                                    }
+                                    }
+                                    className="px-4 py-2 border w-full hover:bg-[#C5D4BC]"
+                                >
+                                    Place
+                                </button>
+                            </div>
+                        </div>
                 </div>
             )}
         </div>

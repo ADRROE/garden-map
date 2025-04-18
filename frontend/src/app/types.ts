@@ -5,7 +5,7 @@ export interface MenuElement {
     defaultHeight?: number;
     cursor?: string;
     category: string;
-    subCategory: string;
+    subCategory?: string;
   }
 
 export interface GardenElement extends MenuElement {
@@ -22,6 +22,14 @@ export interface GardenElement extends MenuElement {
   price?: number;
 }
 
+export interface GardenZone extends MenuElement {
+  xstart: number;
+  ystart: number;
+  soiltype: string;
+  coverage?: string[];
+  color: string;
+}
+
 export type CreateElementFn = (element: Omit<GardenElement, "name" | "x" | "y" | "width" | "height"> , name: string, x: number, y: number, width: number, height: number) => void;
 
 export type UpdateElementFn = (updatedElement: { id: string } & Partial<GardenElement>) => void;
@@ -29,10 +37,13 @@ export type UpdateElementFn = (updatedElement: { id: string } & Partial<GardenEl
 export interface GardenContextType {
   elements: GardenElement[];
   selectedElement: MenuElement | null;
+  pendingPosition: { x: number, y: number } | null;
+  setSelectedElement: (element: MenuElement | null) => void;
   createElement: CreateElementFn;
   updateElement: UpdateElementFn;
   selectElement: (element: MenuElement | null) => void;
-  placeElement: (name: string | null, x: number, y: number) => void;
+  setPendingPosition: (pos:{ x: number, y: number }) => void;
+  placeElement: (x: number, y: number, name: string) => void;
   deleteElement: (id: string) => void;
 }
 
