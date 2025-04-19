@@ -44,17 +44,21 @@ const ElementMenu = () => {
 
   const handleClick = (element: MenuElement) => {
     selectElement(element);
-    const cursorImage = element.cursor || element.icon;
-    const image = new Image();
-    image.src = cursorImage;
+    if (element.cursor) {
+      const cursorImage = element.cursor;
+      const image = new Image();
+      image.src = cursorImage;
 
-    image.onload = () => {
-      document.body.style.cursor = `url(${cursorImage}) 16 16, auto`;
-    };
+      image.onload = () => {
+        document.body.style.cursor = `url(${cursorImage}) 16 16, auto`;
+      };
 
-    image.onerror = () => {
-      console.warn("Cursor image failed to load:", cursorImage);
-      document.body.style.cursor = "crosshair";
+      image.onerror = () => {
+        console.warn("Cursor image failed to load:", cursorImage);
+        document.body.style.cursor = "crosshair";
+      };
+    } else {
+        document.body.style.cursor = "crosshair"
     };
   };
 
@@ -66,11 +70,11 @@ const ElementMenu = () => {
           <button
             key={cat}
             onClick={() => setActiveCategory(cat)}
-            className={`flex-1 p-2 text-sm font-medium ${
-              cat === activeCategory
+            style={{cursor: "pointer"}}
+            className={`flex-1 p-2 text-sm font-medium ${cat === activeCategory
                 ? "bg-white border-b-2 border-[#869D7A] text-[#869D7A]"
                 : "bg-gray-100 text-gray-500 hover:bg-gray-200"
-            }`}
+              }`}
           >
             {capitalizeFirstLetter(cat)}
           </button>
@@ -84,11 +88,11 @@ const ElementMenu = () => {
             <button
               key={sub}
               onClick={() => setActiveSubCategory(sub)}
-              className={`flex-1 p-2 text-xs ${
-                sub === activeSubCategory
+              style={{cursor: "pointer"}}
+              className={`flex-1 p-2 text-xs ${sub === activeSubCategory
                   ? "bg-white border-b-2 border-[#869D7A] text-[#869D7A]"
                   : "bg-gray-100 text-gray-500 hover:bg-gray-200"
-              }`}
+                }`}
             >
               {capitalizeFirstLetter(sub)}
             </button>
@@ -105,6 +109,7 @@ const ElementMenu = () => {
               className="p-2 bg-white shadow hover:shadow-md rounded-md flex items-center justify-center"
               draggable
               onClick={() => handleClick(element)}
+              style={{cursor: "pointer"}}
             >
               <img src={element.icon} className="w-6 h-6" />
             </button>

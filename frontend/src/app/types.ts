@@ -38,6 +38,10 @@ export interface GardenContextType {
   elements: GardenElement[];
   selectedElement: MenuElement | null;
   pendingPosition: { x: number, y: number } | null;
+  coloredCells: {x: number, y: number, color: string}[] | null;
+  isMapLocked: boolean;
+  setIsMapLocked: React.Dispatch<React.SetStateAction<boolean>>;
+  colorCell: (x: number, y: number, color: string) => void;
   setSelectedElement: (element: MenuElement | null) => void;
   createElement: CreateElementFn;
   updateElement: UpdateElementFn;
@@ -48,7 +52,6 @@ export interface GardenContextType {
 }
 
 export type ElementType = GardenElement | MenuElement;
-export type ClickHandler = (event: React.MouseEvent) => void;
 
 export interface DraggableElementProps {
   element: GardenElement;

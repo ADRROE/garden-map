@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { Stage, Layer, Rect, Image } from "react-konva";
 import type { Stage as KonvaStage } from "konva/lib/Stage"; // ✅ Import Konva's Stage type
 import { KonvaEventObject } from "konva/lib/Node";
@@ -17,13 +17,26 @@ interface GardenMapProps {
 const GardenMap: React.FC<GardenMapProps> = ({ dimensions }) => {
 
     const stageRef = useRef<KonvaStage | null>(null);
-    const { elements, selectedElement, pendingPosition, setSelectedElement,  setPendingPosition, updateElement, placeElement, deleteElement } = useGarden(); // ✅ Get elements from context
+    const { 
+        elements, 
+        selectedElement, 
+        pendingPosition,
+        isMapLocked,
+        coloredCells, 
+        colorCell,
+        setIsMapLocked,
+        setSelectedElement, 
+        setPendingPosition, 
+        updateElement, 
+        placeElement, 
+        deleteElement 
+    } = useGarden(); // ✅ Get elements from context
 
     const baseGridSize = 19.95;
     const bgWidth = 2500;
     const bgHeight = 2253;
     const stage = stageRef.current
-    const [locked, setLocked] = useState(true)
+    const [locked, setLocked] = useState(true);
 
 
     const handleDrag = (pos: { x: number, y: number }) => {
@@ -82,6 +95,16 @@ const GardenMap: React.FC<GardenMapProps> = ({ dimensions }) => {
     };
 
     const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+    const [activeColor, setActiveColor] = useState<{ color: string } | null>();
+    const [isPainting, setIsPainting] = useState(false);
+    const [isErasing, setIsErasing] = useState(false);
+    const [isDraggingStage, setIsDraggingStage] = useState(true);
+
+    const colorMap = {
+        "loam": "#b88859",
+        "sand": "#c7b199",
+        "clay": "#dad6ba"
+    };
 
     const handleStageMouseDown = (e: KonvaEventObject<MouseEvent>) => {
         if (!stage) return;
@@ -96,9 +119,21 @@ const GardenMap: React.FC<GardenMapProps> = ({ dimensions }) => {
         const x = (pointer.x - stage.x()) / scale;
         const y = (pointer.y - stage.y()) / scale;
 
-        if (selectedElement && clickedOnEmpty && !locked) {
-            setPendingPosition({ x, y });
-            setNameModalOpen(true);
+        if (selectedElement && clickedOnEmpty && !isMapLocked) {
+            if (selectedElement.category !== "soil") {
+                setPendingPosition({ x, y });
+                setNameModalOpen(true);
+            }
+            if (selectedElement.category === "soil") {
+                const color = colorMap[selectedElement.subCategory as keyof typeof colorMap];
+                setActiveColor({ color });
+
+                const isRightClick = e.evt.button === 2 || e.evt.ctrlKey;
+                setIsPainting(!isRightClick);
+                setIsErasing(isRightClick);
+                setIsDraggingStage(false);
+
+            }
         }
         if (clickedOnEmpty) {
             setSelectedNodeId(null);
@@ -106,6 +141,27 @@ const GardenMap: React.FC<GardenMapProps> = ({ dimensions }) => {
             document.body.style.cursor = "default";
         }
     };
+
+    useEffect(() => {
+        document.body.style.cursor = isPainting ? "crosshair" : "default";
+
+        return () => {
+            document.body.style.cursor = "default";
+        };
+    }, [isPainting]);
+
+    useEffect(() => {
+        const handleKeyDown = (event: KeyboardEvent) => {
+          if (event.key === 'Escape') {
+            event.preventDefault();
+            setActiveColor(null);
+            setIsPainting(false);
+            setIsErasing(false);
+          }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown)
+      }, []);
 
     const [propMenu, setPropMenu] = useState<GardenElement | null>(null);
     const [propMenuPosition, setPropMenuPosition] = useState<{ x: number; y: number } | null>(null);
@@ -139,7 +195,19 @@ const GardenMap: React.FC<GardenMapProps> = ({ dimensions }) => {
                     height={dimensions.height}
                     onWheel={handleWheel}
                     onMouseDown={handleStageMouseDown}
-                    draggable
+                    onMouseUp={() => {
+                        setIsPainting(false);
+                        setIsErasing(false);
+                        setIsDraggingStage(true); // re-enable stage dragging
+                    }}
+
+                    onMouseLeave={() => {
+                        setIsPainting(false);
+                        setIsErasing(false);
+                        setIsDraggingStage(true);
+                    }}
+                    onContextMenu={(e) => e.evt.preventDefault()} // disable right-click menu
+                    draggable={isDraggingStage}
                     dragBoundFunc={(pos) => handleDrag(pos)}
                     className="border border-gray-300"
                     ref={stageRef}
@@ -157,6 +225,14 @@ const GardenMap: React.FC<GardenMapProps> = ({ dimensions }) => {
                                     stroke="gray"
                                     strokeWidth={0.5}
                                     listening={true} // important: allow events
+                                    onClick={() => colorCell(i, j, activeColor?.color ?? "")}
+                                    onMouseEnter={() => {
+                                        if (isPainting) {
+                                            colorCell(i, j, activeColor?.color ?? "");
+                                        } else if (isErasing) {
+                                            colorCell(i, j, "");
+                                        }
+                                    }}
 
                                 />
                             ))
@@ -184,36 +260,47 @@ const GardenMap: React.FC<GardenMapProps> = ({ dimensions }) => {
                         ))}
                     </Layer>
                     <Layer name="zonelayer">
-
+                        {coloredCells?.map(({ x, y, color }) => (
+                            <Rect
+                                key={`zone-${x}-${y}`}
+                                x={x * baseGridSize}
+                                y={y * baseGridSize}
+                                width={baseGridSize}
+                                height={baseGridSize}
+                                fill={color}
+                                stroke="transparent"
+                                listening={false}
+                            />
+                        ))}
                     </Layer>
                 </Stage>
             )}
-            {locked &&
+            {isMapLocked &&
+                // eslint-disable-next-line @next/next/no-img-element
                 <img
                     src={lockedImage}
-                    style={{
-                        position: 'absolute',
-                        scale: 0.15,
-                        top: -250,
-                        left: -160,
-                        zIndex: 10, // Must be higher than Konva container
-                        cursor: 'pointer',
+                    className="locked-icon"
+                    onClick={() => {
+                        setIsMapLocked((prev) => !prev);
+                        setSelectedElement(null);
+                        setActiveColor(null);
+                        setIsPainting(false);
+                        setIsErasing(false);
                     }}
-                    onClick={() => setLocked(false)}
                     alt="lockedIcon" />
             }
-            {!locked &&
+            {!isMapLocked &&
+                // eslint-disable-next-line @next/next/no-img-element
                 <img
                     src={unlockedImage}
-                    style={{
-                        position: 'absolute',
-                        scale: 0.15,
-                        top: -250,
-                        left: -160,
-                        zIndex: 10, // Must be higher than Konva container
-                        cursor: 'pointer',
+                    className="unlocked-icon"
+                    onClick={() => {
+                        setIsMapLocked((prev) => !prev);
+                        setSelectedElement(null);
+                        setActiveColor(null);
+                        setIsPainting(false);
+                        setIsErasing(false);
                     }}
-                    onClick={() => setLocked(true)}
                     alt="unlockedIcon" />}
             {propMenu && propMenuPosition && (
                 <div
@@ -247,30 +334,30 @@ const GardenMap: React.FC<GardenMapProps> = ({ dimensions }) => {
                         onClick={() => {
                             setNameModalOpen(false);
                             setSelectedElement(null);
-                            }
+                        }
                         }
                     />
 
                     {/* Modal Content */}
-                        <div className="relative z-10 bg-white shadow-xl p-6 w-full max-w-sm mx-4 animate-fade-in border-2">
-                            <h2 className="text-lg font-sans font-semibold mb-4">Name</h2>
-                            <input 
-                                value={inputName}
-                                onChange={(e) => setInputName(e.target.value)}
-                                className="w-full px-4 py-2 border bg-amber-50 border-black mb-4" />
-                            <div className="flex justify-start space-x-2">
-                                <button
-                                    onClick={() =>{
-                                        placeElement(pendingPosition.x, pendingPosition.y, inputName);
-                                        setNameModalOpen(false);
-                                    }
-                                    }
-                                    className="px-4 py-2 border w-full hover:bg-[#C5D4BC]"
-                                >
-                                    Place
-                                </button>
-                            </div>
+                    <div className="relative z-10 bg-white shadow-xl p-6 w-full max-w-sm mx-4 animate-fade-in border-2">
+                        <h2 className="text-lg font-sans font-semibold mb-4">Name</h2>
+                        <input
+                            value={inputName}
+                            onChange={(e) => setInputName(e.target.value)}
+                            className="w-full px-4 py-2 border bg-amber-50 border-black mb-4" />
+                        <div className="flex justify-start space-x-2">
+                            <button
+                                onClick={() => {
+                                    placeElement(pendingPosition.x, pendingPosition.y, inputName);
+                                    setNameModalOpen(false);
+                                }
+                                }
+                                className="px-4 py-2 border w-full hover:bg-[#C5D4BC]"
+                            >
+                                Place
+                            </button>
                         </div>
+                    </div>
                 </div>
             )}
         </div>

@@ -15,6 +15,7 @@ const GardenContext = createContext<GardenContextType | undefined>(undefined);
 export const GardenProvider = ({ children }: { children: React.ReactNode }) => {
   const [elements, setElements] = useState<GardenElement[]>([]);
   const [selectedElement, setSelectedElement] = useState<MenuElement | null>(null);
+  const [isMapLocked, setIsMapLocked] = useState<boolean>(true);
 
   // Function to select an element (sets cursor image)
   const selectElement = (menuElement: MenuElement | null) => {
@@ -90,6 +91,7 @@ export const GardenProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
+        event.preventDefault();
         setSelectedElement(null);
         document.body.style.cursor = "default";
       }
@@ -98,8 +100,37 @@ export const GardenProvider = ({ children }: { children: React.ReactNode }) => {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, []);
 
+  const [coloredCells, setColoredCells] = useState<{ x: number, y: number, color: string }[]>([]);
+
+  const colorCell = (i: number, j: number, color: string) => {
+      setColoredCells((prev) => {
+          const existingIndex = prev.findIndex(cell => cell.x === i && cell.y === j);
+          if (existingIndex !== -1) {
+              const updated = [...prev];
+              updated[existingIndex].color = color;
+              return updated
+          } else {
+              return [...prev, { x: i, y: j, color }]
+          }
+      });
+  };
+
   return (
-    <GardenContext.Provider value={{ elements, selectedElement, pendingPosition, setSelectedElement, setPendingPosition, createElement, updateElement, selectElement, placeElement, deleteElement }}>
+    <GardenContext.Provider value={{ 
+      elements,
+      selectedElement, 
+      pendingPosition, 
+      coloredCells, 
+      isMapLocked,
+      setIsMapLocked,
+      colorCell, 
+      setSelectedElement, 
+      setPendingPosition, 
+      createElement, 
+      updateElement, 
+      selectElement, 
+      placeElement, 
+      deleteElement }}>
       {children}
     </GardenContext.Provider>
   );

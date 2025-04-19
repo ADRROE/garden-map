@@ -7,12 +7,14 @@ import useImage from "use-image";
 import { DraggableElementProps } from "../types";
 import { translatePosition, toColumnLetter, getCoveredCells } from "../utils";
 import { KonvaEventObject } from "konva/lib/Node";
+import { useGarden } from "../context/GardenContext";
 
 const DraggableElement: React.FC<DraggableElementProps> = ({ element, onUpdate, onSelect, isSelected, onDelete }) => {
     const [image] = useImage(element.icon);
     const groupRef = useRef<KonvaGroup>(null);
     const imageRef = useRef<KonvaImage>(null);
     const transformerRef = useRef<KonvaTransformer>(null);
+    const {isMapLocked} = useGarden()
 
     useEffect(() => {
         if (!isSelected || !transformerRef.current || !groupRef.current) return;
@@ -24,7 +26,7 @@ const DraggableElement: React.FC<DraggableElementProps> = ({ element, onUpdate, 
 
     const handleTransformEnd = () => {
         const groupNode = groupRef.current;
-        if (!groupNode) return;
+        if (!groupNode || isMapLocked) return;
 
         const scaleX = groupNode.scaleX();
         const scaleY = groupNode.scaleY();
@@ -47,6 +49,7 @@ const DraggableElement: React.FC<DraggableElementProps> = ({ element, onUpdate, 
     };
 
     const handleDragEnd = (e: KonvaEventObject<DragEvent>) => {
+        if (isMapLocked) return
         const newX = e.target.x();
         const newY = e.target.y();
         const position = translatePosition(newX, newY);
@@ -67,7 +70,7 @@ const DraggableElement: React.FC<DraggableElementProps> = ({ element, onUpdate, 
                 ref={groupRef}
                 x={element.x}
                 y={element.y}
-                draggable
+                draggable={!isMapLocked}
                 onClick={onSelect}
                 onDragEnd={handleDragEnd}
                 onTransformEnd={handleTransformEnd}
