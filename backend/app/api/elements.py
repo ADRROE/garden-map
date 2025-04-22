@@ -32,3 +32,5 @@ def update_element(id: str, updates: schemas.GardenElementUpdate, db: Session = 
 def delete_element(id: str, db: Session = Depends(get_db)):
     print(f"DELETE ELEMENT CALLED with id={id}")
     return crud.delete_element(db, id)
+
+

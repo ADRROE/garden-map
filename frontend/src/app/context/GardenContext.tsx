@@ -1,9 +1,9 @@
 "use client";
 import { createContext, useContext, useState, useEffect } from "react";
-import { GardenElement, MenuElement, CreateElementFn, UpdateElementFn, GardenContextType } from "../types";
+import { GardenElement, MenuElement, CreateElementFn, UpdateElementFn, GardenContextType, ColoredCell, GardenZone } from "../types";
 import { createElementAPI, updateElementAPI, deleteElementAPI } from "../services/elementsService";
 import { translatePosition, toColumnLetter, getCoveredCells } from "../utils";
-import { fetchElements } from "../services/elementsService";
+import { fetchElements, fetchZones } from "../services/elementsService";
 import { v4 as uuidv4 } from 'uuid';
 
 function generateUUID() {
@@ -14,15 +14,16 @@ const GardenContext = createContext<GardenContextType | undefined>(undefined);
 
 export const GardenProvider = ({ children }: { children: React.ReactNode }) => {
   const [elements, setElements] = useState<GardenElement[]>([]);
+  const [zones, setZones] = useState<GardenZone[]>([]);
   const [selectedElement, setSelectedElement] = useState<MenuElement | null>(null);
-  const [isMapLocked, setIsMapLocked] = useState<boolean>(true);
+  const [isMapLocked, setIsMapLocked] = useState(true);
 
   // Function to select an element (sets cursor image)
   const selectElement = (menuElement: MenuElement | null) => {
     setSelectedElement(menuElement);
   };
 
-  const [pendingPosition, setPendingPosition] = useState<{x: number, y: number} | null>(null);
+  const [pendingPosition, setPendingPosition] = useState<{ x: number, y: number } | null>(null);
 
   // Function to place the element on the map
   const placeElement = (x: number, y: number, name: string) => {
@@ -30,7 +31,7 @@ export const GardenProvider = ({ children }: { children: React.ReactNode }) => {
 
     const width = selectedElement.defaultWidth ?? 40;
     const height = selectedElement.defaultHeight ?? 40;
-    
+
     createElement(selectedElement, name, x - width / 2, y - height / 2, width, height);
     setSelectedElement(null);
     document.body.style.cursor = "default";
@@ -38,15 +39,22 @@ export const GardenProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     fetchElements().then((data) => {
-        console.log("Fetched elements:", data); // 👈 helpful for debugging
-        setElements(data);
+      console.log("Fetched elements:", data); // 👈 helpful for debugging
+      setElements(data);
     });
-}, []);
+  }, []);
+
+  useEffect(() => {
+    fetchZones().then((data) => {
+        console.log("Fetched zones:", data);
+        setZones(Array.isArray(data) ? data : []);
+    });
+  }, []);
 
   const createElement: CreateElementFn = async (menuElement, name, x, y, width, height) => {
     const position = translatePosition(x, y);
     const location = `${toColumnLetter(position[0])}${position[1]}`;
-    const coverage = getCoveredCells(position[0], position[1], width/19.5, height/19.5);
+    const coverage = getCoveredCells(position[0], position[1], width / 19.5, height / 19.5);
     const newElement: GardenElement = {
       ...menuElement,
       id: generateUUID(),
@@ -100,37 +108,41 @@ export const GardenProvider = ({ children }: { children: React.ReactNode }) => {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, []);
 
-  const [coloredCells, setColoredCells] = useState<{ x: number, y: number, color: string }[]>([]);
+  const [coloredCells, setColoredCells] = useState<ColoredCell[]>([]);
 
-  const colorCell = (i: number, j: number, color: string) => {
-      setColoredCells((prev) => {
-          const existingIndex = prev.findIndex(cell => cell.x === i && cell.y === j);
-          if (existingIndex !== -1) {
-              const updated = [...prev];
-              updated[existingIndex].color = color;
-              return updated
-          } else {
-              return [...prev, { x: i, y: j, color }]
-          }
-      });
+  const colorCell = async (i: number, j: number, color: string, menuElementId: string) => {
+    setColoredCells((prev) => {
+      const existingIndex = prev.findIndex(cell => cell.x === i && cell.y === j);
+      if (existingIndex !== -1) {
+        const updated = [...prev];
+        updated[existingIndex].color = color;
+        console.log(`updated cells: ${JSON.stringify(updated)}`)
+        return updated
+      } else {
+        return [...prev, { x: i, y: j, color, menuElementId }]
+      }
+    });
   };
 
   return (
-    <GardenContext.Provider value={{ 
+    <GardenContext.Provider value={{
       elements,
-      selectedElement, 
-      pendingPosition, 
-      coloredCells, 
+      zones,
+      selectedElement,
+      pendingPosition,
+      coloredCells,
       isMapLocked,
       setIsMapLocked,
-      colorCell, 
-      setSelectedElement, 
-      setPendingPosition, 
-      createElement, 
-      updateElement, 
-      selectElement, 
-      placeElement, 
-      deleteElement }}>
+      colorCell,
+      setZones,
+      setSelectedElement,
+      setPendingPosition,
+      createElement,
+      updateElement,
+      selectElement,
+      placeElement,
+      deleteElement
+    }}>
       {children}
     </GardenContext.Provider>
   );

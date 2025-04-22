@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from app.api import elements
+from app.api import elements, zones
 from app.database import engine, Base
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -8,6 +8,7 @@ Base.metadata.create_all(bind=engine)
 app = FastAPI()
 
 app.include_router(elements.router, prefix="/api/elements", tags=["Elements"])
+app.include_router(zones.router, prefix="/api/zones", tags=["Zones"])
 
 app.add_middleware(
     CORSMiddleware,

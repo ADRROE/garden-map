@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import List
+from typing import List, Tuple
 from datetime import datetime
 
 
@@ -24,8 +24,8 @@ class GardenElementBase(BaseModel):
     price: float | None = None
 
     class Config:
-        orm_mode = True
-        allow_population_by_field_name = True
+        from_attributes = True
+        validate_by_name = True
         populate_by_name = True  # supports both aliases and real names
         json_encoders = {
             datetime: lambda v: v.isoformat()
@@ -61,5 +61,29 @@ class GardenElementUpdate(BaseModel):
     price: float | None = None
 
     class Config:
-        allow_population_by_field_name = True
+        validate_by_name = True
         populate_by_name = True
+
+class ColoredCell(BaseModel):
+    x: float
+    y: float
+    color: str
+    menuElementId: str = Field(default=None, alias="menu_element_id")
+
+    class Config:
+        from_attributes = True
+        populate_by_name = True
+
+class GardenZone(BaseModel):
+    id: str
+    name: str | None = None
+    color: str
+    coverage: List[ColoredCell]
+    borders: List[Tuple[Tuple[int, int], Tuple[int, int]]]
+
+    class Config:
+        from_attributes = True
+
+class GardenZoneUpdateName(BaseModel):
+    id: str
+    name: str

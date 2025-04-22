@@ -1,5 +1,6 @@
 export interface MenuElement {
     id: string;
+    iconName: string;
     icon: string;
     defaultWidth?: number;
     defaultHeight?: number;
@@ -22,13 +23,23 @@ export interface GardenElement extends MenuElement {
   price?: number;
 }
 
-export interface GardenZone extends MenuElement {
-  xstart: number;
-  ystart: number;
-  soiltype: string;
-  coverage?: string[];
+type Point = [number, number];
+type LineSegment = [Point, Point];
+
+export interface GardenZone {
+  id: string;
+  name?: string;
   color: string;
+  coverage: ColoredCell[];
+  borders: LineSegment[];
 }
+
+export type ColoredCell = {
+  x: number;
+  y: number;
+  color: string;
+  menuElementId: string;
+};
 
 export type CreateElementFn = (element: Omit<GardenElement, "name" | "x" | "y" | "width" | "height"> , name: string, x: number, y: number, width: number, height: number) => void;
 
@@ -36,12 +47,14 @@ export type UpdateElementFn = (updatedElement: { id: string } & Partial<GardenEl
 
 export interface GardenContextType {
   elements: GardenElement[];
+  zones: GardenZone[];
   selectedElement: MenuElement | null;
   pendingPosition: { x: number, y: number } | null;
-  coloredCells: {x: number, y: number, color: string}[] | null;
+  coloredCells: ColoredCell[];
   isMapLocked: boolean;
   setIsMapLocked: React.Dispatch<React.SetStateAction<boolean>>;
-  colorCell: (x: number, y: number, color: string) => void;
+  colorCell: (x: number, y: number, color: string, menuElementId: string) => void;
+  setZones: React.Dispatch<React.SetStateAction<GardenZone[]>>;
   setSelectedElement: (element: MenuElement | null) => void;
   createElement: CreateElementFn;
   updateElement: UpdateElementFn;
@@ -59,4 +72,11 @@ export interface DraggableElementProps {
   onSelect: () => void;
   onDelete: (id: string) => void;
   isSelected: boolean;
+}
+
+export interface ZoneProps {
+  zone: GardenZone;
+  hoveredZoneId?: string | null;
+  setHoveredZoneId: (id: string | null) => void;
+  onDeleteZone: (id: string) => void;
 }

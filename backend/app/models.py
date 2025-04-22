@@ -1,24 +1,55 @@
-from sqlalchemy import Column, Integer, String, Float, DateTime, JSON
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy import String, Float, DateTime, ForeignKey, JSON
 from app.database import Base
+from typing import List, Tuple
+
 
 class GardenElement(Base):
-    __tablename__ = "t_garden_map"
+    __tablename__ = "t_garden_elements"
 
-    id = Column(String(36), primary_key=True, index=True)
-    name = Column(String(255), nullable=False)  # frontend uses 'name', not 'type'
-    icon = Column(String(255))
-    x = Column(Float)
-    y = Column(Float)
-    width = Column(Float)
-    height = Column(Float)
-    location = Column(String(255), nullable=True)
-    coverage = Column(JSON, nullable=True)
-    default_width = Column(Float, nullable=True)
-    default_height = Column(Float, nullable=True)
-    cursor = Column(String(255), nullable=True)
-    category = Column(String(255))
-    sub_category = Column(String(255))
-    wcvp_id = Column(String(255), nullable=True)
-    rhs_id = Column(String(255), nullable=True)
-    date_planted = Column(DateTime, nullable=True)
-    price = Column(Float, nullable=True)
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, index=True)
+    name: Mapped[str] = mapped_column(String(255))
+    icon: Mapped[str] = mapped_column(String(255))
+    x: Mapped[float] = mapped_column(Float)
+    y: Mapped[float] = mapped_column(Float)
+    width: Mapped[float] = mapped_column(Float)
+    height: Mapped[float] = mapped_column(Float)
+    location: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    coverage: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    default_width: Mapped[float | None] = mapped_column(Float, nullable=True)
+    default_height: Mapped[float | None] = mapped_column(Float, nullable=True)
+    cursor: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    category: Mapped[str] = mapped_column(String(255))
+    sub_category: Mapped[str] = mapped_column(String(255))
+    wcvp_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    rhs_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    date_planted: Mapped[DateTime | None] = mapped_column(DateTime, nullable=True)
+    price: Mapped[float | None] = mapped_column(Float, nullable=True)
+
+
+class GardenZone(Base):
+    __tablename__ = "t_garden_zones"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, index=True)
+    name: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    color: Mapped[str] = mapped_column(String(255), nullable=False)
+    borders: Mapped[List[Tuple[Tuple[int, int], Tuple[int, int]]]] = mapped_column(JSON, nullable=False)
+
+
+    coverage: Mapped[list["ColoredCell"]] = relationship(
+        back_populates="zone",
+        cascade="all, delete-orphan"
+    )
+
+
+class ColoredCell(Base):
+    __tablename__ = "t_colored_cells"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, index=True)
+    x: Mapped[float] = mapped_column(Float, nullable=False)
+    y: Mapped[float] = mapped_column(Float, nullable=False)
+    color: Mapped[str] = mapped_column(String(20), nullable=False)
+    menu_element_id: Mapped[str] = mapped_column(String(50), nullable=False)
+
+    zone_id: Mapped[str] = mapped_column(ForeignKey("t_garden_zones.id"))
+    zone: Mapped["GardenZone"] = relationship(back_populates="coverage")
