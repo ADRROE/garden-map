@@ -46,8 +46,8 @@ export const GardenProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     fetchZones().then((data) => {
-        console.log("Fetched zones:", data);
-        setZones(Array.isArray(data) ? data : []);
+      console.log("Fetched zones:", data);
+      setZones(Array.isArray(data) ? data : []);
     });
   }, []);
 
@@ -108,21 +108,16 @@ export const GardenProvider = ({ children }: { children: React.ReactNode }) => {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, []);
 
-  const [coloredCells, setColoredCells] = useState<ColoredCell[]>([]);
+  const [coloredCells, setColoredCells] = useState<Record<string, ColoredCell>>({});
 
-  const colorCell = async (i: number, j: number, color: string, menuElementId: string) => {
-    setColoredCells((prev) => {
-      const existingIndex = prev.findIndex(cell => cell.x === i && cell.y === j);
-      if (existingIndex !== -1) {
-        const updated = [...prev];
-        updated[existingIndex].color = color;
-        console.log(`updated cells: ${JSON.stringify(updated)}`)
-        return updated
-      } else {
-        return [...prev, { x: i, y: j, color, menuElementId }]
-      }
-    });
+  const colorCell = (i: number, j: number, color: string, menuElementId: string) => {
+    const key = `${i}-${j}`;
+    setColoredCells((prev) => ({
+      ...prev,
+      [key]: { x: i, y: j, color, menuElementId },
+    }));
   };
+
 
   return (
     <GardenContext.Provider value={{
@@ -134,6 +129,7 @@ export const GardenProvider = ({ children }: { children: React.ReactNode }) => {
       isMapLocked,
       setIsMapLocked,
       colorCell,
+      setColoredCells,
       setZones,
       setSelectedElement,
       setPendingPosition,

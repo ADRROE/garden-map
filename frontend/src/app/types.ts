@@ -39,6 +39,7 @@ export type ColoredCell = {
   y: number;
   color: string;
   menuElementId: string;
+  zoneId?: string;
 };
 
 export type CreateElementFn = (element: Omit<GardenElement, "name" | "x" | "y" | "width" | "height"> , name: string, x: number, y: number, width: number, height: number) => void;
@@ -50,10 +51,11 @@ export interface GardenContextType {
   zones: GardenZone[];
   selectedElement: MenuElement | null;
   pendingPosition: { x: number, y: number } | null;
-  coloredCells: ColoredCell[];
+  coloredCells: Record<string, ColoredCell>;
   isMapLocked: boolean;
   setIsMapLocked: React.Dispatch<React.SetStateAction<boolean>>;
   colorCell: (x: number, y: number, color: string, menuElementId: string) => void;
+  setColoredCells: React.Dispatch<React.SetStateAction<Record<string, ColoredCell>>>;
   setZones: React.Dispatch<React.SetStateAction<GardenZone[]>>;
   setSelectedElement: (element: MenuElement | null) => void;
   createElement: CreateElementFn;
@@ -77,6 +79,8 @@ export interface DraggableElementProps {
 export interface ZoneProps {
   zone: GardenZone;
   hoveredZoneId?: string | null;
+  selectedZoneId?: string | null;
   setHoveredZoneId: (id: string | null) => void;
+  setSelectedZoneId: (id: string | null) => void;
   onDeleteZone: (id: string) => void;
 }

@@ -20,6 +20,8 @@ interface GardenMapProps {
 const GardenMap: React.FC<GardenMapProps> = ({ dimensions }) => {
 
     const stageRef = useRef<KonvaStage | null>(null);
+    const mouseDownRef = useRef(false);
+
     const {
         elements,
         zones,
@@ -28,6 +30,7 @@ const GardenMap: React.FC<GardenMapProps> = ({ dimensions }) => {
         pendingPosition,
         isMapLocked,
         colorCell,
+        setColoredCells,
         setZones,
         setIsMapLocked,
         setSelectedElement,
@@ -103,6 +106,7 @@ const GardenMap: React.FC<GardenMapProps> = ({ dimensions }) => {
     const [isPainting, setIsPainting] = useState(false);
     const [isErasing, setIsErasing] = useState(false);
     const [hoveredZoneId, setHoveredZoneId] = useState<string | null>(null);
+    const [selectedZoneId, setSelectedZoneId] = useState<string | null>(null);
     const [isDraggingStage, setIsDraggingStage] = useState(true);
     const zoneLayerRef = useRef<Konva.Layer | null>(null)
     const [showZones, setShowZones] = useState(true);
@@ -119,8 +123,10 @@ const GardenMap: React.FC<GardenMapProps> = ({ dimensions }) => {
         "clay": "#dad6ba"
     };
 
-    const handleStageMouseDown = (e: KonvaEventObject<MouseEvent>) => {
+    const handleStageMouseDown = (e: KonvaEventObject<MouseEvent>, i?: number, j?: number) => {
         if (!stage) return;
+
+        mouseDownRef.current = true;
 
         const clickedOnEmpty =
             e.target === stage || e.target.getParent()?.name() === "baselayer";
@@ -146,13 +152,37 @@ const GardenMap: React.FC<GardenMapProps> = ({ dimensions }) => {
                 setIsErasing(isRightClick);
                 setIsDraggingStage(false);
 
+                if (typeof i === "number" && typeof j === "number") {
+                    if (isPainting) {
+                        colorCell(i, j, activeColor?.color ?? "", selectedElement?.id ?? "");
+                    } else if (isErasing) {
+                        colorCell(i, j, "", "");
+                    }
+                }
+
             }
         }
         if (clickedOnEmpty) {
             setSelectedNodeId(null);
+            setSelectedZoneId(null);
             setPropMenu(null);
             document.body.style.cursor = "default";
         }
+    };
+
+    const handleStageMouseUp = () => {
+        mouseDownRef.current = false
+        if (isPainting) {
+            createZoneAPI(Object.values(coloredCells)).then(() => {
+                setIsPainting(false);
+                setIsErasing(false);
+                fetchZones().then((freshZones) => {
+                    setZones(freshZones);
+                });
+            })
+        }
+        setSelectedElement(null);
+        setIsDraggingStage(true);
     };
 
     useEffect(() => {
@@ -210,20 +240,8 @@ const GardenMap: React.FC<GardenMapProps> = ({ dimensions }) => {
                     width={dimensions.width}
                     height={dimensions.height}
                     onWheel={handleWheel}
-                    onMouseDown={handleStageMouseDown}
-                    onMouseUp={() => {
-                        if (isPainting) {
-                            createZoneAPI(coloredCells).then(() => {
-                                setIsPainting(false);
-                                setIsErasing(false);
-                                fetchZones().then((freshZones) => {
-                                    setZones(freshZones);
-                                });
-                            })
-                        }
-                        setSelectedElement(null);
-                        setIsDraggingStage(true);
-                    }}
+                    onMouseDown={(e) => handleStageMouseDown(e)}
+                    onMouseUp={handleStageMouseUp}
                     onMouseLeave={() => {
                         setIsPainting(false);
                         setIsErasing(false);
@@ -248,16 +266,15 @@ const GardenMap: React.FC<GardenMapProps> = ({ dimensions }) => {
                                     height={baseGridSize}
                                     stroke="gray"
                                     strokeWidth={0.5}
-                                    listening={true} // important: allow events
-                                    onClick={() => colorCell(i, j, activeColor?.color ?? "", selectedElement?.id ?? "")}
+                                    listening={true}
+                                    onMouseDown={(e) => handleStageMouseDown(e)}
                                     onMouseEnter={() => {
-                                        if (isPainting) {
+                                        if (mouseDownRef.current && isPainting) {
                                             colorCell(i, j, activeColor?.color ?? "", selectedElement?.id ?? "");
-                                        } else if (isErasing) {
+                                        } else if (mouseDownRef.current && isErasing) {
                                             colorCell(i, j, "", "");
                                         }
                                     }}
-
                                 />
                             ))
                         ))}
@@ -285,34 +302,34 @@ const GardenMap: React.FC<GardenMapProps> = ({ dimensions }) => {
                     </Layer>
                     {showZones && (
                         <Layer name="zonelayer" ref={zoneLayerRef}>
+                            {Object.values(coloredCells).map((cell) => (
+                                <Rect
+                                    key={`${cell.x}-${cell.y}`}
+                                    x={cell.x * baseGridSize}
+                                    y={cell.y * baseGridSize}
+                                    width={baseGridSize}
+                                    height={baseGridSize}
+                                    fill={cell.color}
+                                    onClick={() => setSelectedZoneId(`${cell.x}-${cell.y}`)}
+                                />
+                            ))}
                             {zones.map((zone) => (
                                 <Zone
                                     key={zone.id}
                                     zone={zone}
                                     hoveredZoneId={hoveredZoneId}
                                     setHoveredZoneId={setHoveredZoneId}
-                                  onDeleteZone={(id) => {
-                                    // maybe add a confirm?
-                                    deleteZoneAPI(id).then(() => {
-                                      fetchZones().then(setZones);
-                                    });
-                                  }}
+                                    selectedZoneId={selectedZoneId}
+                                    setSelectedZoneId={setSelectedZoneId}
+                                    onDeleteZone={(id) => {
+                                        // maybe add a confirm?
+                                        deleteZoneAPI(id).then(() => {
+                                            fetchZones().then(setZones);
+                                            setColoredCells({})
+                                        });
+                                    }}
                                 />
                             ))}
-                            {Object.entries(coloredCells).map(([key, data]) => {
-                                const [i, j] = key.split('-').map(Number);
-                                return (
-                                    <Rect
-                                        key={key}
-                                        x={i * baseGridSize}
-                                        y={j * baseGridSize}
-                                        width={baseGridSize}
-                                        height={baseGridSize}
-                                        fill={data.color}
-                                        listening={false} // prevent interaction
-                                    />
-                                );
-                            })}
                         </Layer>
                     )}
                 </Stage>

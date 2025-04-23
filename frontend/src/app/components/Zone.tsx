@@ -5,7 +5,7 @@ import { ZoneProps } from "../types";
 import { useGarden } from "../context/GardenContext";
 import { darkenColor } from "../utils";
 
-const Zone: React.FC<ZoneProps> = ({ zone, hoveredZoneId, onDeleteZone, setHoveredZoneId }) => {
+const Zone: React.FC<ZoneProps> = ({ zone, hoveredZoneId, selectedZoneId,setSelectedZoneId, onDeleteZone, setHoveredZoneId }) => {
     const { isMapLocked } = useGarden()
 
     const baseGridSize = 19.95
@@ -34,6 +34,7 @@ const Zone: React.FC<ZoneProps> = ({ zone, hoveredZoneId, onDeleteZone, setHover
                         fill={color}
                         stroke="transparent"
                         listening={true}
+                        onClick={() => setSelectedZoneId(zone.id)}
                     />
                 </Group>
             ))}
@@ -46,11 +47,11 @@ const Zone: React.FC<ZoneProps> = ({ zone, hoveredZoneId, onDeleteZone, setHover
                         x2 * baseGridSize,
                         y2 * baseGridSize,
                     ]}
-                    stroke={hoveredZoneId === zone.id ? darkenColor(zone.color, 20) : 'transparent'}
+                    stroke={(hoveredZoneId || selectedZoneId === zone.id) && !isMapLocked ? darkenColor(zone.color, 20) : 'transparent'}
                     strokeWidth={3}
                 />
             ))}
-            {hoveredZoneId === zone.id && !isMapLocked && (
+            {(hoveredZoneId === zone.id || selectedZoneId === zone.id) && !isMapLocked && (
                 <>
                     <Circle
                         x={maxX * baseGridSize + baseGridSize}
@@ -61,7 +62,6 @@ const Zone: React.FC<ZoneProps> = ({ zone, hoveredZoneId, onDeleteZone, setHover
                         strokeWidth={1}
                         onClick={(e) => {
                             e.cancelBubble = true;
-                            // Call delete logic here
                             onDeleteZone?.(zone.id);
                         }}
                         shadowColor="black"
