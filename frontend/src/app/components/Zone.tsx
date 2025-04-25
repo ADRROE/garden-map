@@ -5,7 +5,7 @@ import { ZoneProps } from "../types";
 import { useGarden } from "../context/GardenContext";
 import { darkenColor } from "../utils";
 
-const Zone: React.FC<ZoneProps> = ({ zone, hoveredZoneId, selectedZoneId,setSelectedZoneId, onDeleteZone, setHoveredZoneId }) => {
+const Zone: React.FC<ZoneProps> = ({ zone, hoveredZoneId, selectedZoneId, onClickZone, onDeleteZone, setHoveredZoneId }) => {
     const { isMapLocked } = useGarden()
 
     const baseGridSize = 19.95
@@ -34,7 +34,7 @@ const Zone: React.FC<ZoneProps> = ({ zone, hoveredZoneId, selectedZoneId,setSele
                         fill={color}
                         stroke="transparent"
                         listening={true}
-                        onClick={() => setSelectedZoneId(zone.id)}
+                        onClick={() => onClickZone?.()}
                     />
                 </Group>
             ))}

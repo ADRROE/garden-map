@@ -64,6 +64,16 @@ export interface GardenContextType {
   setPendingPosition: (pos:{ x: number, y: number }) => void;
   placeElement: (x: number, y: number, name: string) => void;
   deleteElement: (id: string) => void;
+  activeColor: { color: string } | null;
+  setActiveColor: React.Dispatch<React.SetStateAction<{ color: string } | null>>;
+  isPainting: boolean;
+  setIsPainting: React.Dispatch<React.SetStateAction<boolean>>;
+  isErasing: boolean;
+  setIsErasing: React.Dispatch<React.SetStateAction<boolean>>;
+  showZones: boolean;
+  setShowZones: React.Dispatch<React.SetStateAction<boolean>>;
+  isSelectingElement: boolean;
+  setIsSelectingElement: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 export type ElementType = GardenElement | MenuElement;
@@ -82,5 +92,6 @@ export interface ZoneProps {
   selectedZoneId?: string | null;
   setHoveredZoneId: (id: string | null) => void;
   setSelectedZoneId: (id: string | null) => void;
+  onClickZone: () => void;
   onDeleteZone: (id: string) => void;
 }

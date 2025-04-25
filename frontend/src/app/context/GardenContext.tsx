@@ -15,8 +15,13 @@ const GardenContext = createContext<GardenContextType | undefined>(undefined);
 export const GardenProvider = ({ children }: { children: React.ReactNode }) => {
   const [elements, setElements] = useState<GardenElement[]>([]);
   const [zones, setZones] = useState<GardenZone[]>([]);
+  const [showZones, setShowZones] = useState(true);
   const [selectedElement, setSelectedElement] = useState<MenuElement | null>(null);
+  const [isSelectingElement, setIsSelectingElement] = useState(false);
   const [isMapLocked, setIsMapLocked] = useState(true);
+  const [activeColor, setActiveColor] = useState<{ color: string } | null>(null);
+  const [isPainting, setIsPainting] = useState(false);
+  const [isErasing, setIsErasing] = useState(false);
 
   // Function to select an element (sets cursor image)
   const selectElement = (menuElement: MenuElement | null) => {
@@ -124,13 +129,23 @@ export const GardenProvider = ({ children }: { children: React.ReactNode }) => {
       elements,
       zones,
       selectedElement,
+      isSelectingElement,
+      setIsSelectingElement,
       pendingPosition,
       coloredCells,
       isMapLocked,
+      activeColor,
+      setActiveColor,
+      isPainting,
+      setIsPainting,
+      isErasing,
+      setIsErasing,
       setIsMapLocked,
       colorCell,
       setColoredCells,
       setZones,
+      showZones,
+      setShowZones,
       setSelectedElement,
       setPendingPosition,
       createElement,

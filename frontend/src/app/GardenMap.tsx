@@ -12,6 +12,7 @@ import PropMenu from "./components/PropMenu";
 import { useGarden } from "./context/GardenContext";
 import { GardenElement } from "./types";
 import { createZoneAPI, deleteZoneAPI, fetchZones } from "./services/elementsService";
+import NameModal from "./components/NameModal";
 
 interface GardenMapProps {
     dimensions: { width: number; height: number };
@@ -25,10 +26,17 @@ const GardenMap: React.FC<GardenMapProps> = ({ dimensions }) => {
     const {
         elements,
         zones,
+        showZones,
         coloredCells,
         selectedElement,
         pendingPosition,
         isMapLocked,
+        activeColor,
+        setActiveColor,
+        isPainting,
+        setIsPainting,
+        isErasing,
+        setIsErasing,
         colorCell,
         setColoredCells,
         setZones,
@@ -102,14 +110,10 @@ const GardenMap: React.FC<GardenMapProps> = ({ dimensions }) => {
     };
 
     const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
-    const [activeColor, setActiveColor] = useState<{ color: string } | null>();
-    const [isPainting, setIsPainting] = useState(false);
-    const [isErasing, setIsErasing] = useState(false);
     const [hoveredZoneId, setHoveredZoneId] = useState<string | null>(null);
     const [selectedZoneId, setSelectedZoneId] = useState<string | null>(null);
     const [isDraggingStage, setIsDraggingStage] = useState(true);
     const zoneLayerRef = useRef<Konva.Layer | null>(null)
-    const [showZones, setShowZones] = useState(true);
 
     useEffect(() => {
         if (zoneLayerRef.current) {
@@ -227,14 +231,9 @@ const GardenMap: React.FC<GardenMapProps> = ({ dimensions }) => {
     const [inputName, setInputName] = useState("");
 
     const [bgImage] = useImage("/grid.jpg");
-    const lockedImage = "/icons/locked.png";
-    const unlockedImage = "/icons/unlocked.png";
 
     return (
         <div className="flex-1 relative">
-            <button onClick={() => setShowZones(prev => !prev)}>
-                Toggle Zones
-            </button>
             {dimensions.width > 0 && (
                 <Stage
                     width={dimensions.width}
@@ -321,6 +320,7 @@ const GardenMap: React.FC<GardenMapProps> = ({ dimensions }) => {
                                     setHoveredZoneId={setHoveredZoneId}
                                     selectedZoneId={selectedZoneId}
                                     setSelectedZoneId={setSelectedZoneId}
+                                    onClickZone={() => setSelectedZoneId(zone.id)}
                                     onDeleteZone={(id) => {
                                         // maybe add a confirm?
                                         deleteZoneAPI(id).then(() => {
@@ -334,33 +334,6 @@ const GardenMap: React.FC<GardenMapProps> = ({ dimensions }) => {
                     )}
                 </Stage>
             )}
-            {isMapLocked &&
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                    src={lockedImage}
-                    className="locked-icon"
-                    onClick={() => {
-                        setIsMapLocked((prev) => !prev);
-                        setSelectedElement(null);
-                        setActiveColor(null);
-                        setIsPainting(false);
-                        setIsErasing(false);
-                    }}
-                    alt="lockedIcon" />
-            }
-            {!isMapLocked &&
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                    src={unlockedImage}
-                    className="unlocked-icon"
-                    onClick={() => {
-                        setIsMapLocked((prev) => !prev);
-                        setSelectedElement(null);
-                        setActiveColor(null);
-                        setIsPainting(false);
-                        setIsErasing(false);
-                    }}
-                    alt="unlockedIcon" />}
             {propMenu && propMenuPosition && (
                 <div
                     style={{
@@ -386,38 +359,18 @@ const GardenMap: React.FC<GardenMapProps> = ({ dimensions }) => {
                 </div>
             )}
             {nameModalOpen && pendingPosition && (
-                <div className="bg-background text-foreground fixed inset-0 z-50 flex items-center justify-center">
-                    {/* Backdrop */}
-                    <div
-                        className="absolute inset-0 bg-white/60 backdrop-blur-md bg-opacity-50"
-                        onClick={() => {
-                            setNameModalOpen(false);
-                            setSelectedElement(null);
+                <NameModal
+                    inputName={inputName}
+                    setInputName={setInputName}
+                    onPlacement={() => {
+                        placeElement(pendingPosition.x, pendingPosition.y, inputName)
+                        setNameModalOpen(false)}}
+                    onAbort={() => {
+                        setNameModalOpen(false);
+                        setSelectedElement(null);
                         }
-                        }
-                    />
-
-                    {/* Modal Content */}
-                    <div className="relative z-10 bg-white shadow-xl p-6 w-full max-w-sm mx-4 animate-fade-in border-2">
-                        <h2 className="text-lg font-sans font-semibold mb-4">Name</h2>
-                        <input
-                            value={inputName}
-                            onChange={(e) => setInputName(e.target.value)}
-                            className="w-full px-4 py-2 border bg-amber-50 border-black mb-4" />
-                        <div className="flex justify-start space-x-2">
-                            <button
-                                onClick={() => {
-                                    placeElement(pendingPosition.x, pendingPosition.y, inputName);
-                                    setNameModalOpen(false);
-                                }
-                                }
-                                className="px-4 py-2 border w-full hover:bg-[#C5D4BC]"
-                            >
-                                Place
-                            </button>
-                        </div>
-                    </div>
-                </div>
+                    }
+                />
             )}
         </div>
     );
