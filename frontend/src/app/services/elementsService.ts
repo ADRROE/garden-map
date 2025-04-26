@@ -33,19 +33,19 @@ export async function fetchZones(): Promise<GardenZone[]> {
     return res.json();
 }
 
-export async function createZoneAPI(cells: ColoredCell[]) {
+export async function createZoneAPI(cells: ColoredCell[], name: string) {
     await fetch(`${API_BASE_ZONES}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(cells)
+        body: JSON.stringify({cells, name})
     });
 }
 
-export async function updateZoneAPI( id: string , name: string) {
-    await fetch(`${API_BASE_ZONES}${id}`, {
+export async function updateZoneAPI( updatedZone: { id: string } & Partial<GardenZone>) {
+    await fetch(`${API_BASE_ZONES}${updatedZone.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({id, name})
+        body: JSON.stringify(updatedZone)
     });
 }
 

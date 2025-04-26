@@ -1,9 +1,11 @@
 from sqlalchemy.orm import Session
-from fastapi import APIRouter, Depends
-from app import schemas
+from fastapi import APIRouter, Depends, HTTPException
+from app import schemas, models
 from app import crud
 from app.database import SessionLocal
 from app import algorithms
+import uuid
+
 
 router = APIRouter()
 
@@ -21,27 +23,27 @@ def get_zones(db: Session = Depends(get_db)):
 
 @router.post("/", response_model=list[schemas.GardenZone])
 def calculate_zones(
-    cells: list[schemas.ColoredCell],
+    payload: schemas.CreateZonePayload,
     db: Session = Depends(get_db)
 ):
-    print("RECEIVED CELLS:", cells)
+    print("RECEIVED CELLS:", payload.cells)
 
     # Use the grouping algorithm from algorithms.py
-    grouped_zones = algorithms.group_cells_into_zones(cells)
+    grouped_zones = algorithms.group_cells_into_zones(payload.cells)
 
     saved_zones = []
 
     for zone in grouped_zones:
-        # Save the zone and its colored cells to the database
+        zone.name = payload.name
         saved_zone = crud.create_zone_with_cells(db, zone)
         saved_zones.append(saved_zone)
 
-    return saved_zones
+        return saved_zones
 
 @router.put("/{id}", response_model=schemas.GardenZone)
-def name_zone(id: str, updates: schemas.GardenZoneUpdateName, db: Session = Depends(get_db)
+def update_zone(id: str, updates: schemas.GardenZoneUpdate, db: Session = Depends(get_db)
 ):
-    updated_zone = crud.update_zone_name(db, id, updates)
+    updated_zone = crud.update_zone(db, id, updates)
     if not updated_zone:
         raise HTTPException(status_code=404, detail="Zone not found")
     return updated_zone

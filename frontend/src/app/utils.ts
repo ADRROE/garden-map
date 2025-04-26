@@ -30,8 +30,6 @@ export const translatePosition = (x: number, y: number) => {
   const col = Math.floor((x - cellSize) / cellSize) + 1;
   const row = Math.floor((y - cellSize) / cellSize) + 2;
 
-  console.log(`Translated position: ${col}, ${row}`);
-
   return [col, row]
 };
 

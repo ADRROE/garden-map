@@ -10,7 +10,7 @@ import DraggableElement from "./components/DraggableElement";
 import Zone from "./components/Zone";
 import PropMenu from "./components/PropMenu";
 import { useGarden } from "./context/GardenContext";
-import { GardenElement } from "./types";
+import { GardenElement, UpdateZoneFn, ColoredCell } from "./types";
 import { createZoneAPI, deleteZoneAPI, fetchZones } from "./services/elementsService";
 import NameModal from "./components/NameModal";
 
@@ -45,7 +45,8 @@ const GardenMap: React.FC<GardenMapProps> = ({ dimensions }) => {
         setPendingPosition,
         updateElement,
         placeElement,
-        deleteElement
+        deleteElement,
+        updateZone
     } = useGarden(); // ✅ Get elements from context
 
     const baseGridSize = 19.95;
@@ -112,8 +113,11 @@ const GardenMap: React.FC<GardenMapProps> = ({ dimensions }) => {
     const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
     const [hoveredZoneId, setHoveredZoneId] = useState<string | null>(null);
     const [selectedZoneId, setSelectedZoneId] = useState<string | null>(null);
+    const [nameModalOpen, setNameModalOpen] = useState(false);
     const [isDraggingStage, setIsDraggingStage] = useState(true);
+
     const zoneLayerRef = useRef<Konva.Layer | null>(null)
+    const [bgImage] = useImage("/grid.jpg");
 
     useEffect(() => {
         if (zoneLayerRef.current) {
@@ -144,12 +148,13 @@ const GardenMap: React.FC<GardenMapProps> = ({ dimensions }) => {
 
         if (selectedElement && clickedOnEmpty && !isMapLocked) {
             if (selectedElement.category !== "zone") {
-                setPendingPosition({ x, y });
+                setPendingPosition({ x, y, subject: "element" });
                 setNameModalOpen(true);
             }
             if (selectedElement.category === "zone") {
                 const color = colorMap[selectedElement.iconName as keyof typeof colorMap];
                 setActiveColor({ color });
+                setPendingPosition({ subject: "zone" });
 
                 const isRightClick = e.evt.button === 2 || e.evt.ctrlKey;
                 setIsPainting(!isRightClick);
@@ -166,7 +171,7 @@ const GardenMap: React.FC<GardenMapProps> = ({ dimensions }) => {
 
             }
         }
-        if (clickedOnEmpty) {
+        if (clickedOnEmpty && !isPainting) {
             setSelectedNodeId(null);
             setSelectedZoneId(null);
             setPropMenu(null);
@@ -174,16 +179,29 @@ const GardenMap: React.FC<GardenMapProps> = ({ dimensions }) => {
         }
     };
 
+    const handleZoneUpdate: UpdateZoneFn = ({ id }) => {
+        const zoneToEdit = zones.find((z) => z.id === id);
+        if (!zoneToEdit) return;
+
+        setActiveColor({ color: zoneToEdit.color });
+        setPendingPosition({ subject: "zone" });
+        setIsPainting(true);
+        setIsErasing(false);
+        setIsDraggingStage(false);
+        setSelectedZoneId(id); // select the zone being edited
+
+        // Clear the previous coloredCells and load the zone coverage into coloredCells
+        const newColoredCells: Record<string, ColoredCell> = {};
+        zoneToEdit.coverage.forEach((cell) => {
+            newColoredCells[`${cell.x}-${cell.y}`] = cell;
+        });
+        setColoredCells(newColoredCells);
+    }
+
     const handleStageMouseUp = () => {
         mouseDownRef.current = false
         if (isPainting) {
-            createZoneAPI(Object.values(coloredCells)).then(() => {
-                setIsPainting(false);
-                setIsErasing(false);
-                fetchZones().then((freshZones) => {
-                    setZones(freshZones);
-                });
-            })
+            setNameModalOpen(true);
         }
         setSelectedElement(null);
         setIsDraggingStage(true);
@@ -226,11 +244,6 @@ const GardenMap: React.FC<GardenMapProps> = ({ dimensions }) => {
             y: containerRect.top + pointer.y,
         });
     };
-
-    const [nameModalOpen, setNameModalOpen] = useState(false);
-    const [inputName, setInputName] = useState("");
-
-    const [bgImage] = useImage("/grid.jpg");
 
     return (
         <div className="flex-1 relative">
@@ -320,8 +333,9 @@ const GardenMap: React.FC<GardenMapProps> = ({ dimensions }) => {
                                     setHoveredZoneId={setHoveredZoneId}
                                     selectedZoneId={selectedZoneId}
                                     setSelectedZoneId={setSelectedZoneId}
-                                    onClickZone={() => setSelectedZoneId(zone.id)}
-                                    onDeleteZone={(id) => {
+                                    onClick={() => setSelectedZoneId(zone.id)}
+                                    onUpdate={handleZoneUpdate}
+                                    onDelete={(id) => {
                                         // maybe add a confirm?
                                         deleteZoneAPI(id).then(() => {
                                             fetchZones().then(setZones);
@@ -360,15 +374,37 @@ const GardenMap: React.FC<GardenMapProps> = ({ dimensions }) => {
             )}
             {nameModalOpen && pendingPosition && (
                 <NameModal
-                    inputName={inputName}
-                    setInputName={setInputName}
-                    onPlacement={() => {
-                        placeElement(pendingPosition.x, pendingPosition.y, inputName)
-                        setNameModalOpen(false)}}
+                    onPlacement={(inputName) => {
+                        if (pendingPosition.subject === "element" && pendingPosition.x && pendingPosition.y) {
+                            placeElement(pendingPosition.x, pendingPosition.y, inputName)
+                            setNameModalOpen(false)
+                        }
+                        if (pendingPosition.subject === "zone" && selectedZoneId) {
+                            updateZone({
+                                id: selectedZoneId,
+                                name: inputName,
+                                coverage: Object.values(coloredCells),
+                            })
+                            fetchZones().then((freshZones) => {
+                                setZones(freshZones);
+                            });
+                        } else {
+                            createZoneAPI(Object.values(coloredCells), inputName).then(() => {
+                                fetchZones().then((freshZones) => {
+                                    setZones(freshZones);
+                                    setColoredCells({});
+                                });
+                            });
+                        }
+                        setIsPainting(false);
+                        setIsErasing(false);
+                        setNameModalOpen(false);
+                        setSelectedZoneId(null);
+                    }}
                     onAbort={() => {
                         setNameModalOpen(false);
                         setSelectedElement(null);
-                        }
+                    }
                     }
                 />
             )}

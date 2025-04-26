@@ -84,6 +84,14 @@ class GardenZone(BaseModel):
     class Config:
         from_attributes = True
 
-class GardenZoneUpdateName(BaseModel):
-    id: str
+class GardenZoneUpdate(BaseModel):
+    name: str | None = None
+    color: str | None = None
+    coverage: List[ColoredCell] | None = None
+    borders: List[Tuple[Tuple[int, int], Tuple[int, int]]] | None = None
+
+class CreateZonePayload(BaseModel):
     name: str
+    cells: list[ColoredCell]
+    color: str | None = None
+    borders: List[Tuple[Tuple[int, int], Tuple[int, int]]] | None = None

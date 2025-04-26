@@ -1,14 +1,15 @@
-import React from 'react'
+import React, {useState} from 'react'
 
 type NameModalProps = {
-    inputName: string;
-    onPlacement: () => void;
+    onPlacement: (inputName: string) => void;
     onAbort: () => void;
-    setInputName: (value: string) => void;
 }
 
 
-const NameModal: React.FC<NameModalProps> = ({ inputName, onPlacement, onAbort, setInputName }) => {
+const NameModal: React.FC<NameModalProps> = ({ onPlacement, onAbort }) => {
+
+    const [inputName, setInputName] = useState("");
+
     return (
         <div className="bg-background text-foreground fixed inset-0 z-50 flex items-center justify-center">
             {/* Backdrop */}
@@ -26,10 +27,7 @@ const NameModal: React.FC<NameModalProps> = ({ inputName, onPlacement, onAbort, 
                     className="w-full px-4 py-2 border bg-amber-50 border-black mb-4" />
                 <div className="flex justify-start space-x-2">
                     <button
-                        onClick={() => {
-                            onPlacement();
-                        }
-                        }
+                        onClick={() => onPlacement(inputName)}
                         className="px-4 py-2 border w-full hover:bg-[#C5D4BC]"
                     >
                         Place

@@ -1,43 +1,79 @@
 "use client"
 import React from "react";
-import { Group, Rect, Line, Text, Circle } from "react-konva";
+import { Group, Rect, Line, Text, Circle, Image } from "react-konva";
 import { ZoneProps } from "../types";
 import { useGarden } from "../context/GardenContext";
 import { darkenColor } from "../utils";
+import useImage from "use-image";
 
-const Zone: React.FC<ZoneProps> = ({ zone, hoveredZoneId, selectedZoneId, onClickZone, onDeleteZone, setHoveredZoneId }) => {
+const Zone: React.FC<ZoneProps> = ({ zone, hoveredZoneId, selectedZoneId, onClick, onUpdate, onDelete, setHoveredZoneId }) => {
     const { isMapLocked } = useGarden()
 
     const baseGridSize = 19.95
+    const fontSize = 50
 
     const cellXs = zone.coverage.map((c) => c.x);
     const cellYs = zone.coverage.map((c) => c.y);
     const maxX = Math.max(...cellXs);
+    const maxY = Math.max(...cellYs);
+    const minX = Math.min(...cellXs);
     const minY = Math.min(...cellYs);
+
+    const centerX = (minX + maxX) / 2;
+    const centerY = (minY + maxY) / 2;
+    const [pencilImage] = useImage("/pencil.svg")
 
     return (
         <>
-            {zone.coverage.map(({ x, y, color }) => (
-                <Group
-                    key={`zone-${zone.id}-${x}-${y}`}
-                    onMouseEnter={() => {
-                        if (!isMapLocked) setHoveredZoneId(zone.id);
-                    }}
-                    onMouseLeave={() => {
-                        if (!isMapLocked) setHoveredZoneId(null);
-                    }}>
+
+            <Group
+                key={`zone-${zone.id}`}
+                onMouseEnter={() => !isMapLocked && setHoveredZoneId(zone.id)}
+                onMouseLeave={() => !isMapLocked && setHoveredZoneId(null)}
+                onClick={() => onClick?.()}
+            >
+                {zone.coverage.map((cell) => (
                     <Rect
-                        x={x * baseGridSize}
-                        y={y * baseGridSize}
+                        key={`zone-cell-${cell.x}-${cell.y}`}
+                        x={cell.x * baseGridSize}
+                        y={cell.y * baseGridSize}
                         width={baseGridSize}
                         height={baseGridSize}
-                        fill={color}
+                        fill={zone.color}
                         stroke="transparent"
-                        listening={true}
-                        onClick={() => onClickZone?.()}
                     />
-                </Group>
-            ))}
+                ))}
+                {zone.name &&
+                    <Group>
+                        <Text
+                            text={zone.name}
+                            fontSize={fontSize}
+                            x={centerX * baseGridSize}
+                            y={centerY * baseGridSize}
+                            offsetX={(zone.name.length * fontSize) / 6} // rough centering based on text length
+                            offsetY={fontSize / 3}
+                            align="center"
+                            verticalAlign="middle"
+                            fill={darkenColor(zone.color, 50)}
+                        />
+                        <Image
+                            image={pencilImage}
+                            width={8}
+                            height={8}
+                            x={centerX * baseGridSize}
+                            y={centerY * baseGridSize}
+                            offsetX={(zone.name.length * fontSize - fontSize * 1.4)}
+                            offsetY={fontSize / 3}
+                            onClick={() => {
+                                onUpdate({ id: zone.id })
+                            }
+                            }
+                            alt="pencil"
+                        />
+                    </Group>
+                }
+            </Group>
+
             {zone.borders.map(([[x1, y1], [x2, y2]], idx) => (
                 <Line
                     key={`zone-border-${zone.id}-${idx}`}
@@ -47,12 +83,12 @@ const Zone: React.FC<ZoneProps> = ({ zone, hoveredZoneId, selectedZoneId, onClic
                         x2 * baseGridSize,
                         y2 * baseGridSize,
                     ]}
-                    stroke={(hoveredZoneId || selectedZoneId === zone.id) && !isMapLocked ? darkenColor(zone.color, 20) : 'transparent'}
+                    stroke={(hoveredZoneId === zone.id || selectedZoneId === zone.id) && !isMapLocked ? darkenColor(zone.color, 20) : 'transparent'}
                     strokeWidth={3}
                 />
             ))}
             {(hoveredZoneId === zone.id || selectedZoneId === zone.id) && !isMapLocked && (
-                <>
+                <Group>
                     <Circle
                         x={maxX * baseGridSize + baseGridSize}
                         y={minY * baseGridSize}
@@ -62,7 +98,7 @@ const Zone: React.FC<ZoneProps> = ({ zone, hoveredZoneId, selectedZoneId, onClic
                         strokeWidth={1}
                         onClick={(e) => {
                             e.cancelBubble = true;
-                            onDeleteZone?.(zone.id);
+                            onDelete?.(zone.id);
                         }}
                         shadowColor="black"
                         shadowBlur={4}
@@ -80,13 +116,13 @@ const Zone: React.FC<ZoneProps> = ({ zone, hoveredZoneId, selectedZoneId, onClic
                         height={8}
                         onClick={(e) => {
                             e.cancelBubble = true;
-                            onDeleteZone?.(zone.id);
+                            onDelete?.(zone.id);
                         }}
                         align="center"
                         verticalAlign="middle"
                         listening={true}
                     />
-                </>
+                </Group>
             )}
         </>
     )

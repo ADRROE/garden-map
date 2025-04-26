@@ -1,9 +1,9 @@
 "use client";
 import { createContext, useContext, useState, useEffect } from "react";
-import { GardenElement, MenuElement, CreateElementFn, UpdateElementFn, GardenContextType, ColoredCell, GardenZone } from "../types";
-import { createElementAPI, updateElementAPI, deleteElementAPI } from "../services/elementsService";
+import { GardenElement, MenuElement, CreateElementFn, UpdateElementFn, GardenContextType, ColoredCell, GardenZone, PendingPosition, UpdateZoneFn } from "../types";
+import { createElementAPI, updateElementAPI, deleteElementAPI, } from "../services/elementsService";
 import { translatePosition, toColumnLetter, getCoveredCells } from "../utils";
-import { fetchElements, fetchZones } from "../services/elementsService";
+import { fetchElements, fetchZones, updateZoneAPI } from "../services/elementsService";
 import { v4 as uuidv4 } from 'uuid';
 
 function generateUUID() {
@@ -22,13 +22,13 @@ export const GardenProvider = ({ children }: { children: React.ReactNode }) => {
   const [activeColor, setActiveColor] = useState<{ color: string } | null>(null);
   const [isPainting, setIsPainting] = useState(false);
   const [isErasing, setIsErasing] = useState(false);
+  const [pendingPosition, setPendingPosition] = useState<PendingPosition>(null);
+
 
   // Function to select an element (sets cursor image)
   const selectElement = (menuElement: MenuElement | null) => {
     setSelectedElement(menuElement);
   };
-
-  const [pendingPosition, setPendingPosition] = useState<{ x: number, y: number } | null>(null);
 
   // Function to place the element on the map
   const placeElement = (x: number, y: number, name: string) => {
@@ -80,7 +80,6 @@ export const GardenProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const updateElement: UpdateElementFn = async (updatedElement) => {
-    console.log("Updating element:", updatedElement);
     setElements((prev) =>
       prev.map((el) =>
         el.id === updatedElement.id ? { ...el, ...updatedElement } : el
@@ -90,6 +89,12 @@ export const GardenProvider = ({ children }: { children: React.ReactNode }) => {
     } catch (error) {
       console.error("Failed to update element on server", error);
     }
+  };
+
+  const updateZone: UpdateZoneFn = async (updatedZone) => {
+    updateZoneAPI(updatedZone)
+      .then(() => fetchZones().then(setZones))
+      .catch((err) => console.error(err));
   };
 
   const deleteElement = async (id: string) => {
@@ -152,7 +157,8 @@ export const GardenProvider = ({ children }: { children: React.ReactNode }) => {
       updateElement,
       selectElement,
       placeElement,
-      deleteElement
+      deleteElement,
+      updateZone
     }}>
       {children}
     </GardenContext.Provider>
