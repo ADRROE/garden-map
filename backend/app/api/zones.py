@@ -41,8 +41,7 @@ def calculate_zones(
         return saved_zones
 
 @router.put("/{id}", response_model=schemas.GardenZone)
-def update_zone(id: str, updates: schemas.GardenZoneUpdate, db: Session = Depends(get_db)
-):
+def update_zone(id: str, updates: schemas.GardenZoneUpdate, db: Session = Depends(get_db)):
     updated_zone = crud.update_zone(db, id, updates)
     if not updated_zone:
         raise HTTPException(status_code=404, detail="Zone not found")

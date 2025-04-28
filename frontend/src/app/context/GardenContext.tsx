@@ -20,13 +20,11 @@ export const GardenProvider = ({ children }: { children: React.ReactNode }) => {
   const [isSelectingElement, setIsSelectingElement] = useState(false);
   const [isMapLocked, setIsMapLocked] = useState(true);
   const [activeColor, setActiveColor] = useState<{ color: string } | null>(null);
-  const [isPainting, setIsPainting] = useState(false);
-  const [isErasing, setIsErasing] = useState(false);
   const [pendingPosition, setPendingPosition] = useState<PendingPosition>(null);
 
 
   // Function to select an element (sets cursor image)
-  const selectElement = (menuElement: MenuElement | null) => {
+  const selectElement = (menuElement: MenuElement) => {
     setSelectedElement(menuElement);
   };
 
@@ -122,10 +120,15 @@ export const GardenProvider = ({ children }: { children: React.ReactNode }) => {
 
   const colorCell = (i: number, j: number, color: string, menuElementId: string) => {
     const key = `${i}-${j}`;
-    setColoredCells((prev) => ({
-      ...prev,
-      [key]: { x: i, y: j, color, menuElementId },
-    }));
+    setColoredCells((prev) => {
+      const updated = { ...prev };
+      if (color) {
+        updated[key] = { x: i, y: j, color, menuElementId };
+      } else {
+        delete updated[key]; // 🧹 REMOVE the cell when no color
+      }
+      return updated;
+    });
   };
 
 
@@ -141,10 +144,6 @@ export const GardenProvider = ({ children }: { children: React.ReactNode }) => {
       isMapLocked,
       activeColor,
       setActiveColor,
-      isPainting,
-      setIsPainting,
-      isErasing,
-      setIsErasing,
       setIsMapLocked,
       colorCell,
       setColoredCells,

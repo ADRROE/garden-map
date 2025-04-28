@@ -10,13 +10,17 @@ import DraggableElement from "./components/DraggableElement";
 import Zone from "./components/Zone";
 import PropMenu from "./components/PropMenu";
 import { useGarden } from "./context/GardenContext";
-import { GardenElement, UpdateZoneFn, ColoredCell } from "./types";
+import { GardenElement, MenuElement, ColoredCell, GardenZone } from "./types";
 import { createZoneAPI, deleteZoneAPI, fetchZones } from "./services/elementsService";
 import NameModal from "./components/NameModal";
+import allElements from "./MenuElements.json";
+
 
 interface GardenMapProps {
     dimensions: { width: number; height: number };
 }
+
+const menuPalette: MenuElement[] = (allElements || []) as MenuElement[];
 
 const GardenMap: React.FC<GardenMapProps> = ({ dimensions }) => {
 
@@ -31,12 +35,8 @@ const GardenMap: React.FC<GardenMapProps> = ({ dimensions }) => {
         selectedElement,
         pendingPosition,
         isMapLocked,
-        activeColor,
         setActiveColor,
-        isPainting,
-        setIsPainting,
-        isErasing,
-        setIsErasing,
+        selectElement,
         colorCell,
         setColoredCells,
         setZones,
@@ -115,8 +115,15 @@ const GardenMap: React.FC<GardenMapProps> = ({ dimensions }) => {
     const [selectedZoneId, setSelectedZoneId] = useState<string | null>(null);
     const [nameModalOpen, setNameModalOpen] = useState(false);
     const [isDraggingStage, setIsDraggingStage] = useState(true);
+    const [isZonePainting, setIsZonePainting] = useState(false);
+    const [modalMode, setModalMode] = useState<"element"|"zone" | null>(null);
+
 
     const zoneLayerRef = useRef<Konva.Layer | null>(null)
+    const coloredCellsRef = useRef<Record<string, ColoredCell>>({});
+    const freshCellsRef = useRef<Set<string>>(new Set());
+
+
     const [bgImage] = useImage("/grid.jpg");
 
     useEffect(() => {
@@ -124,6 +131,11 @@ const GardenMap: React.FC<GardenMapProps> = ({ dimensions }) => {
             zoneLayerRef.current.batchDraw();
         }
     }, [zones, hoveredZoneId]);
+
+    useEffect(() => {
+        coloredCellsRef.current = coloredCells;
+    }, [coloredCells]);
+
 
     const colorMap = {
         "loam": "#b88859",
@@ -147,86 +159,102 @@ const GardenMap: React.FC<GardenMapProps> = ({ dimensions }) => {
         const y = (pointer.y - stage.y()) / scale;
 
         if (selectedElement && clickedOnEmpty && !isMapLocked) {
+
             if (selectedElement.category !== "zone") {
                 setPendingPosition({ x, y, subject: "element" });
+                setModalMode("element");
                 setNameModalOpen(true);
+
             }
             if (selectedElement.category === "zone") {
-                const color = colorMap[selectedElement.iconName as keyof typeof colorMap];
-                setActiveColor({ color });
-                setPendingPosition({ subject: "zone" });
 
-                const isRightClick = e.evt.button === 2 || e.evt.ctrlKey;
-                setIsPainting(!isRightClick);
-                setIsErasing(isRightClick);
+                setIsZonePainting(true);     // now we’re in paint-mode
+                document.body.style.cursor = "crosshair";
+
                 setIsDraggingStage(false);
 
                 if (typeof i === "number" && typeof j === "number") {
-                    if (isPainting) {
-                        colorCell(i, j, activeColor?.color ?? "", selectedElement?.id ?? "");
-                    } else if (isErasing) {
-                        colorCell(i, j, "", "");
-                    }
+                    const color = colorMap[selectedElement!.iconName as keyof typeof colorMap];
+                    colorCell(i, j, color, selectedElement.id);
+                    freshCellsRef.current.add(`${i}-${j}`);
+                    return;
                 }
 
             }
         }
-        if (clickedOnEmpty && !isPainting) {
+        if (clickedOnEmpty) {
             setSelectedNodeId(null);
             setSelectedZoneId(null);
             setPropMenu(null);
-            document.body.style.cursor = "default";
         }
     };
 
-    const handleZoneUpdate: UpdateZoneFn = ({ id }) => {
-        const zoneToEdit = zones.find((z) => z.id === id);
-        if (!zoneToEdit) return;
+    const handleZoneEdit = (zone: { id: string } & Partial<GardenZone>) => {
+        // 1) grab one of its cells to know which menu‐element drove it
+        const firstCell = zone.coverage?.[0];
+        if (!firstCell) return;
 
-        setActiveColor({ color: zoneToEdit.color });
-        setPendingPosition({ subject: "zone" });
-        setIsPainting(true);
-        setIsErasing(false);
+        // 2) look up the *palette* item (MenuElement) by that id
+        const menuElement = menuPalette.find(m => m.id === firstCell.menuElementId);
+        if (!menuElement) return;
+
+        // 3) pretend the user just clicked that element in the palette
+        selectElement(menuElement);
+        setColoredCells({});         // start fresh
+        setIsZonePainting(true);     // now we’re in paint-mode
         setIsDraggingStage(false);
-        setSelectedZoneId(id); // select the zone being edited
 
-        // Clear the previous coloredCells and load the zone coverage into coloredCells
-        const newColoredCells: Record<string, ColoredCell> = {};
-        zoneToEdit.coverage.forEach((cell) => {
-            newColoredCells[`${cell.x}-${cell.y}`] = cell;
+        // 4) paint with exactly that element’s color
+        setActiveColor({ color: colorMap[menuElement.iconName as keyof typeof colorMap] });
+
+        // 6) now unlock & turn *on* paint mode
+        setIsMapLocked(false);
+
+        // 7) seed the grid with the existing coverage so you see it immediately
+        const seeded: Record<string, ColoredCell> = {};
+        zone.coverage?.forEach(c => {
+            seeded[`${c.x}-${c.y}`] = c;
         });
-        setColoredCells(newColoredCells);
-    }
+        setColoredCells(seeded);
+    };
 
     const handleStageMouseUp = () => {
-        mouseDownRef.current = false
-        if (isPainting) {
-            setNameModalOpen(true);
+        if (mouseDownRef.current && isZonePainting) {
+            mouseDownRef.current = false;
+
+            if (freshCellsRef.current.size > 0) {
+                setModalMode("zone");
+                setNameModalOpen(true);
+              }              
+
+            // reset
+            freshCellsRef.current.clear();
+
+            document.body.style.cursor = "default";
+            setIsDraggingStage(true);
+            setSelectedElement(null);
         }
-        setSelectedElement(null);
-        setIsDraggingStage(true);
     };
 
     useEffect(() => {
-        document.body.style.cursor = isPainting ? "crosshair" : "default";
+        document.body.style.cursor = isZonePainting ? "crosshair" : "default";
 
         return () => {
             document.body.style.cursor = "default";
         };
-    }, [isPainting]);
+    }, [isZonePainting]);
 
     useEffect(() => {
         const handleKeyDown = (event: KeyboardEvent) => {
             if (event.key === 'Escape') {
                 event.preventDefault();
                 setActiveColor(null);
-                setIsPainting(false);
-                setIsErasing(false);
+                setIsZonePainting(false);
             }
         };
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown)
-    }, []);
+    });
 
     const [propMenu, setPropMenu] = useState<GardenElement | null>(null);
     const [propMenuPosition, setPropMenuPosition] = useState<{ x: number; y: number } | null>(null);
@@ -255,8 +283,7 @@ const GardenMap: React.FC<GardenMapProps> = ({ dimensions }) => {
                     onMouseDown={(e) => handleStageMouseDown(e)}
                     onMouseUp={handleStageMouseUp}
                     onMouseLeave={() => {
-                        setIsPainting(false);
-                        setIsErasing(false);
+                        setIsZonePainting(false);
                         setIsDraggingStage(true);
 
                     }}
@@ -279,12 +306,13 @@ const GardenMap: React.FC<GardenMapProps> = ({ dimensions }) => {
                                     stroke="gray"
                                     strokeWidth={0.5}
                                     listening={true}
-                                    onMouseDown={(e) => handleStageMouseDown(e)}
+                                    onMouseDown={(e) => handleStageMouseDown(e, i, j)}
+                                    onMouseUp={handleStageMouseUp}
                                     onMouseEnter={() => {
-                                        if (mouseDownRef.current && isPainting) {
-                                            colorCell(i, j, activeColor?.color ?? "", selectedElement?.id ?? "");
-                                        } else if (mouseDownRef.current && isErasing) {
-                                            colorCell(i, j, "", "");
+                                        if (mouseDownRef.current && isZonePainting) {
+                                            const color = colorMap[selectedElement!.iconName as keyof typeof colorMap];
+                                            colorCell(i, j, color, selectedElement!.id);
+                                            freshCellsRef.current.add(`${i}-${j}`);
                                         }
                                     }}
                                 />
@@ -322,7 +350,6 @@ const GardenMap: React.FC<GardenMapProps> = ({ dimensions }) => {
                                     width={baseGridSize}
                                     height={baseGridSize}
                                     fill={cell.color}
-                                    onClick={() => setSelectedZoneId(`${cell.x}-${cell.y}`)}
                                 />
                             ))}
                             {zones.map((zone) => (
@@ -334,7 +361,7 @@ const GardenMap: React.FC<GardenMapProps> = ({ dimensions }) => {
                                     selectedZoneId={selectedZoneId}
                                     setSelectedZoneId={setSelectedZoneId}
                                     onClick={() => setSelectedZoneId(zone.id)}
-                                    onUpdate={handleZoneUpdate}
+                                    onUpdate={() => handleZoneEdit(zone)}
                                     onDelete={(id) => {
                                         // maybe add a confirm?
                                         deleteZoneAPI(id).then(() => {
@@ -372,41 +399,38 @@ const GardenMap: React.FC<GardenMapProps> = ({ dimensions }) => {
                     />
                 </div>
             )}
-            {nameModalOpen && pendingPosition && (
-                <NameModal
-                    onPlacement={(inputName) => {
-                        if (pendingPosition.subject === "element" && pendingPosition.x && pendingPosition.y) {
-                            placeElement(pendingPosition.x, pendingPosition.y, inputName)
-                            setNameModalOpen(false)
-                        }
-                        if (pendingPosition.subject === "zone" && selectedZoneId) {
-                            updateZone({
-                                id: selectedZoneId,
-                                name: inputName,
-                                coverage: Object.values(coloredCells),
-                            })
-                            fetchZones().then((freshZones) => {
-                                setZones(freshZones);
-                            });
-                        } else {
-                            createZoneAPI(Object.values(coloredCells), inputName).then(() => {
-                                fetchZones().then((freshZones) => {
-                                    setZones(freshZones);
-                                    setColoredCells({});
-                                });
-                            });
-                        }
-                        setIsPainting(false);
-                        setIsErasing(false);
-                        setNameModalOpen(false);
-                        setSelectedZoneId(null);
-                    }}
-                    onAbort={() => {
-                        setNameModalOpen(false);
-                        setSelectedElement(null);
+            {nameModalOpen && (
+            <NameModal
+            onPlacement={async (inputName) => {
+                try {
+                  if (modalMode === "element" && pendingPosition?.subject === "element") {
+                    await placeElement(pendingPosition.x!, pendingPosition.y!, inputName);
+                  } else if (modalMode === "zone") {
+                    const coverage = Object.values(coloredCells);
+                    if (selectedZoneId) {
+                      await updateZone({ id: selectedZoneId, name: inputName, coverage });
+                    } else {
+                      await createZoneAPI(coverage, inputName);
+                      const fresh = await fetchZones();
+                      setZones(fresh);
                     }
-                    }
-                />
+                  }
+                } catch (err) {
+                  console.error(err);
+                } finally {
+                  // CLEANUP
+                  setNameModalOpen(false);
+                  setModalMode(null);
+                  setPendingPosition(null);
+                  setSelectedZoneId(null);
+                  setColoredCells({});
+                  freshCellsRef.current.clear();
+                  setIsZonePainting(false);
+                }
+              }}
+            onAbort={() => { /* … */ }}
+          />
+          
             )}
         </div>
     );

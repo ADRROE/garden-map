@@ -1,3 +1,7 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
+
 import { ColoredCell, GardenElement, GardenZone } from "../types";
 
 const API_BASE_ELEMENTS = process.env.NEXT_PUBLIC_API_URL + "/api/elements/";
@@ -28,9 +32,23 @@ export async function deleteElementAPI(id: string) {
     await fetch(`${API_BASE_ELEMENTS}${id}`, { method: "DELETE" });
 }
 
+function deserializeCell(cell: any): ColoredCell {
+    return {
+        ...cell,
+        menuElementId: cell.menu_element_id,
+    };
+}
+
 export async function fetchZones(): Promise<GardenZone[]> {
     const res = await fetch(API_BASE_ZONES);
-    return res.json();
+    const zonesFromBackend = await res.json();
+
+    const zones: GardenZone[] = zonesFromBackend.map((zone: GardenZone) => ({
+        ...zone,
+        coverage: zone.coverage.map(deserializeCell),
+    }));
+
+    return zones;
 }
 
 export async function createZoneAPI(cells: ColoredCell[], name: string) {

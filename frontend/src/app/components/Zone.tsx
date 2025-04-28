@@ -7,7 +7,7 @@ import { darkenColor } from "../utils";
 import useImage from "use-image";
 
 const Zone: React.FC<ZoneProps> = ({ zone, hoveredZoneId, selectedZoneId, onClick, onUpdate, onDelete, setHoveredZoneId }) => {
-    const { isMapLocked } = useGarden()
+    const { isMapLocked, selectedElement } = useGarden()
 
     const baseGridSize = 19.95
     const fontSize = 50
@@ -21,7 +21,9 @@ const Zone: React.FC<ZoneProps> = ({ zone, hoveredZoneId, selectedZoneId, onClic
 
     const centerX = (minX + maxX) / 2;
     const centerY = (minY + maxY) / 2;
-    const [pencilImage] = useImage("/pencil.svg")
+    const [pencilImage] = useImage("/pencil.png")
+
+    const isEditingThisZone = selectedElement?.category === "zone" && selectedElement?.id === zone.coverage[0].menuElementId;
 
     return (
         <>
@@ -32,7 +34,7 @@ const Zone: React.FC<ZoneProps> = ({ zone, hoveredZoneId, selectedZoneId, onClic
                 onMouseLeave={() => !isMapLocked && setHoveredZoneId(null)}
                 onClick={() => onClick?.()}
             >
-                {zone.coverage.map((cell) => (
+                {!isEditingThisZone && zone.coverage.map((cell) => (
                     <Rect
                         key={`zone-cell-${cell.x}-${cell.y}`}
                         x={cell.x * baseGridSize}
@@ -55,20 +57,6 @@ const Zone: React.FC<ZoneProps> = ({ zone, hoveredZoneId, selectedZoneId, onClic
                             align="center"
                             verticalAlign="middle"
                             fill={darkenColor(zone.color, 50)}
-                        />
-                        <Image
-                            image={pencilImage}
-                            width={8}
-                            height={8}
-                            x={centerX * baseGridSize}
-                            y={centerY * baseGridSize}
-                            offsetX={(zone.name.length * fontSize - fontSize * 1.4)}
-                            offsetY={fontSize / 3}
-                            onClick={() => {
-                                onUpdate({ id: zone.id })
-                            }
-                            }
-                            alt="pencil"
                         />
                     </Group>
                 }
@@ -121,6 +109,18 @@ const Zone: React.FC<ZoneProps> = ({ zone, hoveredZoneId, selectedZoneId, onClic
                         align="center"
                         verticalAlign="middle"
                         listening={true}
+                    />
+                    <Image
+                        image={pencilImage}
+                        width={15}
+                        height={15}
+                        x={maxX * baseGridSize + baseGridSize - 25}
+                        y={minY * baseGridSize - 8}
+                        onClick={() => {
+                            onUpdate(zone)
+                        }
+                        }
+                        alt="pencil"
                     />
                 </Group>
             )}

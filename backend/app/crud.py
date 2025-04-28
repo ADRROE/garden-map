@@ -66,7 +66,6 @@ def update_zone(db: Session, zone_id: str, updates: schemas.GardenZoneUpdate):
 
     updates_data = updates.dict(exclude_unset=True)
 
-    # Special case: if 'coverage' is being updated
     if "coverage" in updates_data:
         # 1. Delete old coverage
         db.query(models.ColoredCell).filter(models.ColoredCell.zone_id == zone.id).delete()
@@ -85,10 +84,24 @@ def update_zone(db: Session, zone_id: str, updates: schemas.GardenZoneUpdate):
         ]
         db.add_all(new_cells)
 
-        # Remove coverage from update dict (since we already handled it manually)
-        updates_data.pop("coverage")
+        # 3. RECOMPUTE borders
+        # 3.1 Convert to schemas.ColoredCell (needed for algorithm)
+        schema_cells = [
+            schemas.ColoredCell(
+                x=cell.x,
+                y=cell.y,
+                color=cell.color,
+                menuElementId=cell.menu_element_id
+            )
+            for cell in new_cells
+        ]
+        merged_zones = algorithms.group_cells_into_zones(schema_cells)
+        if merged_zones:
+            zone.borders = merged_zones[0].borders
 
-    # Update the rest of the fields normally
+        updates_data.pop("coverage")  # we've already handled it manually
+
+    # Update other fields (name, color, etc.)
     for key, value in updates_data.items():
         setattr(zone, key, value)
 
@@ -96,6 +109,7 @@ def update_zone(db: Session, zone_id: str, updates: schemas.GardenZoneUpdate):
     db.refresh(zone)
 
     return zone
+
 
 def get_zone_by_name(db: Session, name: str):
     return db.query(models.GardenZone).filter(models.GardenZone.name == name).first()

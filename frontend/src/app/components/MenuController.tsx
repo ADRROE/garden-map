@@ -3,16 +3,13 @@ import MenuBar from "./MenuBar";
 
 const MenuController = () => {
 
-    const {isMapLocked, setIsSelectingElement, setIsMapLocked, setSelectedElement, setActiveColor, setIsPainting, setIsErasing, setShowZones} = useGarden()
+    const {isMapLocked, setIsSelectingElement, setIsMapLocked, setSelectedElement, setActiveColor, setShowZones} = useGarden()
 
     const handleZoneClick = () => { setShowZones((prev) => !prev) }
     const handleLockClick = () => {
         setIsMapLocked((prev) => !prev);
         setSelectedElement(null);
         setActiveColor(null);
-        setIsPainting(false);
-        setIsErasing(false);
-    
     }
     const handleElementClick = () => { setIsSelectingElement((prev) => !prev) }
 

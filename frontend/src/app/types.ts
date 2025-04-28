@@ -54,7 +54,7 @@ export interface GardenContextType {
 
   createElement: CreateElementFn;
   updateElement: UpdateElementFn;
-  selectElement: (element: MenuElement | null) => void;
+  selectElement: (element: MenuElement) => void;
   placeElement: (x: number, y: number, name: string) => void;
   deleteElement: (id: string) => void;
 
@@ -67,8 +67,6 @@ export interface GardenContextType {
   pendingPosition: PendingPosition | null;
   isMapLocked: boolean;
   isSelectingElement: boolean;
-  isPainting: boolean;
-  isErasing: boolean;
   showZones: boolean;
   activeColor: { color: string } | null;
 
@@ -78,8 +76,6 @@ export interface GardenContextType {
   setPendingPosition: React.Dispatch<React.SetStateAction<PendingPosition>>;
   setIsMapLocked: React.Dispatch<React.SetStateAction<boolean>>;
   setIsSelectingElement: React.Dispatch<React.SetStateAction<boolean>>;
-  setIsPainting: React.Dispatch<React.SetStateAction<boolean>>;
-  setIsErasing: React.Dispatch<React.SetStateAction<boolean>>;
   setShowZones: React.Dispatch<React.SetStateAction<boolean>>;
   setActiveColor: React.Dispatch<React.SetStateAction<{ color: string } | null>>;
 }
