@@ -1,15 +1,21 @@
-"use client"
-import GardenMap from "./GardenMap"
-import ElementMenu from "./components/ElementMenu";
+"use client";
+
 import { useEffect, useState } from "react";
+import GardenMap from "./GardenMap";
+import ElementMenu from "./components/ElementMenu";
 import MenuController from "./components/MenuController";
 import { useGarden } from "./context/GardenContext";
 import { motion, AnimatePresence } from "framer-motion";
+import dynamic from "next/dynamic";
+
+// Dynamically import CanvasGrid (disable SSR to avoid window undefined errors)
+const CanvasGrid = dynamic(() => import("./GardenMapV2"), { ssr: false });
 
 export default function Home() {
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+  const { isSelectingElement } = useGarden();
 
-  const { isSelectingElement } = useGarden()
+  const useCanvasGrid = process.env.NEXT_PUBLIC_USE_CANVAS_GRID === "true";
 
   useEffect(() => {
     const updateDimensions = () => {
@@ -47,12 +53,16 @@ export default function Home() {
           </motion.div>
         )}
       </AnimatePresence>
+
       <div className="flex-1 relative">
-        <GardenMap dimensions={dimensions} />
+        {useCanvasGrid ? (
+          <CanvasGrid />
+        ) : (
+          <GardenMap dimensions={dimensions} />
+        )}
       </div>
 
       <MenuController />
-
     </div>
   );
 }
