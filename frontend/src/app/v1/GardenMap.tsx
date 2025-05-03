@@ -10,10 +10,10 @@ import DraggableElement from "./components/DraggableElement";
 import Zone from "./components/Zone";
 import PropMenu from "./components/PropMenu";
 import { useGarden } from "./context/GardenContext";
-import { GardenElement, MenuElement, ColoredCell, GardenZone } from "./types";
+import { GardenElement, MenuElement, ColoredCell, GardenZone } from "../types";
 import { createZoneAPI, deleteZoneAPI, fetchZones } from "./services/elementsService";
 import NameModal from "./components/NameModal";
-import allElements from "./MenuElements.json";
+import allElements from "../MenuElements.json";
 
 
 interface GardenMapProps {
@@ -130,7 +130,7 @@ const GardenMap: React.FC<GardenMapProps> = ({ dimensions }) => {
         if (zoneLayerRef.current) {
             zoneLayerRef.current.batchDraw();
         }
-    }, [zones, hoveredZoneId]);
+    }, [zones, hoveredZoneId, coloredCells]);
 
     useEffect(() => {
         coloredCellsRef.current = coloredCells;
@@ -168,7 +168,7 @@ const GardenMap: React.FC<GardenMapProps> = ({ dimensions }) => {
             }
             if (selectedElement.category === "zone") {
 
-                setIsZonePainting(true);     // now we’re in paint-mode
+                setIsZonePainting(true);     
                 document.body.style.cursor = "crosshair";
 
                 setIsDraggingStage(false);
@@ -179,7 +179,6 @@ const GardenMap: React.FC<GardenMapProps> = ({ dimensions }) => {
                     freshCellsRef.current.add(`${i}-${j}`);
                     return;
                 }
-
             }
         }
         if (clickedOnEmpty) {

@@ -4,8 +4,8 @@ import type { Group as KonvaGroup } from "konva/lib/Group";
 import type { Image as KonvaImage } from "konva/lib/shapes/Image";
 import type { Transformer as KonvaTransformer } from "konva/lib/shapes/Transformer";
 import useImage from "use-image";
-import { DraggableElementProps } from "../types";
-import { translatePosition, toColumnLetter, getCoveredCells } from "../utils";
+import { DraggableElementProps } from "../../types";
+import { translatePosition, toColumnLetter, getCoveredCells } from "../../utils";
 import { KonvaEventObject } from "konva/lib/Node";
 import { useGarden } from "../context/GardenContext";
 

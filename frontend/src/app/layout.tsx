@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { GardenProvider } from "./context/GardenContext";
+import { GardenProvider } from "./v1/context/GardenContext";
 import "./globals.css";
 
 export const metadata: Metadata = {

@@ -1,6 +1,6 @@
 "use client"
 import React, {useState} from "react"
-import { GardenElement, UpdateElementFn } from "../types"
+import { GardenElement, UpdateElementFn } from "../../types"
 
 interface ElementProps {
     element: GardenElement,

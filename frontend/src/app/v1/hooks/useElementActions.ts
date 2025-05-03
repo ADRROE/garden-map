@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { useGarden } from "@/app/context/GardenContext";
+import { useGarden } from "@/app/v1/context/GardenContext";
 import { GardenElement } from "@/app/types";
 
 export const useElementActions = (id: string) => {

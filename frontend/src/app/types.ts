@@ -59,6 +59,7 @@ export interface GardenContextType {
   deleteElement: (id: string) => void;
 
   colorCell: (x: number, y: number, color: string, menuElementId: string) => void;
+  uncolorCell: (x: number, y: number) => void;
   updateZone: UpdateZoneFn;
 
   selectedElement: MenuElement | null;

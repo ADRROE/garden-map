@@ -1,10 +1,10 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import allElements from "../MenuElements.json";
-import { MenuElement } from "../types";
+import allElements from "../../MenuElements.json";
+import { MenuElement } from "../../types";
 import { useGarden } from "../context/GardenContext";
-import { capitalizeFirstLetter } from "../utils";
+import { capitalizeFirstLetter } from "../../utils";
 
 const menuElements: MenuElement[] = (allElements || []) as MenuElement[];
 

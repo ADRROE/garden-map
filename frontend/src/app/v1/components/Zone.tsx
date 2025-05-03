@@ -1,9 +1,9 @@
 "use client"
 import React from "react";
 import { Group, Rect, Line, Text, Circle, Image } from "react-konva";
-import { ZoneProps } from "../types";
+import { ZoneProps } from "../../types";
 import { useGarden } from "../context/GardenContext";
-import { darkenColor } from "../utils";
+import { darkenColor } from "../../utils";
 import useImage from "use-image";
 
 const Zone: React.FC<ZoneProps> = ({ zone, hoveredZoneId, selectedZoneId, onClick, onUpdate, onDelete, setHoveredZoneId }) => {
@@ -29,7 +29,7 @@ const Zone: React.FC<ZoneProps> = ({ zone, hoveredZoneId, selectedZoneId, onClic
         <>
 
             <Group
-                key={`zone-${zone.id}`}
+                key={zone.id}
                 onMouseEnter={() => !isMapLocked && setHoveredZoneId(zone.id)}
                 onMouseLeave={() => !isMapLocked && setHoveredZoneId(null)}
                 onClick={() => onClick?.()}

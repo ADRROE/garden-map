@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
-import { ColoredCell, GardenElement, GardenZone } from "../types";
+import { ColoredCell, GardenElement, GardenZone } from "../../types";
 
 const API_BASE_ELEMENTS = process.env.NEXT_PUBLIC_API_URL + "/api/elements/";
 const API_BASE_ZONES = process.env.NEXT_PUBLIC_API_URL + "/api/zones/";

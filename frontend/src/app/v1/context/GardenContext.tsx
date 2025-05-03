@@ -1,8 +1,8 @@
 "use client";
 import { createContext, useContext, useState, useEffect } from "react";
-import { GardenElement, MenuElement, CreateElementFn, UpdateElementFn, GardenContextType, ColoredCell, GardenZone, PendingPosition, UpdateZoneFn } from "../types";
+import { GardenElement, MenuElement, CreateElementFn, UpdateElementFn, GardenContextType, ColoredCell, GardenZone, PendingPosition, UpdateZoneFn } from "../../types";
 import { createElementAPI, updateElementAPI, deleteElementAPI, } from "../services/elementsService";
-import { translatePosition, toColumnLetter, getCoveredCells } from "../utils";
+import { translatePosition, toColumnLetter, getCoveredCells } from "../../utils";
 import { fetchElements, fetchZones, updateZoneAPI } from "../services/elementsService";
 import { v4 as uuidv4 } from 'uuid';
 
@@ -120,17 +120,23 @@ export const GardenProvider = ({ children }: { children: React.ReactNode }) => {
 
   const colorCell = (i: number, j: number, color: string, menuElementId: string) => {
     const key = `${i}-${j}`;
+    setActiveColor({color});
     setColoredCells((prev) => {
       const updated = { ...prev };
-      if (color) {
-        updated[key] = { x: i, y: j, color, menuElementId };
-      } else {
-        delete updated[key]; // 🧹 REMOVE the cell when no color
-      }
+      updated[key] = { x: i, y: j, color, menuElementId };
       return updated;
     });
   };
 
+  const uncolorCell = (i: number, j: number) => {
+    const key = `${i}-${j}`;
+    setActiveColor(null)
+    setColoredCells((prev) => {
+      const updated = { ...prev };
+      delete updated[key];
+      return updated;
+    });
+  };
 
   return (
     <GardenContext.Provider value={{
@@ -146,6 +152,7 @@ export const GardenProvider = ({ children }: { children: React.ReactNode }) => {
       setActiveColor,
       setIsMapLocked,
       colorCell,
+      uncolorCell,
       setColoredCells,
       setZones,
       showZones,
