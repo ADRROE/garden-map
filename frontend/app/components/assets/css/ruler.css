@@ -1,0 +1,32 @@
+/* ruler.css */
+.ruler-outer {
+    position: fixed;
+    bottom: 1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    height: 40px;
+    overflow: hidden;
+  }
+  .ruler-inner {
+    position: relative;
+    height: 100%;
+  }
+  .ruler-bar {
+    position: absolute;
+    top: 30px;
+    width: 150px;   /* BASE_UNIT */
+    height:   10px;
+  }
+  .ruler-bar.even { background: #000000FF; }
+  .ruler-bar.odd  { background: #ffffffFF; }
+  .ruler-label {
+    position: absolute;
+    top: 0;
+    width: 44px;
+    height: 30px;
+    text-align: center;
+    font-size: 14px;
+    line-height: 30px;
+    pointer-events: none;
+  }
+  
