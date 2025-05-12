@@ -3,6 +3,7 @@ import MenuController from "./MenuController";
 import { motion, AnimatePresence } from "framer-motion";
 import { useGardenData } from "@/contexts/GardenDataContext";
 import ElementMenu from "./ElementMenu";
+import ZoneMenu from "./ZoneMenu";
 
 
 export default function Overlay() {
@@ -32,6 +33,27 @@ export default function Overlay() {
               className="h-screen overflow-y-auto"
             >
               <ElementMenu />
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
+        {datastate.isSelectingZone && (
+          <div
+            style={{
+              width: 300,
+              right: 20,
+              position: "absolute",
+            }}>
+            <motion.div
+              key="zone-menu"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 10 }}
+              transition={{ duration: 0.5 }}
+              className="h-screen overflow-y-auto"
+            >
+              <ZoneMenu />
             </motion.div>
           </div>
         )}

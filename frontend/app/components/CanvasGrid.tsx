@@ -155,7 +155,12 @@ const throttledRedraw = () => {
     const fabricCanvas = fabricCanvasRef.current;
     if (!fabricCanvas) return;
     if (!datastate.pendingPosition) return;
-  
+
+    if (datastate.pendingPosition.subject === 'zone') {
+      document.body.style.cursor = "crosshair";
+      fabricCanvas.defaultCursor = "crosshair";
+    } 
+    
     const cursorImage = datastate.selectedElement?.cursor;
   
     if (cursorImage) {

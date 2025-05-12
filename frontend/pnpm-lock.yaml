@@ -4,6 +4,9 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+overrides:
+  '@tanstack/react-query': latest
+
 importers:
 
   .:
@@ -62,9 +65,6 @@ importers:
       rneui:
         specifier: ^1.0.0-stable.0
         version: 1.0.0-stable.0(react-native-safe-area-context@5.4.0(react-native@0.79.2(@babel/core@7.27.1)(@types/react@19.1.2)(react@19.1.0))(react@19.1.0))(react-native-vector-icons@10.2.0)(react-native@0.79.2(@babel/core@7.27.1)(@types/react@19.1.2)(react@19.1.0))(react@19.1.0)
-      root:
-        specifier: github:tanstack/react-query
-        version: git+https://git@github.com:tanstack/react-query.git#18af64367c6435de0ad899108209a94ef2ba0b14
       use-image:
         specifier: ^1.1.1
         version: 1.1.1(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -3295,10 +3295,6 @@ packages:
 
   rneui@1.0.0-stable.0:
     resolution: {integrity: sha512-W0gmyt1gTHt/4B5+pznOLyPOXs4F/7AJqXMozvLNz1G3cxMXT4Ayi1UNb+OKsgeFuz701xgxSVcI2cVWV6ehNA==}
-
-  root@git+https://git@github.com:tanstack/react-query.git#18af64367c6435de0ad899108209a94ef2ba0b14:
-    resolution: {commit: 18af64367c6435de0ad899108209a94ef2ba0b14, repo: git@github.com:tanstack/react-query.git, type: git}
-    version: 0.0.0
 
   router@2.2.0:
     resolution: {integrity: sha512-nLTrUKm2UyiL7rlhapu/Zl45FwNgkZGaCpZbIHajDYgwlJCOzLSk+cIPAnsEqV955GjILJnKbdQC1nVPz+gAYQ==}
@@ -7726,8 +7722,6 @@ snapshots:
       - react-native
       - react-native-safe-area-context
       - react-native-vector-icons
-
-  root@git+https://git@github.com:tanstack/react-query.git#18af64367c6435de0ad899108209a94ef2ba0b14: {}
 
   router@2.2.0:
     dependencies:

@@ -22,6 +22,7 @@ const initialState: HistoryState<GardenDataState> = {
     selectedElement: null,
     pendingPosition: null,
     isSelectingElement: false,
+    isSelectingZone: false,
     isMapLocked: true,
     pan: { x: 0, y: 0 },
     scale: 1,
@@ -104,7 +105,10 @@ function baseReducer(datastate: GardenDataState, dataaction: GardenDataAction) {
       return { ...datastate, elements: dataaction.elements };
 
     case 'TOGGLE_IS_SELECTING_ELEMENT':
-      return { ...datastate, isSelectingElement: !datastate.isSelectingElement };
+      return { ...datastate, isSelectingElement: !datastate.isSelectingElement, isSelectingZone: false };
+
+    case 'TOGGLE_IS_SELECTING_ZONE':
+      return { ...datastate, isSelectingZone: !datastate.isSelectingZone, isSelectingElement: false };
 
     case 'TOGGLE_MAP_LOCK':
       return {
@@ -188,7 +192,7 @@ export function undoable<T>(
 const GardenDataContext = createContext<GardenDataContextType | null>(null);
 
 export function GardenDataProvider({ children }: { children: ReactNode }) {
-  
+
   const [historyState, datadispatch] = useReducer(
     undoable(baseReducer),
     initialState
@@ -230,7 +234,7 @@ export function GardenDataProvider({ children }: { children: ReactNode }) {
       coverage,
     };
 
-   datadispatch({ type: 'CREATE_ELEMENT', element: newElement });
+    datadispatch({ type: 'CREATE_ELEMENT', element: newElement });
 
     try {
       console.log(`Called createElementAPI with ${newElement}`)
@@ -239,7 +243,7 @@ export function GardenDataProvider({ children }: { children: ReactNode }) {
       console.error("Failed to create element on server", error);
     } finally {
       const newElements = await fetchElements();
-     datadispatch({ type: 'SET_ELEMENTS', elements: newElements });
+      datadispatch({ type: 'SET_ELEMENTS', elements: newElements });
     }
   };
 
@@ -254,18 +258,18 @@ export function GardenDataProvider({ children }: { children: ReactNode }) {
   };
 
   const updateZone = async (updatedZone: GardenZone) => {
-   datadispatch({ type: 'UPDATE_ZONE', updatedZone });
+    datadispatch({ type: 'UPDATE_ZONE', updatedZone });
     try {
       await updateZoneAPI(updatedZone);
       const zones = await fetchZones();
-     datadispatch({ type: 'SET_ZONES', zones });
+      datadispatch({ type: 'SET_ZONES', zones });
     } catch (error) {
       console.error(error);
     }
   };
 
   const deleteElement = async (id: string) => {
-   datadispatch({ type: 'DELETE_ELEMENT', id });
+    datadispatch({ type: 'DELETE_ELEMENT', id });
     try {
       await deleteElementAPI(id);
     } catch (error) {
@@ -274,23 +278,23 @@ export function GardenDataProvider({ children }: { children: ReactNode }) {
   };
 
   const colorCell = (i: number, j: number, color: string, menuElementId: string) => {
-   datadispatch({ type: 'COLOR_CELL', i, j, color, menuElementId });
+    datadispatch({ type: 'COLOR_CELL', i, j, color, menuElementId });
   };
 
   const uncolorCell = (i: number, j: number) => {
-   datadispatch({ type: 'UNCOLOR_CELL', i, j });
+    datadispatch({ type: 'UNCOLOR_CELL', i, j });
   };
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         event.preventDefault();
-       datadispatch({ type: 'SET_SELECTED_ELEMENT', element: null });
+        datadispatch({ type: 'SET_SELECTED_ELEMENT', element: null });
         document.body.style.cursor = "default";
       } else if (event.ctrlKey && event.key === 'z') {
-       datadispatch({ type: 'UNDO' });
+        datadispatch({ type: 'UNDO' });
       } else if (event.ctrlKey && event.key === 'y') {
-       datadispatch({ type: 'REDO' });
+        datadispatch({ type: 'REDO' });
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -298,8 +302,8 @@ export function GardenDataProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    fetchElements().then(elements =>datadispatch({ type: 'SET_ELEMENTS', elements }));
-    fetchZones().then(zones =>datadispatch({ type: 'SET_ZONES', zones }));
+    fetchElements().then(elements => datadispatch({ type: 'SET_ELEMENTS', elements }));
+    fetchZones().then(zones => datadispatch({ type: 'SET_ZONES', zones }));
   }, []);
 
   return (

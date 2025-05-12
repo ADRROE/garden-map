@@ -17,6 +17,8 @@ const MenuController = () => {
         datadispatch({ type: 'TOGGLE_IS_SELECTING_ELEMENT' });
     }
     const handleElementClick = () => datadispatch({ type: 'TOGGLE_IS_SELECTING_ELEMENT' });
+    const handleZoneClick = () => datadispatch({ type: 'TOGGLE_IS_SELECTING_ZONE' });
+
 
     return (
         <MenuBar>
@@ -35,7 +37,7 @@ const MenuController = () => {
                 </button>
                 <button
                     className={btnClass}
-                    // onClick={handleZoneClick}
+                    onClick={handleZoneClick}
                     >
                     <img src="/zone.png" width={"70%"} alt="zones" />
                 </button>

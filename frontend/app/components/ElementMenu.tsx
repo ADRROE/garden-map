@@ -6,12 +6,10 @@ import { capitalizeFirstLetter } from "../utils/utils";
 import { useGardenData } from "@/contexts/GardenDataContext";
 import { useMenuElements } from "@/hooks/useMenuElements";
 
-
-
 const ElementMenu = () => {
   const { selectElement } = useGardenData();
 
-  const { data: menuElements, isLoading } = useMenuElements();
+  const { data: menuElements, isLoading } = useMenuElements('objects');
 
   const categories = menuElements ? [...new Set(menuElements.map(el => el.category))] : [];
   const defaultCategory = categories[0] || "";

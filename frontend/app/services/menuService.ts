@@ -1,8 +1,14 @@
 import type { MenuElement } from "@/types";
-import raw from '@/data/MenuElements.json';
+import objects from '@/data/MenuElements.json';
+import zones from '@/data/MenuZones.json';
 
-export async function fetchMenuElements(): Promise<MenuElement[]> {
-    // in the future this could do `await fetch("/api/menu")`
-    // or pull from a CMS, GraphQL endpoint, etc.
-    return raw as MenuElement[];
-  };
+export async function fetchMenuElements(which: string): Promise<MenuElement[]> {
+  console.log(which)
+  if (which === 'zones') {
+    console.log(zones)
+    return zones as MenuElement[]
+
+  } else {
+    return objects as MenuElement[];
+  }
+};

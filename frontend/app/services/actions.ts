@@ -15,6 +15,7 @@ export type GardenDataAction =
     | { type: 'SET_ELEMENTS'; elements: GardenElement[] }
     | { type: 'SET_ZONES'; zones: GardenZone[] }
     | { type: 'TOGGLE_IS_SELECTING_ELEMENT' }
+    | { type: 'TOGGLE_IS_SELECTING_ZONE' }
     | { type: 'TOGGLE_MAP_LOCK' }
     | { type: 'UNDO' }
     | { type: 'REDO' }

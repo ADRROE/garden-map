@@ -39,6 +39,7 @@ export interface GardenDataState {
   selectedElement: ElementType | null;
   pendingPosition: { pos: {x?: number, y?: number} | null; subject: "element" | "zone" } | null;
   isSelectingElement: boolean;
+  isSelectingZone: boolean;
   isMapLocked: boolean;
   pan: { x: number; y: number };
   scale: number;
