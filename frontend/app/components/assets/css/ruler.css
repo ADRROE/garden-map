@@ -17,8 +17,8 @@
     width: 150px;   /* BASE_UNIT */
     height:   10px;
   }
-  .ruler-bar.even { background: #000000FF; }
-  .ruler-bar.odd  { background: #ffffffFF; }
+  .ruler-bar.major { background: #000000FF; }
+  .ruler-bar.minor  { background: #ffffffFF; }
   .ruler-label {
     position: absolute;
     top: 0;

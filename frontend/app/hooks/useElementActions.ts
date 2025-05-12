@@ -1,15 +1,15 @@
 import { useCallback } from "react";
-import { useGarden } from "../context/GardenContext";
-import { GardenElement } from "../types";
+import { useGardenData } from "../contexts/GardenDataContext";
+import { GardenElement } from "@/types";
 
 export const useElementActions = (id: string) => {
-    const {updateElement, deleteElement} = useGarden();
+    const {updateElement, deleteElement} = useGardenData();
 
     const update = useCallback(
-        (updates: Partial<GardenElement>) => {
-            updateElement({id, ...updates});
+        (updates: GardenElement) => {
+            updateElement({...updates});
         },
-        [id, updateElement]
+        [updateElement]
     );
 
     const remove = useCallback(() => {

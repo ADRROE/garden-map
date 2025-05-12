@@ -1,6 +1,8 @@
 import React, { useRef, useEffect } from 'react';
 import { LayerManager } from '@/utils/LayerManager';
 import { CanvasLayer } from '@/types';
+import { Canvas } from 'fabric';
+import { useGardenData } from '@/contexts/GardenDataContext';
 
 const NUM_ROWS = 225;
 const NUM_COLS = 225;
@@ -12,14 +14,14 @@ interface CanvasGridProps {
   scale: number;
   setScale: (s: number) => void;
   layers: CanvasLayer[];
-  onGridClick: (row: number, col: number) => void;
+  onWorldClick: (row: number, col: number) => void;
 }
 
 export default function CanvasGrid({
   scale,
   setScale,
   layers,
-  onGridClick,
+  onWorldClick,
 }: CanvasGridProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -27,6 +29,78 @@ export default function CanvasGrid({
   const lmRef = useRef<LayerManager | null>(null);
   const panRef = useRef({ x: 0, y: 0 });
   const scaleRef = useRef(scale);
+  const fabricCanvasRef = useRef<Canvas | null>(null);
+
+  const {datastate} = useGardenData()
+  const cursorImage = datastate.pendingPosition ? datastate.selectedElement?.cursor : null ;
+
+  const needsRedrawRef = useRef(false);
+const frameRequestedRef = useRef(false);
+
+const throttledRedraw = () => {
+  if (frameRequestedRef.current) {
+    needsRedrawRef.current = true;
+    return;
+  }
+
+  frameRequestedRef.current = true;
+
+  requestAnimationFrame(() => {
+    redraw();
+    frameRequestedRef.current = false;
+
+    if (needsRedrawRef.current) {
+      needsRedrawRef.current = false;
+      throttledRedraw(); // immediately schedule the next frame
+    }
+  });
+};
+
+  const getRenderResolution = (scale: number) => {
+    if (scale < 0.7) return 0.8;
+    if (scale < 1.2) return 0.9;
+    if (scale < 1.5) return 1.0;
+    return 2.0;
+  };
+
+  const redraw = () => {
+    const canvas = mainRef.current!;
+    if (!canvas) return
+
+    const ctx = canvas.getContext('2d')!;
+  
+    const renderFactor = getRenderResolution(scaleRef.current);
+    const renderWidth = WIDTH * renderFactor;
+    const renderHeight = HEIGHT * renderFactor;
+  
+    // Resize canvas resolution
+    canvas.width = renderWidth;
+    canvas.height = renderHeight;
+  
+    // Keep visual size the same via CSS
+    canvas.style.width = `${WIDTH}px`;
+    canvas.style.height = `${HEIGHT}px`;
+  
+    ctx.setTransform(renderFactor, 0, 0, renderFactor, 0, 0);  // scale context
+    ctx.clearRect(0, 0, WIDTH, HEIGHT);
+  
+    lmRef.current!.drawToMain(ctx, layers.map(l => l.name));
+  };
+
+  useEffect(() => {
+    if (!mainRef.current) return;
+
+    // Initialize Fabric only once
+    fabricCanvasRef.current = new Canvas(mainRef.current, {
+      selection: true,
+      preserveObjectStacking: true,
+    });
+    fabricCanvasRef.current.defaultCursor = `url(${cursorImage}) 16 16, auto`;
+
+    return () => {
+      fabricCanvasRef.current?.dispose();
+    };
+  }, []);
 
   useEffect(() => {
     scaleRef.current = scale;
@@ -48,7 +122,7 @@ export default function CanvasGrid({
       for (let y = 0; y <= HEIGHT; y += CELL_SIZE) {
         bgCtx.beginPath(); bgCtx.moveTo(0, y); bgCtx.lineTo(WIDTH, y); bgCtx.stroke();
       }
-      redraw();
+      throttledRedraw();
     };
   }, [layers]);
 
@@ -71,15 +145,39 @@ export default function CanvasGrid({
     lm.drawToMain(ctx, layers.map(l => l.name));
 
     // flatten all layer.deps into our effect's dependency array:
-  }, [scale, panRef, layers]);
+  }, [scale, layers]);
 
-  // composite helper
-  const redraw = () => {
-    const main = mainRef.current!;
-    const ctx = main.getContext('2d')!;
-    ctx.clearRect(0, 0, WIDTH, HEIGHT);
-    lmRef.current!.drawToMain(ctx, layers.map(l => l.name));
-  };
+  useEffect(() => {
+    throttledRedraw();
+  }, [scale, layers]);
+
+  useEffect(() => {
+    const fabricCanvas = fabricCanvasRef.current;
+    if (!fabricCanvas) return;
+    if (!datastate.pendingPosition) return;
+  
+    const cursorImage = datastate.selectedElement?.cursor;
+  
+    if (cursorImage) {
+      const img = new Image();
+      img.src = cursorImage;
+  
+      img.onload = () => {
+        const cursorUrl = `url(${cursorImage}) 16 16, auto`;
+        document.body.style.cursor = cursorUrl;
+        fabricCanvas.defaultCursor = cursorUrl;
+      };
+  
+      img.onerror = () => {
+        console.warn("Failed to load cursor image:", cursorImage);
+        document.body.style.cursor = "crosshair";
+        fabricCanvas.defaultCursor = "crosshair";
+      };
+    } else {
+      document.body.style.cursor = "default";
+      fabricCanvas.defaultCursor = "default";
+    }
+  }, [datastate.selectedElement, datastate.pendingPosition]);
 
 
   // 5️⃣ Compute world‑coordinates on click & toggle the Set
@@ -87,15 +185,11 @@ export default function CanvasGrid({
     const rect = containerRef.current!.getBoundingClientRect();
     const xCss = e.clientX - rect.left;
     const yCss = e.clientY - rect.top;
-
+  
     const worldX = xCss / scale + panRef.current.x;
     const worldY = yCss / scale + panRef.current.y;
-
-    const col = Math.floor(worldX / CELL_SIZE);
-    const row = Math.floor(worldY / CELL_SIZE);
-    if (row < 0 || row >= NUM_ROWS || col < 0 || col >= NUM_COLS) return;
-
-    onGridClick(row, col);
+  
+    onWorldClick?.(worldX, worldY);
   };
 
   // 6️⃣  Wheel → update pan/scale state only
@@ -143,9 +237,7 @@ export default function CanvasGrid({
         `;
         setScale(scaleRef.current);
         // 👉 composite layers immediately:
-        const main = mainRef.current!.getContext('2d')!;
-        main.clearRect(0, 0, WIDTH, HEIGHT);
-        lmRef.current!.drawToMain(main, layers.map(l => l.name));
+        throttledRedraw()
       });
     };
 
@@ -158,15 +250,15 @@ export default function CanvasGrid({
 
 
   return (
-    <div ref={containerRef} style={{ width: WIDTH, height: HEIGHT, overflow: 'hidden' }}>
+    <div ref={containerRef} style={{ width: WIDTH, height: HEIGHT, overflow: 'hidden', cursor: 'inherit' }}>
       <div
         ref={wrapperRef}
         onMouseDown={handleMouseDown}
-        style={{ position: 'relative', width: WIDTH, height: HEIGHT }}
+        style={{ position: 'relative', width: WIDTH, height: HEIGHT, cursor: 'inherit' }}
       >
         <canvas
           ref={mainRef}
-          style={{ position: 'absolute', top: 0, left: 0 }}
+          style={{ position: 'absolute', top: 0, left: 0, cursor: 'inherit' }}
           width={WIDTH}
           height={HEIGHT}
         />

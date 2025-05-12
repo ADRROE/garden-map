@@ -3,13 +3,13 @@
 import React, { useState, useEffect } from "react";
 import { MenuElement } from "../types";
 import { capitalizeFirstLetter } from "../utils/utils";
-import { useGarden } from "@/context/GardenContext";
+import { useGardenData } from "@/contexts/GardenDataContext";
 import { useMenuElements } from "@/hooks/useMenuElements";
 
 
 
 const ElementMenu = () => {
-  const { selectElement } = useGarden();
+  const { selectElement } = useGardenData();
 
   const { data: menuElements, isLoading } = useMenuElements();
 
@@ -46,22 +46,6 @@ const ElementMenu = () => {
 
   const handleClick = (element: MenuElement) => {
     selectElement(element);
-    if (element.cursor) {
-      const cursorImage = element.cursor;
-      const image = new Image();
-      image.src = cursorImage;
-
-      image.onload = () => {
-        document.body.style.cursor = `url(${cursorImage}) 16 16, auto`;
-      };
-
-      image.onerror = () => {
-        console.warn("Cursor image failed to load:", cursorImage);
-        document.body.style.cursor = "crosshair";
-      };
-    } else {
-        document.body.style.cursor = "crosshair"
-    };
   };
 
   if (isLoading) {

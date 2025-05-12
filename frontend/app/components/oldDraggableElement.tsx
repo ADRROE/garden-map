@@ -7,7 +7,7 @@ import useImage from "use-image";
 import { DraggableElementProps } from "../types";
 import { translatePosition, toColumnLetter, getCoveredCells } from "../utils/utils";
 import { KonvaEventObject } from "konva/lib/Node";
-import { useGarden } from "../context/GardenContext";
+import { useGarden } from "../contexts/GardenDataContext";
 
 const DraggableElement: React.FC<DraggableElementProps> = ({ element, onUpdate, onSelect, isSelected, onDelete }) => {
     const [image] = useImage(element.icon);

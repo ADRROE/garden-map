@@ -8,6 +8,7 @@ class GardenElement(Base):
     __tablename__ = "t_garden_elements"
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, index=True)
+    menu_element_id: Mapped[str] = mapped_column(String(3))
     name: Mapped[str] = mapped_column(String(255))
     icon: Mapped[str] = mapped_column(String(255))
     x: Mapped[float] = mapped_column(Float)

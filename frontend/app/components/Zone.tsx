@@ -2,7 +2,7 @@
 import React from "react";
 import { Group, Rect, Line, Text, Circle, Image } from "react-konva";
 import { ZoneProps } from "../types";
-import { useGarden } from "../context/GardenContext";
+import { useGarden } from "../contexts/GardenDataContext";
 import { darkenColor } from "../utils/utils";
 import useImage from "use-image";
 

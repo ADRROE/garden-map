@@ -1,22 +1,22 @@
-import { useGarden } from "../context/GardenContext";
+import { useGardenData } from "../contexts/GardenDataContext";
 import MenuBar from "./MenuBar";
 
 const MenuController = () => {
 
     const {
-        state: { isMapLocked },
-        dispatch,
-      } = useGarden();
+        datastate: { isMapLocked },
+        datadispatch,
+      } = useGardenData();
 
     const btnClass =
         'w-12 h-12 flex rounded-full bg-[#C5D4BC] items-center justify-center hover:bg-green-700 shadow-lg transition';
 
-    const handleZoneClick = () => dispatch({ type: 'TOGGLE_SHOW_ZONES' });
+    // const handleZoneClick = () => datadispatch({ type: 'TOGGLE_SHOW_ZONES' });
     const handleLockClick = () => {
-        dispatch({ type: 'TOGGLE_MAP_LOCK' });
-        dispatch({ type: 'TOGGLE_IS_SELECTING_ELEMENT' });
+        datadispatch({ type: 'TOGGLE_MAP_LOCK' });
+        datadispatch({ type: 'TOGGLE_IS_SELECTING_ELEMENT' });
     }
-    const handleElementClick = () => dispatch({ type: 'TOGGLE_IS_SELECTING_ELEMENT' });
+    const handleElementClick = () => datadispatch({ type: 'TOGGLE_IS_SELECTING_ELEMENT' });
 
     return (
         <MenuBar>
@@ -25,18 +25,19 @@ const MenuController = () => {
                     <img src="/icons/tool1.png" alt="Tool 1" className="w-[70%]" />
                 </button>
                 <button className={btnClass}>
-                    <img src="/icons/tool2.png" alt="Tool 2" className="w-[70%]" />
+                    <img src="/icons/database.png" alt="database" className="w-[55%]" />
                 </button>
                 <button className={btnClass}>
-                    <img src="/icons/tool3.png" alt="Tool 3" className="w-[70%]" />
+                    <img src="/icons/workflow.png" alt="workflow" className="w-[55%]" />
                 </button>
                 <button className={btnClass}>
-                    <img src="/icons/tool4.png" alt="Tool 4" className="w-[70%]" />
+                    <img src="/icons/layers.png" width={"60%"} alt="layers" />
                 </button>
                 <button
                     className={btnClass}
-                    onClick={handleZoneClick}>
-                    <img src="/zone.png" width={"70%"} alt="layers" />
+                    // onClick={handleZoneClick}
+                    >
+                    <img src="/zone.png" width={"70%"} alt="zones" />
                 </button>
                 <button
                     className={btnClass}

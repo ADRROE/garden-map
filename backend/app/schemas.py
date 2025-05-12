@@ -5,6 +5,7 @@ from datetime import datetime
 
 class GardenElementBase(BaseModel):
     id: str
+    menu_element_id: str = Field(alias="menuElementId")
     name: str
     icon: str
     x: float

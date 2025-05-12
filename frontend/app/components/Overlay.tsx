@@ -1,13 +1,13 @@
 
 import MenuController from "./MenuController";
 import { motion, AnimatePresence } from "framer-motion";
-import { useGarden } from "@/context/GardenContext";
+import { useGardenData } from "@/contexts/GardenDataContext";
 import ElementMenu from "./ElementMenu";
 
 
 export default function Overlay() {
 
-  const {state} = useGarden()
+  const {datastate} = useGardenData()
 
   const btnClass =
     'w-12 h-12 flex rounded-full bg-[#C5D4BC] items-center justify-center hover:bg-green-700 shadow-lg transition';
@@ -16,7 +16,7 @@ export default function Overlay() {
     <>
       <MenuController />
       <AnimatePresence>
-        {state.isSelectingElement && (
+        {datastate.isSelectingElement && (
           <div
             style={{
               width: 300,
@@ -41,10 +41,10 @@ export default function Overlay() {
       {/* Top center buttons */}
       <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 space-x-4 flex">
         <button className={btnClass}>
-          <img src="/icons/top1.png" alt="Top 1" className="w-[70%]" />
+          <img src="/icons/undo.svg" alt="undo" className="w-[50%]" />
         </button>
         <button className={btnClass}>
-          <img src="/icons/top2.png" alt="Top 2" className="w-[70%]" />
+          <img src="/icons/redo.svg" alt="redo" className="w-[50%]" />
         </button>
       </div>
     </>

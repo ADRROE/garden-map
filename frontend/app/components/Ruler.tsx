@@ -1,51 +1,76 @@
 // components/Ruler.tsx
-import React, { useLayoutEffect, useRef } from "react";
-import { useGarden } from "@/context/GardenContext";
+import React from "react";
+import { useGardenData } from "@/contexts/GardenDataContext";
 import "@/components/assets/css/ruler.css";
 
 // number of “1 m” segments
 const SEGMENTS = 5;
 // base width in px at zoom = 1
-const BASE_UNIT = 150;
+const BASE_UNIT = 100;
 
 export default React.memo(function Ruler() {
   const {
-    state: { scale },
-  } = useGarden();
-  const inner = useRef<HTMLDivElement>(null);
-
-  // GPU‐accelerated transform
-  useLayoutEffect(() => {
-    if (inner.current) {
-      inner.current.style.transform = `scaleX(${scale})`;
-    }
-  }, [scale]);
+    datastate: { scale },
+  } = useGardenData();
 
   return (
     <div className="ruler-outer">
       <div
-        ref={inner}
         className="ruler-inner"
         style={{
-          width: `${SEGMENTS * BASE_UNIT}px`,
-          transformOrigin: "0 0",
-          willChange: "transform",
+          width: `${SEGMENTS * BASE_UNIT * scale}px`,
+          position: "relative",
         }}
       >
-        {[...Array(SEGMENTS)].map((_, i) => (
-          <React.Fragment key={i}>
+        {/* Scaled bars */}
+        <div
+          className="ruler-bars"
+          style={{
+            transform: `scaleX(${scale})`,
+            transformOrigin: "left",
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: `${SEGMENTS * BASE_UNIT}px`,
+            height: "100%",
+          }}
+        >
+          {[...Array(SEGMENTS)].map((_, i) => {
+            const value = 2.5 * (i + 1);
+            const isMajor = value % 5 === 0;
+
+            return (
+              <div
+                key={`bar-${i}`}
+                className={`ruler-bar ${isMajor ? "minor" : "major"}`}
+                style={{
+                  left: `${i * BASE_UNIT}px`,
+                  position: "absolute",
+                }}
+              />
+            );
+          })}
+        </div>
+
+        {/* Labels aligned to bar centers */}
+        {[...Array(SEGMENTS)].map((_, i) => {
+          const value = 2.5 * (i + 1);
+          const scaledLeft = (i + 0.5) * BASE_UNIT * scale;
+
+          return (
             <div
-              className={`ruler-bar ${i % 2 ? "odd" : "even"}`}
-              style={{ left: `${i * BASE_UNIT}px` }}
-            />
-            <div
+              key={`label-${i}`}
               className="ruler-label"
-              style={{ left: `${i * BASE_UNIT + (BASE_UNIT - 44) / 2}px` }}
+              style={{
+                position: "absolute",
+                left: `${scaledLeft}px`,
+                transform: "translateX(-50%)",
+              }}
             >
-              {i + 1} m
+              {value} m
             </div>
-          </React.Fragment>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
