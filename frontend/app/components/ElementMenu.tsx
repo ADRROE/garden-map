@@ -3,11 +3,11 @@
 import React, { useState, useEffect } from "react";
 import { MenuElement } from "../types";
 import { capitalizeFirstLetter } from "../utils/utils";
-import { useGardenData } from "@/contexts/GardenDataContext";
+import { useGardenStore } from "@/hooks/useGardenStore";
 import { useMenuElements } from "@/hooks/useMenuElements";
 
 const ElementMenu = () => {
-  const { selectElement } = useGardenData();
+  const  selectElement  = useGardenStore(state => state.selectElement);
 
   const { data: menuElements, isLoading } = useMenuElements('objects');
 

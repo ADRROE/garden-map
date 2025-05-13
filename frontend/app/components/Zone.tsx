@@ -2,12 +2,14 @@
 import React from "react";
 import { Group, Rect, Line, Text, Circle, Image } from "react-konva";
 import { ZoneProps } from "../types";
-import { useGarden } from "../contexts/GardenDataContext";
+import { useGardenStore } from "@/hooks/useGardenStore";
 import { darkenColor } from "../utils/utils";
 import useImage from "use-image";
 
 const Zone: React.FC<ZoneProps> = ({ zone, hoveredZoneId, selectedZoneId, onClick, onUpdate, onDelete, setHoveredZoneId }) => {
-    const { isMapLocked, selectedElement } = useGarden()
+    const isMapLocked = useGardenStore(state => state.present.isMapLocked)
+    const selectedElement = useGardenStore(state => state.selectedElementRef)
+
 
     const baseGridSize = 19.95
     const fontSize = 50

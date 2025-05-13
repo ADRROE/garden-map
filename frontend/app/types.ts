@@ -37,7 +37,7 @@ export interface GardenDataState {
   coloredCells: Record<string, ColoredCell>;
   activeLayers: LayerName[];
   selectedElement: ElementType | null;
-  pendingPosition: { pos: {x?: number, y?: number} | null; subject: "element" | "zone" } | null;
+  pendingPosition: { pos: Vec2 ; subject: "element" | "zone" } | null;
   isSelectingElement: boolean;
   isSelectingZone: boolean;
   isMapLocked: boolean;
@@ -75,7 +75,11 @@ export type CreateElementFn = (element: Omit<GardenElement, "name" | "x" | "y" |
 export type UpdateElementFn = (updatedElement: { id: string } & Partial<GardenElement>) => void;
 export type UpdateZoneFn = (updatedZone: { id: string } & Partial<GardenZone>) => void;
 
-export type PendingPosition = { x?: number; y?: number; subject: "element" | "zone" } | null;
+export type Vec2 = {
+  x: number;
+  y: number;
+};
+
 
 type Point = [number, number];
 type LineSegment = [Point, Point];

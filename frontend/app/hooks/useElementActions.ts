@@ -1,13 +1,15 @@
 import { useCallback } from "react";
-import { useGardenData } from "../contexts/GardenDataContext";
+import { useGardenStore } from "./useGardenStore";
 import { GardenElement } from "@/types";
 
 export const useElementActions = (id: string) => {
-    const {updateElement, deleteElement} = useGardenData();
+
+    const updateElement = useGardenStore(state => state.updateElement);
+    const deleteElement = useGardenStore(state => state.deleteElement);
 
     const update = useCallback(
         (updates: GardenElement) => {
-            updateElement({...updates});
+            updateElement({ ...updates });
         },
         [updateElement]
     );
@@ -15,6 +17,6 @@ export const useElementActions = (id: string) => {
     const remove = useCallback(() => {
         deleteElement(id);
     }, [id, deleteElement]);
-    
-    return {update, remove};
+
+    return { update, remove };
 };

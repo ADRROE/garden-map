@@ -1,4 +1,4 @@
-import { useGardenData } from '@/contexts/GardenDataContext';
+import { useGardenStore } from './useGardenStore';
 import { GardenElement } from '@/types';
 
 interface TransformOptions {
@@ -9,7 +9,7 @@ interface TransformOptions {
 }
 
 export const useElementTransform = (options?: TransformOptions) => {
-  const { datadispatch } = useGardenData();
+const datadispatch = useGardenStore(state => state.dispatch);
   const {
     snapToGrid = false,
     gridSize = 20,

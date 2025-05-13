@@ -1,6 +1,6 @@
 // components/Ruler.tsx
 import React from "react";
-import { useGardenData } from "@/contexts/GardenDataContext";
+import { useGardenStore } from "@/hooks/useGardenStore";
 import "@/components/assets/css/ruler.css";
 
 // number of “1 m” segments
@@ -9,9 +9,8 @@ const SEGMENTS = 5;
 const BASE_UNIT = 100;
 
 export default React.memo(function Ruler() {
-  const {
-    datastate: { scale },
-  } = useGardenData();
+
+  const scale = useGardenStore(state => state.present.scale)
 
   return (
     <div className="ruler-outer">

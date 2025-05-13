@@ -1,4 +1,4 @@
-import { ElementType } from "@/types";
+import { ElementType, Vec2 } from "@/types";
 import { GardenElement, GardenZone, LayerName } from "../types";
 
 export type GardenDataAction =
@@ -9,7 +9,7 @@ export type GardenDataAction =
     | { type: 'COLOR_CELL'; i: number; j: number; color: string; menuElementId: string }
     | { type: 'UNCOLOR_CELL'; i: number; j: number }
     | { type: 'SET_SELECTED_ELEMENT'; element: ElementType | null }
-    | { type: 'SET_PENDING_POSITION'; pos: { x?: number, y?: number } | null; subject: "element" | "zone" | null }
+    | { type: 'SET_PENDING_POSITION'; pos: Vec2 | null; subject: "element" | "zone" | null }
     | { type: 'SET_PAN'; pan: { x: number; y: number } }
     | { type: 'SET_SCALE'; scale: number }
     | { type: 'SET_ELEMENTS'; elements: GardenElement[] }

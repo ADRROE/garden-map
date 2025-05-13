@@ -1,7 +1,7 @@
 import React, { useState, useRef, useMemo } from 'react';
 import CanvasGrid from './CanvasGrid';
 import NameModal from './NameModal';
-import { useGardenData } from '../contexts/GardenDataContext';
+import { useGardenStore } from '@/hooks/useGardenStore';
 import { useGardenLayer } from '@/contexts/GardenLayerContext';
 import { CanvasLayer, GardenElement } from '@/types';
 import { isGardenElement } from '@/utils/FabricHelpers';
@@ -10,8 +10,10 @@ import PropMenu from './PropMenu';
 
 const CELL_SIZE = 20;
 
-export default function GardenMap() {
-  const { datastate, datadispatch, placeElement } = useGardenData();
+export default function GardenCanvas() {
+  const datastate = useGardenStore(state => state.present)
+  const datadispatch = useGardenStore(state => state.dispatch)
+  const placeElement = useGardenStore(state => state.placeElement)
   const { layerstate } = useGardenLayer();
 
   const [naming, setNaming] = useState(false);

@@ -1,15 +1,14 @@
 
 import MenuController from "./MenuController";
 import { motion, AnimatePresence } from "framer-motion";
-import { useGardenData } from "@/contexts/GardenDataContext";
+import { useGardenStore } from "@/hooks/useGardenStore";
 import ElementMenu from "./ElementMenu";
 import ZoneMenu from "./ZoneMenu";
 
 
 export default function Overlay() {
 
-  const {datastate} = useGardenData()
-
+  const datastate = useGardenStore(state => state.present);
   const btnClass =
     'w-12 h-12 flex rounded-full bg-[#C5D4BC] items-center justify-center hover:bg-green-700 shadow-lg transition';
 

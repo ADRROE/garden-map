@@ -4,12 +4,12 @@ import { useEffect, useCallback } from "react";
 import Overlay from "./components/Overlay";
 import Ruler from "./components/Ruler";
 import GardenCanvas from "./components/GardenCanvas";
-import { useGardenData } from "./contexts/GardenDataContext";
+import { useGardenStore } from "./hooks/useGardenStore";
 import debounce from "lodash.debounce";
 
 
 export default function Home() {
-  const { datadispatch } = useGardenData();
+  const datadispatch  = useGardenStore(state => state.dispatch);
 
   const updateScale = useCallback(() => {
     const targetWidth = 2560;

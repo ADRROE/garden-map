@@ -1,4 +1,4 @@
-import { useGardenData } from "@/contexts/GardenDataContext";
+import { useGardenStore } from "./useGardenStore";
 import { GardenElement } from "@/types";
 
 type CanvasInteractionOptions = {
@@ -7,7 +7,9 @@ type CanvasInteractionOptions = {
 };
 
 export const useCanvasInteraction = ({ onSelect, onDeselect }: CanvasInteractionOptions = {}) => {
-  const { datastate, selectElement } = useGardenData();
+
+  const  selectElement  = useGardenStore(state => state.selectElement);
+  const datastate = useGardenStore(state => state.present);
 
   const onCanvasClick = (worldX: number, worldY: number): GardenElement | null => {
     const clicked = datastate.elements.find(el =>

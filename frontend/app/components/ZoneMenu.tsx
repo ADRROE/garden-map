@@ -3,14 +3,12 @@
 import React, { useState, useEffect } from "react";
 import { MenuElement } from "../types";
 import { capitalizeFirstLetter } from "../utils/utils";
-import { useGardenData } from "@/contexts/GardenDataContext";
 import { useMenuElements } from "@/hooks/useMenuElements";
 
 
 
 const ZoneMenu = () => {
   const { data: menuElements, isLoading } = useMenuElements('zones');
-  const {datastate, datadispatch} = useGardenData();
 
   const categories = menuElements ? [...new Set(menuElements.map(el => el.category))] : [];
   const defaultCategory = categories[0] || "";
@@ -26,7 +24,6 @@ const ZoneMenu = () => {
 
   const handleClick = () => {
     datadispatch({type: 'SET_PENDING_POSITION', pos: null, subject: 'zone'});
-    console.log(datastate.pendingPosition)
   };
 
   if (isLoading) {

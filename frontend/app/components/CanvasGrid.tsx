@@ -2,7 +2,7 @@ import React, { useRef, useEffect } from 'react';
 import { LayerManager } from '@/utils/LayerManager';
 import { CanvasLayer } from '@/types';
 import { Canvas } from 'fabric';
-import { useGardenData } from '@/contexts/GardenDataContext';
+import { useGardenStore } from '@/hooks/useGardenStore';
 
 const NUM_ROWS = 225;
 const NUM_COLS = 225;
@@ -31,7 +31,7 @@ export default function CanvasGrid({
   const scaleRef = useRef(scale);
   const fabricCanvasRef = useRef<Canvas | null>(null);
 
-  const {datastate} = useGardenData()
+  const datastate = useGardenStore(state => state.present)
   const cursorImage = datastate.pendingPosition ? datastate.selectedElement?.cursor : null ;
 
   const needsRedrawRef = useRef(false);
@@ -160,7 +160,7 @@ const throttledRedraw = () => {
       document.body.style.cursor = "crosshair";
       fabricCanvas.defaultCursor = "crosshair";
     } 
-    
+
     const cursorImage = datastate.selectedElement?.cursor;
   
     if (cursorImage) {
