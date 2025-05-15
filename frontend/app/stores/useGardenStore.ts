@@ -24,8 +24,6 @@ const initialState: GardenDataState = {
   zones: [],
   activeLayers: ['background', 'elements'],
   coloredCells: {},
-  selectedElement: null,
-  pendingPosition: null,
 };
 
 const undoableActions = new Set<GardenDataAction['type']>([

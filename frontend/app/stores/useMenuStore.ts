@@ -1,27 +1,25 @@
 import { create } from 'zustand';
 import { MenuElement } from '@/types';
 import { menuItems } from '@/components/assets/menuItems';
+import { useSelectionStore } from './useSelectionStore';
 
 type MenuState = {
   openSectionId: string | null;
-  selectedItemId: string | null;
-  selectedItem: MenuElement | null;
+  isLoading: boolean;
   setOpenSection: (id: string | null) => void;
   setSelectedItem: (id: string) => void;
+  toggleIsLoading: () => void;
 };
 
 export const useMenuStore = create<MenuState>((set) => ({
   openSectionId: null,
-  selectedItemId: null,
-  selectedItem: null,
+  isLoading: false,
 
   setOpenSection: (id) => set({ openSectionId: id }),
-
   setSelectedItem: (id) => {
     const found = menuItems.find(el => el.id === id) ?? null;
-    set({
-      selectedItemId: id,
-      selectedItem: found,
-    });
+    if (!found) return;
+    useSelectionStore.getState().setPlacing(found);
   },
+  toggleIsLoading: () => set((s) => ({ isLoading: !s.isLoading }))
 }));

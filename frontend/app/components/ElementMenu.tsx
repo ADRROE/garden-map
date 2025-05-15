@@ -6,9 +6,11 @@ import { capitalizeFirstLetter } from "../utils/utils";
 
 import { menuItems } from '@/components/assets/menuItems';
 import { useMenuStore } from "@/stores/useMenuStore";
+import { useUIStore } from "@/stores/useUIStore";
 
 const ElementMenu = () => {
   const selectElement  = useMenuStore(state => state.setSelectedItem)
+  const isLoading = useMenuStore(state => state.isLoading)
 
   const categories = menuItems ? [...new Set(menuItems.map(el => el.category))] : [];
   const defaultCategory = categories[0] || "";

@@ -5,6 +5,7 @@ import { Canvas } from 'fabric';
 import { useGardenStore } from '@/hooks/useGardenStore';
 import { useUIStore } from '@/stores/useUIStore';
 import { useSelection } from '@/hooks/useSelection';
+import { useSelectionStore } from '@/stores/useSelectionStore';
 
 const NUM_ROWS = 225;
 const NUM_COLS = 225;
@@ -34,7 +35,11 @@ export default function CanvasGrid({
   const panRef = useRef({ x: 0, y: 0 });
   const fabricCanvasRef = useRef<Canvas | null>(null);
 
-  const cursorImage = datastate.pendingPosition ? datastate.selectedElement?.cursor : null ;
+  const isPlacing = useSelectionStore((s) => s.isPlacing) // OPTIE 1
+  // const isPlacing = useSelectionStore((s) => s.selection.kind === 'placing') <<< OPTIE 2
+
+  const menuItem = useSelectionStore((s) => s.selection.kind === 'placing' ? s.selection.menuItem : null)
+  const cursorImage = menuItem?.cursor;
 
   const needsRedrawRef = useRef(false);
 const frameRequestedRef = useRef(false);
@@ -156,8 +161,6 @@ const throttledRedraw = () => {
   useEffect(() => {
     const fabricCanvas = fabricCanvasRef.current;
     if (!fabricCanvas) return;
-
-    const cursorImage = selectedItem?.cursor;
   
     if (cursorImage) {
       const img = new Image();
@@ -178,7 +181,7 @@ const throttledRedraw = () => {
       document.body.style.cursor = "default";
       fabricCanvas.defaultCursor = "default";
     }
-  }, [selectedItem]);
+  }, [menuItem]);
 
 
   // 5️⃣ Compute world‑coordinates on click & toggle the Set

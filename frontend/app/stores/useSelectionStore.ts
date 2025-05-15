@@ -1,6 +1,7 @@
+// useSelectionStore.ts
 import { create } from 'zustand';
 import { SelectionState } from './SelectionState';
-import type { GardenElement, MenuElement } from '@/types';
+import { MenuElement, GardenElement } from '@/types'
 
 type SelectionStore = {
   selection: SelectionState;

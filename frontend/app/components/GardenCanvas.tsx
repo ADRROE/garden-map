@@ -4,11 +4,9 @@ import NameModal from './NameModal';
 import { useGardenStore } from '@/hooks/useGardenStore';
 import { useGardenLayer } from '@/contexts/GardenLayerContext';
 import { CanvasLayer, GardenElement } from '@/types';
-import { isGardenElement } from '@/utils/FabricHelpers';
 import { useCanvasInteraction } from '@/hooks/useCanvasInteraction';
 import PropMenu from './PropMenu';
 import { useSelection } from '@/hooks/useSelection';
-import { useUIStore } from '@/stores/useUIStore';
 
 const CELL_SIZE = 20;
 
@@ -16,11 +14,9 @@ export default function GardenCanvas() {
 
   const { layerstate } = useGardenLayer();
   const {dispatch, placeElement} = useGardenStore();
-  const { selectedItem, clearSelection } = useSelection();
+  const { selectedItem, clearSelection, isPlacing } = useSelection();
+
   const elements = useGardenStore(state => state.present.elements);
-  const {selectedElement} = useUIStore()
-
-
 
   const [naming, setNaming] = useState(false);
   const [propMenu, setPropMenu] = useState<GardenElement | null>(null);
@@ -51,7 +47,7 @@ export default function GardenCanvas() {
   };
 
   const handleCellClick = (row: number, col: number) => {
-    if (selectedItem) {
+    if (isPlacing) {
       dispatch({
         type: 'SET_PENDING_POSITION',
         pos: { x: col * CELL_SIZE, y: row * CELL_SIZE },
@@ -101,7 +97,7 @@ export default function GardenCanvas() {
             ctx.strokeRect(el.x, el.y, el.width, el.height);
 
             // 🔵 Highlight if selected
-            if (el.id === selectedElement?.id) {
+            if (el.id === selectedItem?.id) {
               ctx.strokeStyle = 'blue';
               ctx.lineWidth = 2;
               ctx.strokeRect(el.x, el.y, el.width, el.height);
@@ -109,9 +105,9 @@ export default function GardenCanvas() {
           });
         }
       },
-      deps: [selectedElement]
+      deps: [selectedItem]
     }));
-  }, [layerstate.visibleLayers, elements, selectedElement]);
+  }, [layerstate.visibleLayers, elements, selectedItem]);
 
 
   useEffect(() => {

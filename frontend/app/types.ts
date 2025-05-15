@@ -38,8 +38,6 @@ export interface GardenDataState {
   zones: GardenZone[];
   coloredCells: Record<string, ColoredCell>;
   activeLayers: LayerName[];
-  selectedElement: ElementType | null;
-  pendingPosition: { pos: Vec2 ; subject: "element" | "zone" } | null;
 }
 
 export type GardenLayerState = {
