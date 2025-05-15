@@ -3,7 +3,7 @@ import { FabricImage } from "fabric";
 
 export interface MenuElement {
   id: string;
-  iconName: string;
+  label: string;
   icon: string;
   defaultWidth?: number;
   defaultHeight?: number;
@@ -11,6 +11,8 @@ export interface MenuElement {
   category: string;
   subCategory?: string;
   metadata?: Record<string, unknown>;
+  onClick?: () => void;
+  children?: MenuElement[];
 }
 
 export interface GardenElement extends MenuElement {
@@ -38,11 +40,6 @@ export interface GardenDataState {
   activeLayers: LayerName[];
   selectedElement: ElementType | null;
   pendingPosition: { pos: Vec2 ; subject: "element" | "zone" } | null;
-  isSelectingElement: boolean;
-  isSelectingZone: boolean;
-  isMapLocked: boolean;
-  pan: { x: number; y: number };
-  scale: number;
 }
 
 export type GardenLayerState = {

@@ -1,5 +1,5 @@
 import type { MenuElement } from "@/types";
-import objects from '@/data/MenuElements.json';
+import { menuItems } from "@/components/assets/menuItems";
 import zones from '@/data/MenuZones.json';
 
 export async function fetchMenuElements(which: string): Promise<MenuElement[]> {
@@ -7,6 +7,6 @@ export async function fetchMenuElements(which: string): Promise<MenuElement[]> {
     return zones as MenuElement[]
 
   } else {
-    return objects as MenuElement[];
+    return menuItems as MenuElement[];
   }
 };

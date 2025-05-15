@@ -1,64 +1,35 @@
 
 import MenuController from "./MenuController";
-import { motion, AnimatePresence } from "framer-motion";
-import { useGardenStore } from "@/hooks/useGardenStore";
-import ElementMenu from "./ElementMenu";
-import ZoneMenu from "./ZoneMenu";
+import { Menu, MenuSection } from "./Menu";
+import { useMenuElements } from "@/hooks/useMenuElements";
 
 
 export default function Overlay() {
 
-  const datastate = useGardenStore(state => state.present);
   const btnClass =
     'w-12 h-12 flex rounded-full bg-[#C5D4BC] items-center justify-center hover:bg-green-700 shadow-lg transition';
+
+    const { data: menuElements = [] } = useMenuElements('elements');
+
+  const menuSections: MenuSection[] = [{
+    id: "s1",
+    title: "Vegetation",
+    items: menuElements.filter(element => element.category === "vegetation")
+
+  }, {
+    id: "s2",
+    title: "Material",
+    items: menuElements.filter(element => element.category === "pavement")
+  }]
 
   return (
     <>
       <MenuController />
-      <AnimatePresence>
-        {datastate.isSelectingElement && (
-          <div
-            style={{
-              width: 300,
-              right: 20,
-              position: "absolute",
-            }}>
-            <motion.div
-              key="element-menu"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 10 }}
-              transition={{ duration: 0.5 }}
-              className="h-screen overflow-y-auto"
-            >
-              <ElementMenu />
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-      <AnimatePresence>
-        {datastate.isSelectingZone && (
-          <div
-            style={{
-              width: 300,
-              right: 20,
-              position: "absolute",
-            }}>
-            <motion.div
-              key="zone-menu"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 10 }}
-              transition={{ duration: 0.5 }}
-              className="h-screen overflow-y-auto"
-            >
-              <ZoneMenu />
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+     <Menu
+      title="Element chooser"
+      sections={menuSections}>
 
-
+      </Menu>
       {/* Top center buttons */}
       <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 space-x-4 flex">
         <button className={btnClass}>

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useMemo } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import CanvasGrid from './CanvasGrid';
 import NameModal from './NameModal';
 import { useGardenStore } from '@/hooks/useGardenStore';
@@ -7,14 +7,20 @@ import { CanvasLayer, GardenElement } from '@/types';
 import { isGardenElement } from '@/utils/FabricHelpers';
 import { useCanvasInteraction } from '@/hooks/useCanvasInteraction';
 import PropMenu from './PropMenu';
+import { useSelection } from '@/hooks/useSelection';
+import { useUIStore } from '@/stores/useUIStore';
 
 const CELL_SIZE = 20;
 
 export default function GardenCanvas() {
-  const datastate = useGardenStore(state => state.present)
-  const datadispatch = useGardenStore(state => state.dispatch)
-  const placeElement = useGardenStore(state => state.placeElement)
+
   const { layerstate } = useGardenLayer();
+  const {dispatch, placeElement} = useGardenStore();
+  const { selectedItem, clearSelection } = useSelection();
+  const elements = useGardenStore(state => state.present.elements);
+  const {selectedElement} = useUIStore()
+
+
 
   const [naming, setNaming] = useState(false);
   const [propMenu, setPropMenu] = useState<GardenElement | null>(null);
@@ -45,15 +51,15 @@ export default function GardenCanvas() {
   };
 
   const handleCellClick = (row: number, col: number) => {
-    if (datastate.selectedElement && !isGardenElement(datastate.selectedElement)) {
-      datadispatch({
+    if (selectedItem) {
+      dispatch({
         type: 'SET_PENDING_POSITION',
         pos: { x: col * CELL_SIZE, y: row * CELL_SIZE },
         subject: 'element',
       });
       setNaming(true);
     } else {
-      datadispatch({ type: 'SET_SELECTED_ELEMENT', element: null });
+      clearSelection();
       setPropMenu(null);
       setPropMenuPosition(null);
     }
@@ -64,7 +70,6 @@ export default function GardenCanvas() {
       name: layer,
       draw: (ctx) => {
         if (layer === 'elements') {
-          const elements = datastate.elements;
           const cache = imageCacheRef.current;
 
           elements.forEach(el => {
@@ -96,7 +101,7 @@ export default function GardenCanvas() {
             ctx.strokeRect(el.x, el.y, el.width, el.height);
 
             // 🔵 Highlight if selected
-            if (el.id === datastate.selectedElement?.id) {
+            if (el.id === selectedElement?.id) {
               ctx.strokeStyle = 'blue';
               ctx.lineWidth = 2;
               ctx.strokeRect(el.x, el.y, el.width, el.height);
@@ -104,15 +109,25 @@ export default function GardenCanvas() {
           });
         }
       },
-      deps: [datastate.selectedElement]
+      deps: [selectedElement]
     }));
-  }, [layerstate.visibleLayers, datastate.elements, datastate.selectedElement]);
+  }, [layerstate.visibleLayers, elements, selectedElement]);
+
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        clearSelection(); // Clear selection
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [clearSelection]);
 
   return (
     <div style={{ position: 'relative' }}>
       <CanvasGrid
-        scale={datastate.scale}
-        setScale={(s: number) => datadispatch({ type: 'SET_SCALE', scale: s })}
         layers={layers}  // Pass the CanvasLayer objects to CanvasGrid
         onWorldClick={handleWorldClick}
       />
@@ -123,7 +138,7 @@ export default function GardenCanvas() {
             setNaming(false);
           }}
           onAbort={() => {
-            datadispatch({ type: 'SET_PENDING_POSITION', pos: null, subject: null });
+            clearSelection();
             setNaming(false);
           }}
         />

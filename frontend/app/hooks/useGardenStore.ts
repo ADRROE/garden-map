@@ -47,11 +47,6 @@ const initialPresent: GardenDataState = {
   coloredCells: {},
   selectedElement: null,
   pendingPosition: null,
-  isSelectingElement: false,
-  isSelectingZone: false,
-  isMapLocked: true,
-  pan: { x: 0, y: 0 },
-  scale: 1,
 };
 
 const undoableActions = new Set([

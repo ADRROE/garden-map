@@ -3,6 +3,8 @@ import { LayerManager } from '@/utils/LayerManager';
 import { CanvasLayer } from '@/types';
 import { Canvas } from 'fabric';
 import { useGardenStore } from '@/hooks/useGardenStore';
+import { useUIStore } from '@/stores/useUIStore';
+import { useSelection } from '@/hooks/useSelection';
 
 const NUM_ROWS = 225;
 const NUM_COLS = 225;
@@ -11,27 +13,27 @@ const WIDTH = NUM_COLS * CELL_SIZE;
 const HEIGHT = NUM_ROWS * CELL_SIZE;
 
 interface CanvasGridProps {
-  scale: number;
-  setScale: (s: number) => void;
   layers: CanvasLayer[];
   onWorldClick: (row: number, col: number) => void;
 }
 
 export default function CanvasGrid({
-  scale,
-  setScale,
   layers,
   onWorldClick,
 }: CanvasGridProps) {
+
+  const datastate = useGardenStore(state => state.present)
+  const {scale, setScale} = useUIStore()
+  const {selectedItem} = useSelection()
+
+  const scaleRef = useRef(scale);
   const containerRef = useRef<HTMLDivElement>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const mainRef = useRef<HTMLCanvasElement>(null);
   const lmRef = useRef<LayerManager | null>(null);
   const panRef = useRef({ x: 0, y: 0 });
-  const scaleRef = useRef(scale);
   const fabricCanvasRef = useRef<Canvas | null>(null);
 
-  const datastate = useGardenStore(state => state.present)
   const cursorImage = datastate.pendingPosition ? datastate.selectedElement?.cursor : null ;
 
   const needsRedrawRef = useRef(false);
@@ -154,14 +156,8 @@ const throttledRedraw = () => {
   useEffect(() => {
     const fabricCanvas = fabricCanvasRef.current;
     if (!fabricCanvas) return;
-    if (!datastate.pendingPosition) return;
 
-    if (datastate.pendingPosition.subject === 'zone') {
-      document.body.style.cursor = "crosshair";
-      fabricCanvas.defaultCursor = "crosshair";
-    } 
-
-    const cursorImage = datastate.selectedElement?.cursor;
+    const cursorImage = selectedItem?.cursor;
   
     if (cursorImage) {
       const img = new Image();
@@ -182,7 +178,7 @@ const throttledRedraw = () => {
       document.body.style.cursor = "default";
       fabricCanvas.defaultCursor = "default";
     }
-  }, [datastate.selectedElement, datastate.pendingPosition]);
+  }, [selectedItem]);
 
 
   // 5️⃣ Compute world‑coordinates on click & toggle the Set

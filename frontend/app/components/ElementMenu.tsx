@@ -3,22 +3,21 @@
 import React, { useState, useEffect } from "react";
 import { MenuElement } from "../types";
 import { capitalizeFirstLetter } from "../utils/utils";
-import { useGardenStore } from "@/hooks/useGardenStore";
-import { useMenuElements } from "@/hooks/useMenuElements";
+
+import { menuItems } from '@/components/assets/menuItems';
+import { useMenuStore } from "@/stores/useMenuStore";
 
 const ElementMenu = () => {
-  const  selectElement  = useGardenStore(state => state.selectElement);
+  const selectElement  = useMenuStore(state => state.setSelectedItem)
 
-  const { data: menuElements, isLoading } = useMenuElements('objects');
-
-  const categories = menuElements ? [...new Set(menuElements.map(el => el.category))] : [];
+  const categories = menuItems ? [...new Set(menuItems.map(el => el.category))] : [];
   const defaultCategory = categories[0] || "";
   const [activeCategory, setActiveCategory] = useState(defaultCategory);
 
   // Filter subcategories for the active category (skip undefined)
-  const subCategories = menuElements ? [
+  const subCategories = menuItems ? [
     ...new Set(
-      menuElements
+      menuItems
         .filter(el => el.category === activeCategory && el.subCategory)
         .map(el => el.subCategory as string)
     )
@@ -30,12 +29,12 @@ const ElementMenu = () => {
 
   // When category changes, update subcategory
   useEffect(() => {
-    const firstSub = menuElements?.find(el => el.category === activeCategory && el.subCategory)?.subCategory;
+    const firstSub = menuItems?.find(el => el.category === activeCategory && el.subCategory)?.subCategory;
     setActiveSubCategory(firstSub || null);
   }, [activeCategory]);
 
   // Filter elements: match category, and match subcategory if available
-  const filteredElements = menuElements?.filter((el) => {
+  const filteredElements = menuItems?.filter((el) => {
     return (
       el.category === activeCategory &&
       (subCategories.length === 0 || el.subCategory === activeSubCategory)
@@ -43,7 +42,7 @@ const ElementMenu = () => {
   });
 
   const handleClick = (element: MenuElement) => {
-    selectElement(element);
+    return element
   };
 
   if (isLoading) {
