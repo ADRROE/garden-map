@@ -1,7 +1,7 @@
-import React, { useRef, useEffect } from 'react';
+import React, { forwardRef, useImperativeHandle, useRef, useEffect } from 'react';
 import { LayerManager } from '@/utils/LayerManager';
 import { CanvasLayer, GardenElement } from '@/types';
-import { Canvas } from 'fabric';
+import { Canvas, FabricObject } from 'fabric';
 import { useUIStore } from '@/stores/useUIStore';
 import { useSelectionStore } from '@/stores/useSelectionStore';
 import { createFabricElement } from '@/utils/FabricHelpers';
@@ -12,17 +12,38 @@ const CELL_SIZE = 20;
 const WIDTH = NUM_COLS * CELL_SIZE;
 const HEIGHT = NUM_ROWS * CELL_SIZE;
 
+
+export interface CanvasGridHandle {
+  getTransformedElement: () => GardenElement | null;
+}
+
 interface CanvasGridProps {
   layers: CanvasLayer[];
   selectedElement: GardenElement | null
   onWorldClick: (row: number, col: number) => void;
+  onEditConfirm?: (updated: GardenElement) => void;
 }
 
-export default function CanvasGrid({
-  layers,
-  selectedElement,
-  onWorldClick,
-}: CanvasGridProps) {
+
+const CanvasGrid = forwardRef<CanvasGridHandle, CanvasGridProps>(
+  ({ layers, selectedElement, onWorldClick }, ref) => {
+  const fabricCanvasRef = useRef<Canvas | null>(null);
+  const fabricObjectRef = useRef<FabricObject | null>(null);
+
+    useImperativeHandle(ref, () => ({
+      getTransformedElement: () => {
+        const obj = fabricObjectRef.current;
+        if (!obj || !selectedElement) return null;
+
+        return {
+          ...selectedElement,
+          x: obj.left ?? selectedElement.x,
+          y: obj.top ?? selectedElement.y,
+          width: obj.width! * obj.scaleX!,
+          height: obj.height! * obj.scaleY!,
+        };
+      }
+    }));
 
   const { scale: initialScale, setScale } = useUIStore();
 
@@ -32,7 +53,8 @@ export default function CanvasGrid({
   const wrapperRef = useRef<HTMLDivElement>(null);
   const mainRef = useRef<HTMLCanvasElement>(null);
   const lmRef = useRef<LayerManager | null>(null);
-  const fabricCanvasRef = useRef<Canvas | null>(null);
+
+
 
   const menuItem = useSelectionStore((s) => s.selection.kind === 'placing' ? s.selection.menuItem : null)
   const cursorImage = menuItem?.cursor;
@@ -183,7 +205,9 @@ export default function CanvasGrid({
     canvas.clear(); // Clear previously added Fabric objects
 
     if (selectedElement) {
+
       createFabricElement(selectedElement, true).then(fabricEl => {
+        fabricObjectRef.current = fabricEl;
         canvas.add(fabricEl);
         canvas.setActiveObject(fabricEl);
         canvas.renderAll();
@@ -282,4 +306,8 @@ export default function CanvasGrid({
       </div>
     </div>
   );
-}
+});
+
+CanvasGrid.displayName = "CanvasGrid";
+
+export default CanvasGrid;

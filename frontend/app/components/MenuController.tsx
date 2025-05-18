@@ -1,11 +1,13 @@
 import { useGardenStore } from "@/stores/useGardenStore";
 import { useUIStore } from "@/stores/useUIStore";
 import MenuBar from "./MenuBar";
+import { LayerName } from "@/types";
 
 const MenuController = () => {
 
 
-    const datadispatch = useGardenStore(state => state.dispatch)
+    const datadispatch = useGardenStore(state => state.dispatch);
+    const uidispatch = useUIStore(state => state.dispatch);
     const isMapLocked = useUIStore(state => state.isMapLocked);
     const { toggleMapLock } = useUIStore()
 
@@ -18,7 +20,9 @@ const MenuController = () => {
     }
     const handleElementClick = () => datadispatch({ type: 'TOGGLE_IS_SELECTING_ELEMENT' });
     const handleZoneClick = () => datadispatch({ type: 'TOGGLE_IS_SELECTING_ZONE' });
-
+    const handleLayersClick = (layers: LayerName[]) => {
+        uidispatch({type: 'SET_ACTIVE_LAYERS', activeLayers: layers})
+    }
 
     return (
         <MenuBar>
@@ -32,7 +36,9 @@ const MenuController = () => {
                 <button className={btnClass}>
                     <img src="/icons/workflow.png" alt="workflow" className="w-[55%]" />
                 </button>
-                <button className={btnClass}>
+                <button 
+                    className={btnClass}
+                    onClick={() => handleLayersClick(['background'])}>
                     <img src="/icons/layers.png" width={"60%"} alt="layers" />
                 </button>
                 <button

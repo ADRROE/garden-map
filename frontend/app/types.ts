@@ -37,7 +37,6 @@ export interface GardenDataState {
   elements: GardenElement[];
   zones: GardenZone[];
   coloredCells: Record<string, ColoredCell>;
-  activeLayers: LayerName[];
 }
 
 export type GardenLayerState = {

@@ -33,7 +33,6 @@ type GardenStore = HistoryState<GardenDataState> & GardenActions;
 const initialPresent: GardenDataState = {
   elements: [],
   zones: [],
-  activeLayers: ['background', 'elements'],
   coloredCells: {},
 };
 
@@ -46,7 +45,6 @@ const undoableActions = new Set<GardenDataAction['type']>([
   'UPDATE_ZONE',
   'SET_ELEMENTS',
   'SET_ZONES',
-  'TOGGLE_MAP_LOCK',
 ]);
 
 export const useGardenStore = create<GardenStore>()(

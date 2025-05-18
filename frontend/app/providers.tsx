@@ -2,7 +2,6 @@
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
-import { GardenLayerProvider } from './contexts/GardenLayerContext';
 import { useState } from 'react';
 
 export default function Providers({ children }: { children: React.ReactNode }) {
@@ -11,9 +10,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <GardenLayerProvider>
         {children}
-      </GardenLayerProvider>
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
   );

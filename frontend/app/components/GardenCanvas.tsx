@@ -1,26 +1,34 @@
-import React, { useState, useRef, useEffect, useMemo } from 'react';
-import CanvasGrid from './CanvasGrid';
+import React, { useState, useRef, useEffect, useMemo, forwardRef, useImperativeHandle } from 'react';
+import CanvasGrid, { CanvasGridHandle } from './CanvasGrid';
 import NameModal from './NameModal';
 import { useGardenStore } from '@/stores/useGardenStore';
-import { useGardenLayer } from '@/contexts/GardenLayerContext';
 import { CanvasLayer, GardenElement, Vec2 } from '@/types';
 import { useCanvasInteraction } from '@/hooks/useCanvasInteraction';
 import PropMenu from './PropMenu';
 import { useSelectionStore } from '@/stores/useSelectionStore';
 import { useElementPlacement } from '@/hooks/useElementPlacement';
 import { fetchElements } from '@/services/apiService';
+import { useUIStore } from '@/stores/useUIStore';
 
-const CELL_SIZE = 20;
+const CELL_SIZE = 20
 
-export default function GardenCanvas() {
+const GardenCanvas = forwardRef<CanvasGridHandle, object>((props, ref) => {
+  const canvasGridRef = useRef<CanvasGridHandle>(null);
 
-  const { layerstate } = useGardenLayer();
+  useImperativeHandle(ref, () => ({
+    getTransformedElement: () => {
+      return canvasGridRef.current?.getTransformedElement() ?? null;
+    },
+  }));
+
+  const { activeLayers } = useUIStore();
 
   const selectedItem = useSelectionStore((s) => s.selection.kind === 'placing' ? s.selection.menuItem : null);
+  const selectedElement = useSelectionStore((s) => s.selection.kind === 'editing' ? s.selection.element : null);
   const clearSelection = useSelectionStore((s) => s.clear);
 
   const elements = useGardenStore(state => state.present.elements);
-  const selectedElement = useSelectionStore((s) => s.selection.kind === 'editing' ? s.selection.element : null)
+  // const isEditing = useSelectionStore((s) => s.selection.kind === 'editing');
   const dispatch = useGardenStore((s) => s.dispatch);
 
   // const isPlacing = useSelectionStore((s) => s.isPlacing) <<< OPTIE 1
@@ -32,16 +40,16 @@ export default function GardenCanvas() {
 
   const imageCacheRef = useRef<Map<string, HTMLImageElement>>(new Map());
 
+
   const { onCanvasClick } = useCanvasInteraction({
     onSelect: (el) => {
       setPropMenu(el);
       setPropMenuPosition({ x: el.x, y: el.y });
-      document.body.style.cursor = 'pointer';
     },
     onDeselect: () => {
       setPropMenu(null);
       setPropMenuPosition(null);
-      document.body.style.cursor = 'default';
+      //clearSelection();
     }
   });
 
@@ -49,18 +57,17 @@ export default function GardenCanvas() {
 
   const handleWorldClick = (x: number, y: number) => {
     const target = onCanvasClick(x, y);
-    if (!target) {
+    if (!target){
       const col = Math.floor(x / CELL_SIZE);
       const row = Math.floor(y / CELL_SIZE);
       const position: Vec2 = { x: col * CELL_SIZE, y: row * CELL_SIZE };
       handleCellClick(position);
       if (selectedItem)
         setNaming(true)
-    }
-  };
+  };}
 
   const layers = useMemo((): CanvasLayer[] => {
-    return layerstate.visibleLayers.map((layer) => ({
+    return activeLayers.map((layer) => ({
       name: layer,
       draw: (ctx) => {
         if (layer === 'elements') {
@@ -96,9 +103,9 @@ export default function GardenCanvas() {
 
             // 🔵 Highlight if selected
             if (el.id === selectedElement?.id) {
+              ctx.globalAlpha = 0.3;
               ctx.strokeStyle = 'blue';
               ctx.lineWidth = 2;
-              ctx.globalAlpha = 0.3;
               ctx.strokeRect(el.x, el.y, el.width, el.height);
             }
           });
@@ -106,7 +113,7 @@ export default function GardenCanvas() {
       },
       deps: [selectedElement]
     }));
-  }, [layerstate.visibleLayers, elements, selectedElement]);
+  }, [activeLayers, elements, selectedElement]);
 
 
   useEffect(() => {
@@ -144,15 +151,18 @@ export default function GardenCanvas() {
   return (
     <div style={{ position: 'relative' }}>
       <CanvasGrid
+        ref={canvasGridRef}
         layers={layers}
         selectedElement={selectedElement}
         onWorldClick={handleWorldClick}
+        onEditConfirm={(updatedEl) => {
+          dispatch({ type: 'UPDATE_ELEMENT', id: updatedEl.id, updates: updatedEl });
+          clearSelection(); // or set mode = 'idle'
+        }}
       />
       {naming && (
         <NameModal
           onPlacement={async (name) => {
-            console.log("inputName in modal:", name);
-
             await confirmPlacement(name);
             setNaming(false)
           }}
@@ -188,4 +198,8 @@ export default function GardenCanvas() {
       )}
     </div>
   );
-}
+});
+
+GardenCanvas.displayName = 'GardenCanvas'; // ✅ to avoid eslint warning
+
+export default GardenCanvas;

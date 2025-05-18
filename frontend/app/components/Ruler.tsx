@@ -10,7 +10,7 @@ const BASE_UNIT = 100;
 
 export default React.memo(function Ruler() {
 
-    const { scale } = useUIStore()
+    const scale  = useUIStore((s) => s.scale)
   
 
 
