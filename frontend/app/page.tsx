@@ -4,12 +4,12 @@ import { useEffect, useCallback } from "react";
 import Overlay from "./components/Overlay";
 import Ruler from "./components/Ruler";
 import GardenCanvas from "./components/GardenCanvas";
-import { useGardenStore } from "./hooks/useGardenStore";
 import debounce from "lodash.debounce";
+import { useUIStore } from "./stores/useUIStore";
+
 
 
 export default function Home() {
-  const datadispatch  = useGardenStore(state => state.dispatch);
 
   const updateScale = useCallback(() => {
     const targetWidth = 2560;
@@ -18,8 +18,9 @@ export default function Home() {
       window.innerWidth / targetWidth,
       window.innerHeight / targetHeight
     );
-    datadispatch({ type: "SET_SCALE", scale: newScale });
-  }, [datadispatch]);
+            useUIStore.getState().setScale(newScale);
+    
+  }, []);
 
   useEffect(() => {
     const debounced = debounce(updateScale, 100);
@@ -38,21 +39,21 @@ export default function Home() {
 
   return (
 
-      <div
-        style={{
-          width: 1440,
-          height: 1024,
-          position: "relative", // this ensures absolute children work as expected
-        }}
-      >
-        <Overlay />
+    <div
+      style={{
+        width: 1440,
+        height: 1024,
+        position: "relative", // this ensures absolute children work as expected
+      }}
+    >
+      <Overlay />
 
-        {/* Stick ruler to bottom center */}
-        <div className="fixed bottom-6 left-1/2 z-50" style={{ transform: "translateX(-50%)" }}>
-          <Ruler/>
-        </div>
-
-        <GardenCanvas/>
+      {/* Stick ruler to bottom center */}
+      <div className="fixed bottom-6 left-1/2 z-50" style={{ transform: "translateX(-50%)" }}>
+        <Ruler />
       </div>
+
+      <GardenCanvas />
+    </div>
   );
 }

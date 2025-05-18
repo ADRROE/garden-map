@@ -1,6 +1,6 @@
 // components/Ruler.tsx
 import React from "react";
-import { useGardenStore } from "@/hooks/useGardenStore";
+import { useUIStore } from "@/stores/useUIStore";
 import "@/components/assets/css/ruler.css";
 
 // number of “1 m” segments
@@ -10,7 +10,9 @@ const BASE_UNIT = 100;
 
 export default React.memo(function Ruler() {
 
-  const scale = useGardenStore(state => state.present.scale)
+    const { scale } = useUIStore()
+  
+
 
   return (
     <div className="ruler-outer">

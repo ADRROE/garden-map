@@ -13,6 +13,7 @@ export async function fetchElements(): Promise<GardenElement[]> {
 }
 
 export async function createElementAPI(newElement: GardenElement) {
+    console.log("reached")
     await fetch(API_BASE_ELEMENTS, {
         method: "POST",
         headers: { "Content-Type": "application/json" },

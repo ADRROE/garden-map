@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { MenuElement } from '@/types';
+import { devtools } from 'zustand/middleware';
 import { menuItems } from '@/components/assets/menuItems';
 import { useSelectionStore } from './useSelectionStore';
 
@@ -11,7 +11,7 @@ type MenuState = {
   toggleIsLoading: () => void;
 };
 
-export const useMenuStore = create<MenuState>((set) => ({
+export const useMenuStore = create<MenuState>()(devtools((set) => ({
   openSectionId: null,
   isLoading: false,
 
@@ -22,4 +22,4 @@ export const useMenuStore = create<MenuState>((set) => ({
     useSelectionStore.getState().setPlacing(found);
   },
   toggleIsLoading: () => set((s) => ({ isLoading: !s.isLoading }))
-}));
+}), {name: 'MenuStore'}));

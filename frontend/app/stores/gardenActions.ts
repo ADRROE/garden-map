@@ -41,10 +41,9 @@ export const setSelectedElement = (element: ElementType | null): GardenDataActio
   element
 });
 
-export const setPendingPosition = (pos: Vec2 | null, subject: 'element' | 'zone' | null): GardenDataAction => ({
+export const setPendingPosition = (pos: Vec2 | null): GardenDataAction => ({
   type: 'SET_PENDING_POSITION',
-  pos,
-  subject
+  pos
 });
 
 export const setZones = (zones: GardenZone[]): GardenDataAction => ({

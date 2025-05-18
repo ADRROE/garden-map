@@ -2,7 +2,6 @@ import { useMenuStore } from '@/stores/useMenuStore';
 import { useGardenStore } from '@/stores/useGardenStore';
 import { MenuElement, GardenElement } from '@/types';
 
-
 export type Selection =
   | { kind: 'placing'; item: MenuElement }
   | { kind: 'editing'; item: GardenElement }

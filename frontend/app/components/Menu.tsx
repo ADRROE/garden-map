@@ -1,6 +1,7 @@
 // components/AnimatedMenu.tsx
 import { useMenuStore } from "@/stores/useMenuStore";
 import { MenuElement } from "@/types";
+import { useElementPlacement } from "@/hooks/useElementPlacement";
 import { motion, AnimatePresence } from "framer-motion";
 
 export type MenuSection = {
@@ -15,7 +16,9 @@ type MenuProps = {
 };
 
 export function Menu({ title, sections }: MenuProps) {
-    const { openSectionId, setOpenSection, selectedItem, setSelectedItem } = useMenuStore();
+    const { openSectionId, setOpenSection, setSelectedItem } = useMenuStore();
+
+    const {beginPlacing} = useElementPlacement();
 
     const toggleSection = (id: string) => {
         setOpenSection(openSectionId === id ? null : id);
@@ -46,11 +49,10 @@ export function Menu({ title, sections }: MenuProps) {
                                         <li key={item.id}>
                                             <button
                                                 onClick={() => {
-                                                    item.onClick?.();
                                                     setSelectedItem(item.id);
+                                                    beginPlacing(item);
                                                 }}
-                                                className={`block w-full text-left py-1 px-2 rounded hover:bg-gray-100 ${selectedItem?.id === item.id ? "bg-blue-100 font-semibold" : ""
-                                                    }`}
+                                                className={`block w-full text-left py-1 px-2 rounded hover:bg-gray-100 `}
                                                 style={{cursor: "pointer"}}
                                             >
                                                                 <img src={item.icon} alt="" className="w-10 h-10" />
@@ -63,11 +65,10 @@ export function Menu({ title, sections }: MenuProps) {
                                                         <li key={child.id}>
                                                             <button
                                                                 onClick={() => {
-                                                                    child.onClick?.();
                                                                     setSelectedItem(child.id);
+                                                                    beginPlacing(child);
                                                                 }}
-                                                                className={`block w-full text-left py-1 px-2 rounded hover:bg-gray-100 ${selectedItem?.id === child.id ? "bg-blue-100 font-semibold" : ""
-                                                                    }`}
+                                                                className={`block w-full text-left py-1 px-2 rounded hover:bg-gray-100`}
                                                             >
 
                                                             </button>

@@ -1,11 +1,10 @@
 import React, { useRef, useEffect } from 'react';
 import { LayerManager } from '@/utils/LayerManager';
-import { CanvasLayer } from '@/types';
+import { CanvasLayer, GardenElement } from '@/types';
 import { Canvas } from 'fabric';
-import { useGardenStore } from '@/hooks/useGardenStore';
 import { useUIStore } from '@/stores/useUIStore';
-import { useSelection } from '@/hooks/useSelection';
 import { useSelectionStore } from '@/stores/useSelectionStore';
+import { createFabricElement } from '@/utils/FabricHelpers';
 
 const NUM_ROWS = 225;
 const NUM_COLS = 225;
@@ -15,57 +14,54 @@ const HEIGHT = NUM_ROWS * CELL_SIZE;
 
 interface CanvasGridProps {
   layers: CanvasLayer[];
+  selectedElement: GardenElement | null
   onWorldClick: (row: number, col: number) => void;
 }
 
 export default function CanvasGrid({
   layers,
+  selectedElement,
   onWorldClick,
 }: CanvasGridProps) {
 
-  const datastate = useGardenStore(state => state.present)
-  const {scale, setScale} = useUIStore()
-  const {selectedItem} = useSelection()
+  const { scale: initialScale, setScale } = useUIStore();
 
-  const scaleRef = useRef(scale);
+  const scaleRef = useRef(initialScale);
+  const panRef = useRef({ x: 0, y: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const mainRef = useRef<HTMLCanvasElement>(null);
   const lmRef = useRef<LayerManager | null>(null);
-  const panRef = useRef({ x: 0, y: 0 });
   const fabricCanvasRef = useRef<Canvas | null>(null);
-
-  const isPlacing = useSelectionStore((s) => s.isPlacing) // OPTIE 1
-  // const isPlacing = useSelectionStore((s) => s.selection.kind === 'placing') <<< OPTIE 2
 
   const menuItem = useSelectionStore((s) => s.selection.kind === 'placing' ? s.selection.menuItem : null)
   const cursorImage = menuItem?.cursor;
 
   const needsRedrawRef = useRef(false);
-const frameRequestedRef = useRef(false);
+  const frameRequestedRef = useRef(false);
 
-const throttledRedraw = () => {
-  if (frameRequestedRef.current) {
-    needsRedrawRef.current = true;
-    return;
-  }
-
-  frameRequestedRef.current = true;
-
-  requestAnimationFrame(() => {
-    redraw();
-    frameRequestedRef.current = false;
-
-    if (needsRedrawRef.current) {
-      needsRedrawRef.current = false;
-      throttledRedraw(); // immediately schedule the next frame
+  const throttledRedraw = () => {
+    if (frameRequestedRef.current) {
+      needsRedrawRef.current = true;
+      return;
     }
-  });
-};
+
+    frameRequestedRef.current = true;
+
+    requestAnimationFrame(() => {
+      redraw();
+      frameRequestedRef.current = false;
+
+      if (needsRedrawRef.current) {
+        needsRedrawRef.current = false;
+        throttledRedraw(); // immediately schedule the next frame
+      }
+    });
+  };
 
   const getRenderResolution = (scale: number) => {
-    if (scale < 0.7) return 0.8;
-    if (scale < 1.2) return 0.9;
+    if (scale < 1.1) return 0.8;
+    if (scale < 1.3) return 0.9;
     if (scale < 1.5) return 1.0;
     return 2.0;
   };
@@ -75,22 +71,22 @@ const throttledRedraw = () => {
     if (!canvas) return
 
     const ctx = canvas.getContext('2d')!;
-  
+
     const renderFactor = getRenderResolution(scaleRef.current);
     const renderWidth = WIDTH * renderFactor;
     const renderHeight = HEIGHT * renderFactor;
-  
+
     // Resize canvas resolution
     canvas.width = renderWidth;
     canvas.height = renderHeight;
-  
+
     // Keep visual size the same via CSS
     canvas.style.width = `${WIDTH}px`;
     canvas.style.height = `${HEIGHT}px`;
-  
+
     ctx.setTransform(renderFactor, 0, 0, renderFactor, 0, 0);  // scale context
     ctx.clearRect(0, 0, WIDTH, HEIGHT);
-  
+
     lmRef.current!.drawToMain(ctx, layers.map(l => l.name));
   };
 
@@ -98,7 +94,7 @@ const throttledRedraw = () => {
     if (!mainRef.current) return;
 
     // Initialize Fabric only once
-    fabricCanvasRef.current = new Canvas(mainRef.current, {
+    fabricCanvasRef.current = new Canvas('fabric-overlay', {
       selection: true,
       preserveObjectStacking: true,
     });
@@ -109,9 +105,6 @@ const throttledRedraw = () => {
     };
   }, []);
 
-  useEffect(() => {
-    scaleRef.current = scale;
-  }, [scale]);
 
   // 1️⃣ init LayerManager
   useEffect(() => {
@@ -152,26 +145,26 @@ const throttledRedraw = () => {
     lm.drawToMain(ctx, layers.map(l => l.name));
 
     // flatten all layer.deps into our effect's dependency array:
-  }, [scale, layers]);
+  }, [layers]);
 
   useEffect(() => {
     throttledRedraw();
-  }, [scale, layers]);
+  }, [layers]);
 
   useEffect(() => {
     const fabricCanvas = fabricCanvasRef.current;
     if (!fabricCanvas) return;
-  
+
     if (cursorImage) {
       const img = new Image();
       img.src = cursorImage;
-  
+
       img.onload = () => {
         const cursorUrl = `url(${cursorImage}) 16 16, auto`;
         document.body.style.cursor = cursorUrl;
         fabricCanvas.defaultCursor = cursorUrl;
       };
-  
+
       img.onerror = () => {
         console.warn("Failed to load cursor image:", cursorImage);
         document.body.style.cursor = "crosshair";
@@ -183,16 +176,31 @@ const throttledRedraw = () => {
     }
   }, [menuItem]);
 
+  useEffect(() => {
+    const canvas = fabricCanvasRef.current;
+    if (!canvas) return;
+
+    canvas.clear(); // Clear previously added Fabric objects
+
+    if (selectedElement) {
+      createFabricElement(selectedElement, true).then(fabricEl => {
+        canvas.add(fabricEl);
+        canvas.setActiveObject(fabricEl);
+        canvas.renderAll();
+      });
+    }
+  }, [selectedElement]);
+
 
   // 5️⃣ Compute world‑coordinates on click & toggle the Set
   const handleMouseDown = (e: React.MouseEvent) => {
     const rect = containerRef.current!.getBoundingClientRect();
     const xCss = e.clientX - rect.left;
     const yCss = e.clientY - rect.top;
-  
-    const worldX = xCss / scale + panRef.current.x;
-    const worldY = yCss / scale + panRef.current.y;
-  
+
+    const worldX = xCss / scaleRef.current + panRef.current.x;
+    const worldY = yCss / scaleRef.current + panRef.current.y;
+
     onWorldClick?.(worldX, worldY);
   };
 
@@ -250,7 +258,7 @@ const throttledRedraw = () => {
       cancelAnimationFrame(raf);
       container.removeEventListener('wheel', onWheel);
     };
-  }, [setScale, layers]);  // only rebind if layer set changes
+  }, [layers]);  // only rebind if layer set changes
 
 
   return (
@@ -266,6 +274,11 @@ const throttledRedraw = () => {
           width={WIDTH}
           height={HEIGHT}
         />
+        <canvas
+          id="fabric-overlay"
+          style={{ position: 'absolute', top: 0, left: 0, cursor: 'inherit' }}
+          width={WIDTH}
+          height={HEIGHT} />
       </div>
     </div>
   );

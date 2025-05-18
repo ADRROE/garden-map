@@ -1,4 +1,5 @@
-import { useGardenStore } from "./useGardenStore";
+import { useSelectionStore } from "@/stores/useSelectionStore";
+import { useGardenStore } from "../stores/useGardenStore";
 import { GardenElement } from "@/types";
 
 type CanvasInteractionOptions = {
@@ -8,21 +9,23 @@ type CanvasInteractionOptions = {
 
 export const useCanvasInteraction = ({ onSelect, onDeselect }: CanvasInteractionOptions = {}) => {
 
-  const  selectElement  = useGardenStore(state => state.selectElement);
   const datastate = useGardenStore(state => state.present);
+  const selectElement = (element: GardenElement) => {
+    useSelectionStore.getState().setEditing(element)
+  }
 
   const onCanvasClick = (worldX: number, worldY: number): GardenElement | null => {
-    const clicked = datastate.elements.find(el =>
+
+    const clickedEl = datastate.elements.find(el =>
       worldX >= el.x && worldX <= el.x + el.width &&
       worldY >= el.y && worldY <= el.y + el.height
     );
 
-    if (clicked) {
-      selectElement(clicked);
-      onSelect?.(clicked);
-      return clicked;
+    if (clickedEl) {
+      selectElement(clickedEl);
+      onSelect?.(clickedEl);
+      return clickedEl;
     } else {
-      selectElement(null); // Clear selection
       onDeselect?.();
       return null;
     }

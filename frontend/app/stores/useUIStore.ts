@@ -1,33 +1,22 @@
-import { GardenElement } from "@/types";
 import { create } from "zustand";
-import { useGardenStore } from "./useGardenStore";
+import { devtools } from 'zustand/middleware';
 
 type Vec2 = { x: number; y: number };
 
 type UIState = {
-  selectedElementId: string | null;
-  selectedElement: GardenElement | null;
   scale: number;
   pan: Vec2;
   isMapLocked: boolean;
-  setSelectedElement: (id: string | null) => void;
   setScale: (scale: number) => void;
   setPan: (pan: Vec2) => void;
   toggleMapLock: () => void;
 };
 
-export const useUIStore = create<UIState>()((set) => ({
-  selectedElementId: null,
-  selectedElement: null,
+export const useUIStore = create<UIState>()(devtools((set) => ({
   scale: 1,
   pan: { x: 0, y: 0 },
   isMapLocked: true,
-
-  setSelectedElement: (id: string | null) => {
-    const element = useGardenStore.getState().present.elements.find(e => e.id === id);
-    set({ selectedElementId: id, selectedElement: element ?? null });
-  },
   setScale: (scale) => set({ scale }),
   setPan: (pan) => set({ pan }),
   toggleMapLock: () => set((s) => ({ isMapLocked: !s.isMapLocked }))
-}));
+}), { name: 'UIStore' }));

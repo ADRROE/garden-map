@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { useGardenStore } from "./useGardenStore";
+import { useGardenStore } from "../stores/useGardenStore";
 import { GardenElement } from "@/types";
 
 export const useElementActions = (id: string) => {

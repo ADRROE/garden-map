@@ -69,5 +69,6 @@ export const menuItems: MenuElement[] =
     { "id": "64", "label": "purpleshrub4", "icon": "/icons/purpleshrub4.png", "defaultWidth": 75, "defaultHeight": 75, "cursor": "/icons/purpleshrub4-sm.png", "category": "vegetation", "subCategory": "shrubs"},
     { "id": "66", "label": "whitepinkshrub1", "icon": "/icons/whitepinkshrub1.png", "defaultWidth": 75, "defaultHeight": 75, "cursor": "/icons/whitepinkshrub1-sm.png", "category": "vegetation", "subCategory": "shrubs"},
     { "id": "67", "label": "whitepinkshrub2", "icon": "/icons/whitepinkshrub2.png", "defaultWidth": 75, "defaultHeight": 75, "cursor": "/icons/whitepinkshrub2-sm.png", "category": "vegetation", "subCategory": "shrubs"},
-    { "id": "68", "label": "yellowgreenshrub1", "icon": "/icons/yellowgreenshrub1.png", "defaultWidth": 75, "defaultHeight": 75, "cursor": "/icons/yellowgreenshrub1-sm.png", "category": "vegetation", "subCategory": "shrubs"}
+    { "id": "68", "label": "yellowgreenshrub1", "icon": "/icons/yellowgreenshrub1.png", "defaultWidth": 75, "defaultHeight": 75, "cursor": "/icons/yellowgreenshrub1-sm.png", "category": "vegetation", "subCategory": "shrubs"},
+     { "id": "69", "label": "fern1", "icon": "/icons/fern1.png", "defaultWidth": 75, "defaultHeight": 75, "cursor": "/icons/fern1-sm.png", "category": "vegetation", "subCategory": "ferns"}
 ]

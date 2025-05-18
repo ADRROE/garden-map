@@ -26,9 +26,9 @@ export const getCoveredCells = (
 
 export const translatePosition = (x: number, y: number) => {
 
-  const cellSize = 19.5;
-  const col = Math.floor((x - cellSize) / cellSize) + 1;
-  const row = Math.floor((y - cellSize) / cellSize) + 2;
+  const cellSize = 20;
+  const col = Math.floor((x - cellSize)) + 1;
+  const row = Math.floor((y - cellSize)) + 2;
 
   return [col, row]
 };
