@@ -43,7 +43,7 @@ export function Menu({ title, sections }: MenuProps) {
                                     animate={{ height: "auto", opacity: 1 }}
                                     exit={{ height: 0, opacity: 0 }}
                                     className="overflow-hidden pl-4 mt-2 border-l border-gray-200"
-                                >
+                                ><div className="grid grid-cols-3">
                                     {section.items.map((item) => (
                                         <li key={item.id}>
                                             <button
@@ -76,7 +76,7 @@ export function Menu({ title, sections }: MenuProps) {
                                                 </ul>
                                             )}
                                         </li>
-                                    ))}
+                                    ))}</div>
                                 </motion.ul>
                             )}
                         </AnimatePresence>
