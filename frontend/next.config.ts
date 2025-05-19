@@ -1,4 +1,5 @@
 import webpack from 'webpack';
+import createNextIntlPlugin from 'next-intl/plugin';
 import { resolve } from 'path';
 
 const nextConfig: import('next').NextConfig = {
@@ -23,4 +24,5 @@ const nextConfig: import('next').NextConfig = {
   },
 };
 
-export default nextConfig;
+const withNextIntl = createNextIntlPlugin();
+export default withNextIntl(nextConfig);

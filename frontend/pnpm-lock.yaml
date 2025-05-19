@@ -54,7 +54,7 @@ importers:
         specifier: 15.2.4
         version: 15.2.4(@babel/core@7.27.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       next-intl:
-        specifier: ^4.1.0
+        specifier: '4'
         version: 4.1.0(next@15.2.4(@babel/core@7.27.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0)(typescript@5.8.3)
       process:
         specifier: ^0.11.10
@@ -77,6 +77,9 @@ importers:
       rneui:
         specifier: ^1.0.0-stable.0
         version: 1.0.0-stable.0(react-native-safe-area-context@5.4.0(react-native@0.79.2(@babel/core@7.27.1)(@types/react@19.1.2)(react@19.1.0))(react@19.1.0))(react-native-vector-icons@10.2.0)(react-native@0.79.2(@babel/core@7.27.1)(@types/react@19.1.2)(react@19.1.0))(react@19.1.0)
+      routing:
+        specifier: link:@/i18n/routing
+        version: link:@/i18n/routing
       use-image:
         specifier: ^1.1.1
         version: 1.1.1(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
