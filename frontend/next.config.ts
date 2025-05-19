@@ -9,7 +9,7 @@ const nextConfig: import('next').NextConfig = {
   webpack: (config) => {
     config.resolve.fallback = {
       ...config.resolve.fallback,
-      crypto: require.resolve('crypto-browserify'), // this still needs to be required
+      crypto: require.resolve('crypto-browserify'),
     };
 
     config.plugins.push(

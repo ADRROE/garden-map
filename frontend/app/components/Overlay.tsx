@@ -5,6 +5,7 @@ import { useMenuElements } from "@/hooks/useMenuElements";
 import { useSelectionStore } from "@/stores/useSelectionStore";
 
 
+
 export default function Overlay({ onEditConfirm }: { onEditConfirm: () => void }) {
 
   const btnClass =
@@ -13,6 +14,7 @@ export default function Overlay({ onEditConfirm }: { onEditConfirm: () => void }
   const { data: menuElements = [] } = useMenuElements('elements');
   const isEditing = useSelectionStore((s) => s.selection.kind === 'editing');
   const { clear } = useSelectionStore();
+
 
   const menuSections: MenuSection[] = [{
     id: "s1",
@@ -28,28 +30,29 @@ export default function Overlay({ onEditConfirm }: { onEditConfirm: () => void }
   return (
     <>
       <MenuController />
+      
       {isEditing ?
-      <>
-        <div className="fixed top-4 right-4 -translate-x-1/2 z-50 space-x-4 flex">
-          <button onClick={onEditConfirm}>
-            <img src='/icons/check.png' width={30} height={30} />
-          </button>
-          <button onClick={clear}>
-            <img src='/icons/remove.png' width={30} height={30} />
-          </button>
-        </div>
-              <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 space-x-4 flex">
-        <button className={btnClass}>
-          <img src="/icons/undo.svg" alt="undo" className="w-[50%]" />
-        </button>
-        <button className={btnClass}>
-          <img src="/icons/redo.svg" alt="redo" className="w-[50%]" />
-        </button>
-      </div>
-      </>
+        <>
+          <div className="fixed top-4 right-4 -translate-x-1/2 z-50 space-x-4 flex">
+            <button onClick={onEditConfirm}>
+              <img src='/icons/check.png' width={30} height={30} />
+            </button>
+            <button onClick={clear}>
+              <img src='/icons/remove.png' width={30} height={30} />
+            </button>
+          </div>
+          <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 space-x-4 flex">
+            <button className={btnClass}>
+              <img src="/icons/undo.svg" alt="undo" className="w-[50%]" />
+            </button>
+            <button className={btnClass}>
+              <img src="/icons/redo.svg" alt="redo" className="w-[50%]" />
+            </button>
+          </div>
+        </>
         :
         <Menu
-          title="Element chooser"
+          title={"element chooser"}
           sections={menuSections}>
         </Menu>
       }
