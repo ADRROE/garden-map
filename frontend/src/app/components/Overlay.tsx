@@ -15,10 +15,9 @@ export default function Overlay({ onEditConfirm }: { onEditConfirm: () => void }
   const btnClass =
     'w-12 h-12 flex rounded-full bg-[#C5D4BC] items-center justify-center hover:bg-green-700 shadow-lg transition';
 
-  const { data: menuElements = [] } = useMenuElements('elements');
+  const { data: menuElements = [] } = useMenuElements();
   const isEditing = useSelectionStore((s) => s.selection.kind === 'editing');
   const { clear } = useSelectionStore();
-
 
   const menuSections: MenuSection[] = [{
     id: "s1",

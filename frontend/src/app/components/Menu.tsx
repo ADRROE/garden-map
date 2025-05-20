@@ -1,6 +1,6 @@
 import { useMenuStore } from "../stores/useMenuStore";
 import { MenuElement } from "../types";
-import { useElementPlacement } from "../hooks/useElementPlacement";
+import { useGardenElement } from "../hooks/useGardenElement";
 import { motion, AnimatePresence } from "framer-motion";
 
 export type MenuSection = {
@@ -17,7 +17,7 @@ type MenuProps = {
 export function Menu({ title, sections }: MenuProps) {
     const { openSectionId, setOpenSection, setSelectedItem } = useMenuStore();
 
-    const {beginPlacing} = useElementPlacement();
+    const {beginPlacing} = useGardenElement();
 
     const toggleSection = (id: string) => {
         setOpenSection(openSectionId === id ? null : id);

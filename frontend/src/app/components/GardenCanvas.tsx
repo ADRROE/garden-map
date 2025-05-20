@@ -6,7 +6,7 @@ import { CanvasLayer, GardenElement, Vec2 } from '../types';
 import { useCanvasInteraction } from '../hooks/useCanvasInteraction';
 import PropMenu from './PropMenu';
 import { useSelectionStore } from '../stores/useSelectionStore';
-import { useElementPlacement } from '../hooks/useElementPlacement';
+import { useGardenElement } from '../hooks/useGardenElement';
 import { fetchElements } from '../services/apiService';
 import { useUIStore } from '../stores/useUIStore';
 
@@ -18,6 +18,12 @@ const GardenCanvas = forwardRef<CanvasGridHandle, object>((props, ref) => {
   useImperativeHandle(ref, () => ({
     getTransformedElement: () => {
       return canvasGridRef.current?.getTransformedElement() ?? null;
+    },
+        colorCell: (row, col, color) => {
+      canvasGridRef.current?.colorCell(row, col, color);
+    },
+    clearColoring: () => {
+      canvasGridRef.current?.clearColoring();
     },
   }));
 
@@ -53,7 +59,7 @@ const GardenCanvas = forwardRef<CanvasGridHandle, object>((props, ref) => {
     }
   });
 
-  const { handleCellClick, confirmPlacement } = useElementPlacement();
+  const { handleCellClick, confirmPlacement } = useGardenElement();
 
   const handleWorldClick = (x: number, y: number) => {
     const target = onCanvasClick(x, y);
