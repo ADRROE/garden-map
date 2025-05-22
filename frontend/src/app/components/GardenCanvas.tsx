@@ -34,13 +34,15 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
   }));
 
   const { activeLayers } = useUIStore();
+  const uidispatch = useUIStore((s) => s.dispatch);
+
   const isDrawing = useSelectionStore((s) => s.selection.kind === 'drawing');
   const selectedItem = useSelectionStore((s) => s.selection.kind === 'placing' ? s.selection.menuItem : null);
   const selectedElement = useSelectionStore((s) => s.selection.kind === 'editing' ? s.selection.element : null);
   const clearSelection = useSelectionStore((s) => s.clear);
 
   const elements = useGardenStore(state => state.present.elements);
-  const dispatch = useGardenStore((s) => s.dispatch);
+  const gdispatch = useGardenStore((s) => s.dispatch);
   const updateElement = useGardenStore((s) => s.updateElement);
 
   const [naming, setNaming] = useState(false);
@@ -58,6 +60,7 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
       setPropMenu(null);
       setPropMenuPosition(null);
       clearSelection();
+      uidispatch({type: 'TOGGLE_SIDEBAR'})
     }
   });
 
@@ -106,7 +109,7 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
     console.log('📦 Colored cells to dispatch:', coloredCells);
 
     if (Object.keys(coloredCells).length > 0) {
-      dispatch({ type: 'SET_COLORED_CELLS', coloredCells });
+      gdispatch({ type: 'SET_COLORED_CELLS', coloredCells });
     } else {
       console.warn('⚠️ No colored cells found in buffer');
     }
@@ -178,7 +181,7 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
         const elements = await fetchElements();
         if (mounted) {
           console.log('🌱 Initial elements loaded:', elements);
-          dispatch({ type: 'SET_ELEMENTS', elements });
+          gdispatch({ type: 'SET_ELEMENTS', elements });
         }
       } catch (err) {
         console.error('🚨 Failed to load elements', err);

@@ -24,6 +24,7 @@ export type UIAction =
     | { type: 'SET_ACTIVE_LAYERS'; activeLayers: LayerName[] }
     | { type: 'SET_SCALE'; scale: number }
     | { type: 'SET_PAN'; pan: { x: number; y: number } }
+    | { type: 'TOGGLE_SIDEBAR'}
 
 
 

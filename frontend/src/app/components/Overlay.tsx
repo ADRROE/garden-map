@@ -1,10 +1,11 @@
 
 import MenuController from "./MenuController";
-import { Menu, MenuSection } from "./Menu";
+import { SideBar, SideBarSection } from "./SideBar";
 import { useMenuElements } from "../hooks/useMenuElements";
 import { useSelectionStore } from "../stores/useSelectionStore";
 import { useTranslations } from "next-intl";
 import LanguageSwitcher from "./LanguageSwitcher";
+import { useUIStore } from "@/stores/useUIStore";
 
 
 export default function Overlay({ onEditConfirm }: { onEditConfirm: () => void }) {
@@ -18,8 +19,9 @@ export default function Overlay({ onEditConfirm }: { onEditConfirm: () => void }
   const isEditing = useSelectionStore((s) => s.selection.kind === 'editing');
   const isDrawing = useSelectionStore((s) => s.selection.kind === 'drawing');
   const { clear } = useSelectionStore();
+  const { showSideBar } = useUIStore();
 
-  const menuSections: MenuSection[] = [{
+  const sideBarSections: SideBarSection[] = [{
     id: "s1",
     title: "Vegetation",
     items: menuElements.filter(element => element.category === "vegetation")
@@ -38,8 +40,8 @@ export default function Overlay({ onEditConfirm }: { onEditConfirm: () => void }
     <>
       <MenuController />
       <LanguageSwitcher />
-      
-      {isEditing || isDrawing ?
+
+      {(isEditing || isDrawing) &&
         <>
           <div className="fixed top-4 right-4 -translate-x-1/2 z-50 space-x-4 flex">
             <button onClick={onEditConfirm}>
@@ -58,13 +60,13 @@ export default function Overlay({ onEditConfirm }: { onEditConfirm: () => void }
             </button>
           </div>
         </>
-        :
-        <Menu
-          title={t('elementchooser')}
-          sections={menuSections}>
-        </Menu>
       }
-
+      {showSideBar &&
+        <SideBar
+          title={t('elementchooser')}
+          sections={sideBarSections}>
+        </SideBar>
+      }
     </>
   );
 }

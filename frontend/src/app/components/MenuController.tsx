@@ -1,19 +1,19 @@
 import { useGardenStore } from "../stores/useGardenStore";
 import { useUIStore } from "../stores/useUIStore";
-import MenuBar from "./MenuBar";
 import { LayerName } from "../types";
 import { useMenuStore } from "@/stores/useMenuStore";
+import { AnimatePresence, motion } from "framer-motion";
+import { useState } from "react";
 
 const MenuController = () => {
-
 
     const dispatch = useGardenStore(state => state.dispatch);
     const uidispatch = useUIStore(state => state.dispatch);
     const isMapLocked = useUIStore(state => state.isMapLocked);
     const { toggleMapLock } = useUIStore();
 
-    const btnClass =
-        'w-12 h-12 flex rounded-full bg-[#C5D4BC] items-center justify-center hover:bg-green-700 shadow-lg transition';
+    const [isOpen, setIsOpen] = useState(false);
+
 
     // const handleZoneClick = () => datadispatch({ type: 'TOGGLE_SHOW_ZONES' });
     const handleLockClick = () => {
@@ -27,42 +27,57 @@ const MenuController = () => {
         uidispatch({type: 'SET_ACTIVE_LAYERS', activeLayers: layers})
     }
 
+    const buttons = [
+        { src: "/icons/lightbulb.png", alt: "Tool 1", onClick: () => {} },
+        { src: "/icons/database.png", alt: "Database", onClick: () => {} },
+        { src: "/icons/workflow.png", alt: "Workflow", onClick: () => {} },
+        { src: "/icons/layers.png", alt: "Layers", onClick: () => handleLayersClick(['background']) },
+        { src: "/zone.png", alt: "Zones", onClick: handleZoneClick },
+        { src: "/element.png", alt: "Elements", onClick: handleElementClick },
+        { src: isMapLocked ? "/icons/locked.png" : "/icons/unlocked.png", alt: "Lock", onClick: handleLockClick },
+    ];
+
     return (
-        <MenuBar>
-            <div className="fixed left-4 top-1/2 -translate-y-1/2 space-y-4 z-50">
-                <button className={btnClass}>
-                    <img src="/icons/lightbulb.png" alt="Tool 1" className="w-[70%]" />
-                </button>
-                <button className={btnClass}>
-                    <img src="/icons/database.png" alt="database" className="w-[55%]" />
-                </button>
-                <button className={btnClass}>
-                    <img src="/icons/workflow.png" alt="workflow" className="w-[55%]" />
-                </button>
-                <button 
-                    className={btnClass}
-                    onClick={() => handleLayersClick(['background'])}>
-                    <img src="/icons/layers.png" width={"60%"} alt="layers" />
-                </button>
-                <button
-                    className={btnClass}
-                    onClick={handleZoneClick}
-                >
-                    <img src="/zone.png" width={"70%"} alt="zones" />
-                </button>
-                <button
-                    className={btnClass}
-                    onClick={handleElementClick}>
-                    <img src="/element.png" width={"70%"} alt="leaf" />
-                </button>
-                <button
-                    className={btnClass}
-                    onClick={handleLockClick}>
-                    <img src={isMapLocked ? "/icons/locked.png" : "/icons/unlocked.png"} width={"70%"} alt="lock" />
-                </button>
-            </div>
-        </MenuBar>
-    )
+        <div className="fixed left-4 top-1/2 -translate-y-1/2 z-50 flex flex-col items-center space-y-2">
+            <AnimatePresence>
+                {isOpen && (
+                    <motion.div
+                        key="menu"
+                        initial={{ opacity: 0, scale: 0.8, y: 10 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.8, y: 10 }}
+                        transition={{ duration: 0.25, ease: "easeInOut" }}
+                        className="flex flex-col items-center space-y-3 mb-3"
+                    >
+                        {buttons.map((btn, i) => (
+                            <motion.button
+                                key={i}
+                                whileHover={{ scale: 1.1 }}
+                                whileTap={{ scale: 0.95 }}
+                                onClick={() => {
+                                    btn.onClick();
+                                    setIsOpen(false); // optional: auto-close
+                                }}
+                                className="bg-white rounded-full p-3 shadow-lg hover:bg-gray-100 transition"
+                            >
+                                <img src={btn.src} alt={btn.alt} className="w-6 h-6" />
+                            </motion.button>
+                        ))}
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* Toggle Button */}
+            <motion.button
+                onClick={() => setIsOpen(prev => !prev)}
+                whileHover={{ scale: 1.1, rotate: 10 }}
+                whileTap={{ scale: 0.95 }}
+                className="bg-blue-600 text-white rounded-full p-3 shadow-xl hover:bg-blue-700 transition"
+            >
+                <span className="text-xl font-bold">...</span>
+            </motion.button>
+        </div>
+    );
 }
 
 export default MenuController;

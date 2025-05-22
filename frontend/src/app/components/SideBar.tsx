@@ -4,18 +4,18 @@ import { useGardenElement } from "../hooks/useGardenElement";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslations } from "next-intl";
 
-export type MenuSection = {
+export type SideBarSection = {
     id: string;
     title: string;
     items: MenuElement[];
 };
 
-type MenuProps = {
+type SideBarProps = {
     title: string;
-    sections: MenuSection[];
+    sections: SideBarSection[];
 };
 
-export function Menu({ title, sections }: MenuProps) {
+export function SideBar({ title, sections }: SideBarProps) {
     const { openSectionId, setOpenSection, setSelectedItem } = useMenuStore();
     const { beginPlacing } = useGardenElement();
     const t = useTranslations('Menu');

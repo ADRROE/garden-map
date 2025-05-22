@@ -9,12 +9,14 @@ type UIState = {
   scale: number;
   pan: Vec2;
   isMapLocked: boolean;
+  showSideBar: boolean;
   activeLayers: LayerName[];
   coloredCells: ColoredCell[];
 
   setScale: (scale: number) => void;
   setPan: (pan: Vec2) => void;
   toggleMapLock: () => void;
+  toggleSideBar: () => void;
 
   dispatch: (action: UIAction) => void;
 };
@@ -25,14 +27,17 @@ export const useUIStore = create<UIState>()(
       scale: 1,
       pan: { x: 0, y: 0 },
       isMapLocked: true,
+      showSideBar: false,
       activeLayers: ["background", "elements"],
       coloredCells: [],
 
       setScale: (scale) => get().dispatch({ type: 'SET_SCALE', scale }),
       setPan: (pan) => get().dispatch({ type: 'SET_PAN', pan }),
-      setActiveLayers: (activeLayers: LayerName[]) => get().dispatch({type: 'SET_ACTIVE_LAYERS', activeLayers}),
+      setActiveLayers: (activeLayers: LayerName[]) => get().dispatch({ type: 'SET_ACTIVE_LAYERS', activeLayers }),
       toggleMapLock: () =>
         set((state) => ({ isMapLocked: !state.isMapLocked })),
+      toggleSideBar: () =>
+        set((state) => ({ showSideBar: !state.showSideBar })),
 
       dispatch: (action: UIAction) =>
         set((state) => ({
@@ -67,6 +72,10 @@ function baseReducer(state: UIState, action: UIAction): Partial<UIState> {
       return {
         activeLayers: [...action.activeLayers],
       };
+    case "TOGGLE_SIDEBAR":
+      return {
+        showSideBar: !state.showSideBar
+      }
     default:
       return {};
   }
