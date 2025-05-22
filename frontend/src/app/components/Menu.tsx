@@ -2,6 +2,7 @@ import { useMenuStore } from "../stores/useMenuStore";
 import { MenuElement } from "../types";
 import { useGardenElement } from "../hooks/useGardenElement";
 import { motion, AnimatePresence } from "framer-motion";
+import { useTranslations } from "next-intl";
 
 export type MenuSection = {
     id: string;
@@ -16,8 +17,8 @@ type MenuProps = {
 
 export function Menu({ title, sections }: MenuProps) {
     const { openSectionId, setOpenSection, setSelectedItem } = useMenuStore();
-
-    const {beginPlacing} = useGardenElement();
+    const { beginPlacing } = useGardenElement();
+    const t = useTranslations('Menu');
 
     const toggleSection = (id: string) => {
         setOpenSection(openSectionId === id ? null : id);
@@ -33,7 +34,7 @@ export function Menu({ title, sections }: MenuProps) {
                             onClick={() => toggleSection(section.id)}
                             className="w-full text-left font-medium text-gray-700 hover:text-black"
                         >
-                            {section.title}
+                            {t(section.title)}
                         </button>
 
                         <AnimatePresence initial={false}>
@@ -44,39 +45,39 @@ export function Menu({ title, sections }: MenuProps) {
                                     exit={{ height: 0, opacity: 0 }}
                                     className="overflow-hidden pl-4 mt-2 border-l border-gray-200"
                                 ><div className="grid grid-cols-3">
-                                    {section.items.map((item) => (
-                                        <li key={item.id}>
-                                            <button
-                                                onClick={() => {
-                                                    setSelectedItem(item.id);
-                                                    beginPlacing(item);
-                                                }}
-                                                className={`block w-full text-left py-1 px-2 rounded hover:bg-gray-100 `}
-                                                style={{cursor: "pointer"}}
-                                            >
-                                                                <img src={item.icon} alt="" className="w-10 h-10" />
+                                        {section.items.map((item) => (
+                                            <li key={item.id}>
+                                                <button
+                                                    onClick={() => {
+                                                        setSelectedItem(item.id);
+                                                        beginPlacing(item);
+                                                    }}
+                                                    className={`block w-full text-left py-1 px-2 rounded hover:bg-gray-100 `}
+                                                    style={{ cursor: "pointer" }}
+                                                >
+                                                    <img src={item.icon} alt="" className="w-10 h-10" />
+                                                </button>
+
+                                                {/* Recursive nested items */}
+                                                {item.children && (
+                                                    <ul className="ml-4 mt-1 border-l border-gray-100 pl-2">
+                                                        {item.children.map((child: MenuElement) => (
+                                                            <li key={child.id}>
+                                                                <button
+                                                                    onClick={() => {
+                                                                        setSelectedItem(child.id);
+                                                                        beginPlacing(child);
+                                                                    }}
+                                                                    className={`block w-full text-left py-1 px-2 rounded hover:bg-gray-100`}
+                                                                >
+
                                                                 </button>
-
-                                            {/* Recursive nested items */}
-                                            {item.children && (
-                                                <ul className="ml-4 mt-1 border-l border-gray-100 pl-2">
-                                                    {item.children.map((child: MenuElement) => (
-                                                        <li key={child.id}>
-                                                            <button
-                                                                onClick={() => {
-                                                                    setSelectedItem(child.id);
-                                                                    beginPlacing(child);
-                                                                }}
-                                                                className={`block w-full text-left py-1 px-2 rounded hover:bg-gray-100`}
-                                                            >
-
-                                                            </button>
-                                                        </li>
-                                                    ))}
-                                                </ul>
-                                            )}
-                                        </li>
-                                    ))}</div>
+                                                            </li>
+                                                        ))}
+                                                    </ul>
+                                                )}
+                                            </li>
+                                        ))}</div>
                                 </motion.ul>
                             )}
                         </AnimatePresence>

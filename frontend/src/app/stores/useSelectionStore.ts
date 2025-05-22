@@ -14,7 +14,7 @@ type SelectionStore = {
   setPlacing: (item: MenuElement) => void;
   setPendingPosition: (pos: Vec2) => void;
   setEditing: (item: GardenElement) => void;
-  setZoneSelection: (zoneId: string) => void;
+  setDrawing: (color: string) => void;
   clear: () => void;
 };
 
@@ -53,10 +53,12 @@ export const useSelectionStore = create<SelectionStore>()(
       })
     },
 
-    setZoneSelection: (zoneId) =>
+    setDrawing: (color) => {
+      if (useUIStore.getState().isMapLocked) return;
       set({
-        selection: { kind: 'zone', zoneId },
-      }),
+        selection: { kind: 'drawing', color },
+      })
+    },
 
     clear: () =>
       set({

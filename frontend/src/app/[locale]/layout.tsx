@@ -2,8 +2,6 @@ import type { Metadata } from "next";
 import Providers from "../providers";
 import "../globals.css";
 import { notFound } from 'next/navigation';
-import { hasLocale } from 'next-intl';
-import {routing} from '../../i18n/routing';
 import { NextIntlClientProvider } from 'next-intl';
 
 export const metadata: Metadata = {
@@ -20,12 +18,9 @@ export default async function LocaleLayout({
 }) {
   const { locale } = await params;
 
-  if (!hasLocale(routing.locales, locale)) {
-    notFound();
-  }
-
   let messages;
   try {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     messages = (await import(`../../../messages/${locale}.json`)).default;
   } catch (error) {
     console.error('Failed to load messages for locale', locale, error);

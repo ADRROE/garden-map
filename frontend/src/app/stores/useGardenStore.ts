@@ -7,14 +7,14 @@ import {
   GardenZone,
   GardenDataState,
   HistoryState,
-} from '../types';
-import { GardenDataAction } from '../services/actions';
+} from '@/types';
+import { GardenDataAction } from '@/services/actions';
 import {
   updateElementAPI,
   deleteElementAPI,
   fetchZones,
   updateZoneAPI,
-} from '../services/apiService';
+} from '@/services/apiService';
 
 type GardenActions = {
   undo: () => void;
@@ -24,8 +24,6 @@ type GardenActions = {
   deleteElement: (id: string) => Promise<void>;
   updateElement: (update: { id: string } & Partial<GardenElement>) => Promise<void>;
   updateZone: (updatedZone: GardenZone) => Promise<void>;
-  colorCell: (i: number, j: number, color: string, menuElementId: string) => void;
-  uncolorCell: (i: number, j: number) => void;
 };
 
 type GardenStore = HistoryState<GardenDataState> & GardenActions;
@@ -40,11 +38,10 @@ const undoableActions = new Set<GardenDataAction['type']>([
   'CREATE_ELEMENT',
   'UPDATE_ELEMENT',
   'DELETE_ELEMENT',
-  'COLOR_CELL',
-  'UNCOLOR_CELL',
   'UPDATE_ZONE',
   'SET_ELEMENTS',
   'SET_ZONES',
+  'SET_COLORED_CELLS',
 ]);
 
 export const useGardenStore = create<GardenStore>()(
@@ -126,14 +123,6 @@ export const useGardenStore = create<GardenStore>()(
         console.error('Failed to update zone:', error);
       }
     },
-
-    colorCell: (i, j, color, menuElementId) => {
-      get().dispatch({ type: 'COLOR_CELL', i, j, color, menuElementId });
-    },
-
-    uncolorCell: (i, j) => {
-      get().dispatch({ type: 'UNCOLOR_CELL', i, j });
-    },
   }),     {
       name: 'GardenStore', 
     })
@@ -161,29 +150,6 @@ function baseReducer(state: GardenDataState, action: GardenDataAction): GardenDa
         elements: state.elements.filter(el => el.id !== action.id),
       };
 
-    case 'COLOR_CELL': {
-      const key = `${action.i}-${action.j}`;
-      return {
-        ...state,
-        coloredCells: {
-          ...state.coloredCells,
-          [key]: {
-            x: action.i,
-            y: action.j,
-            color: action.color,
-            menuElementId: action.menuElementId,
-          },
-        },
-      };
-    }
-
-    case 'UNCOLOR_CELL': {
-      const key = `${action.i}-${action.j}`;
-      const updated = { ...state.coloredCells };
-      delete updated[key];
-      return { ...state, coloredCells: updated };
-    }
-
     case 'UPDATE_ZONE':
       return {
         ...state,
@@ -197,6 +163,14 @@ function baseReducer(state: GardenDataState, action: GardenDataAction): GardenDa
 
     case 'SET_ELEMENTS':
       return { ...state, elements: action.elements };
+    
+    case "SET_COLORED_CELLS":
+        console.log("Reducer received coloredCells:", action.coloredCells);
+
+      return { ...state, coloredCells: {
+          ...state.coloredCells,
+          ...action.coloredCells,
+        }};
 
     default:
       return state;

@@ -1,5 +1,5 @@
 import { UIAction } from "../services/actions";
-import { LayerName } from "../types";
+import { ColoredCell, LayerName } from "../types";
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 
@@ -10,6 +10,7 @@ type UIState = {
   pan: Vec2;
   isMapLocked: boolean;
   activeLayers: LayerName[];
+  coloredCells: ColoredCell[];
 
   setScale: (scale: number) => void;
   setPan: (pan: Vec2) => void;
@@ -25,6 +26,7 @@ export const useUIStore = create<UIState>()(
       pan: { x: 0, y: 0 },
       isMapLocked: true,
       activeLayers: ["background", "elements"],
+      coloredCells: [],
 
       setScale: (scale) => get().dispatch({ type: 'SET_SCALE', scale }),
       setPan: (pan) => get().dispatch({ type: 'SET_PAN', pan }),

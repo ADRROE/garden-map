@@ -9,6 +9,7 @@ import { useUIStore } from "../stores/useUIStore";
 import { CanvasGridHandle } from "../components/CanvasGrid";
 import { useGardenStore } from "../stores/useGardenStore";
 import { useSelectionStore } from "../stores/useSelectionStore";
+import { useColorBuffer } from "@/hooks/useColorBuffer";
 
 
 
@@ -25,18 +26,27 @@ export default function Home() {
 
   }, []);
 
+  const colorBuffer = useColorBuffer()
+
   const canvasGridRef = useRef<CanvasGridHandle>(null);
 
   const updateElement = useGardenStore((s) => s.updateElement);
+    const dispatch = useGardenStore((s) => s.dispatch);
+  
   const clearSelection = useSelectionStore((s) => s.clear);
 
-
-
   const handleEditConfirm = () => {
-    const updated = canvasGridRef.current?.getTransformedElement();
-    if (updated) {
-      updateElement(updated); // whatever logic you use to update your element list
+    const updatedElement = canvasGridRef.current?.getTransformedElement();
+    const coloredCells = colorBuffer.getCells()
+
+    if (updatedElement) {
+      updateElement(updatedElement); // whatever logic you use to update your element list
       clearSelection(); // etc.
+    };
+    if (coloredCells) {
+        console.log("🎨 Dispatching colored cells:", coloredCells);
+
+      dispatch({type: 'SET_COLORED_CELLS', coloredCells: coloredCells})
     }
   };
 
@@ -72,7 +82,8 @@ export default function Home() {
       </div>
 
       <GardenCanvas
-        ref={canvasGridRef} />
+        ref={canvasGridRef}
+        colorBuffer={colorBuffer} />
     </div>
   );
 }

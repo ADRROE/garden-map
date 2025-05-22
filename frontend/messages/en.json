@@ -1,5 +1,19 @@
 {
   "Overlay": {
     "elementchooser": "Element Chooser"
+  },
+  "PropMenu": {
+    "dateplanted": "Date Planted",
+    "priceEUR": "Price (€)",
+    "savechanges": "Save Changes"
+  },
+  "NameModal": {
+    "name": "Name",
+    "place": "Place"
+  },
+  "Menu": {
+    "Vegetation": "Vegetation",
+    "Material": "Material",
+    "Soil": "Soil"
   }
 }

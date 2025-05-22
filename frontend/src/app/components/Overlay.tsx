@@ -7,7 +7,6 @@ import { useTranslations } from "next-intl";
 import LanguageSwitcher from "./LanguageSwitcher";
 
 
-
 export default function Overlay({ onEditConfirm }: { onEditConfirm: () => void }) {
 
   const t = useTranslations('Overlay');
@@ -17,6 +16,7 @@ export default function Overlay({ onEditConfirm }: { onEditConfirm: () => void }
 
   const { data: menuElements = [] } = useMenuElements();
   const isEditing = useSelectionStore((s) => s.selection.kind === 'editing');
+  const isDrawing = useSelectionStore((s) => s.selection.kind === 'drawing');
   const { clear } = useSelectionStore();
 
   const menuSections: MenuSection[] = [{
@@ -28,6 +28,10 @@ export default function Overlay({ onEditConfirm }: { onEditConfirm: () => void }
     id: "s2",
     title: "Material",
     items: menuElements.filter(element => element.category === "pavement")
+  }, {
+    id: "s3",
+    title: "Soil",
+    items: menuElements.filter(element => element.category === "soil")
   }]
 
   return (
@@ -35,7 +39,7 @@ export default function Overlay({ onEditConfirm }: { onEditConfirm: () => void }
       <MenuController />
       <LanguageSwitcher />
       
-      {isEditing ?
+      {isEditing || isDrawing ?
         <>
           <div className="fixed top-4 right-4 -translate-x-1/2 z-50 space-x-4 flex">
             <button onClick={onEditConfirm}>

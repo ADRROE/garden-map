@@ -1,13 +1,13 @@
-import { useSelectionStore } from "../stores/useSelectionStore";
+import { useSelectionStore } from "@/stores/useSelectionStore";
 import { useGardenStore } from "../stores/useGardenStore";
-import { GardenElement } from "../types";
+import { GardenElement } from "@/types";
 
 type CanvasInteractionOptions = {
   onSelect?: (element: GardenElement) => void;
   onDeselect?: () => void;
 };
 
-export const useCanvasInteraction = ({ onSelect, onDeselect }: CanvasInteractionOptions = {}) => {
+export function useCanvasInteraction ({ onSelect, onDeselect }: CanvasInteractionOptions = {}) {
 
   const datastate = useGardenStore(state => state.present);
   const selectElement = (element: GardenElement) => {

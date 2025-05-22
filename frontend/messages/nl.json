@@ -1,5 +1,19 @@
 {
     "Overlay": {
         "elementchooser": "Element Kiezer"
+    },
+    "PropMenu": {
+        "dateplanted": "Datum Aanplanting",
+        "priceEUR": "Prijs (€)",
+        "savechanges": "Wijzigingen opslaan"
+    },
+    "NameModal": {
+        "name": "Naam",
+        "place": "Plaats"
+    },
+    "Menu": {
+        "Vegetation": "Vegetatie",
+        "Material": "Materiaal",
+        "Soil": "Grond"
     }
 }

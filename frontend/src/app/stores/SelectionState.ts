@@ -8,4 +8,4 @@ export type SelectionState =
       pendingPosition?: Vec2; // 🔍 Add this here
     }
   | { kind: 'editing'; element: GardenElement }
-  | { kind: 'zone'; zoneId: string };
+  | { kind: 'drawing'; color: string };

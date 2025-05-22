@@ -2,14 +2,15 @@ import { useGardenStore } from "../stores/useGardenStore";
 import { useUIStore } from "../stores/useUIStore";
 import MenuBar from "./MenuBar";
 import { LayerName } from "../types";
+import { useMenuStore } from "@/stores/useMenuStore";
 
 const MenuController = () => {
 
 
-    const datadispatch = useGardenStore(state => state.dispatch);
+    const dispatch = useGardenStore(state => state.dispatch);
     const uidispatch = useUIStore(state => state.dispatch);
     const isMapLocked = useUIStore(state => state.isMapLocked);
-    const { toggleMapLock } = useUIStore()
+    const { toggleMapLock } = useUIStore();
 
     const btnClass =
         'w-12 h-12 flex rounded-full bg-[#C5D4BC] items-center justify-center hover:bg-green-700 shadow-lg transition';
@@ -18,8 +19,10 @@ const MenuController = () => {
     const handleLockClick = () => {
         toggleMapLock()
     }
-    const handleElementClick = () => datadispatch({ type: 'TOGGLE_IS_SELECTING_ELEMENT' });
-    const handleZoneClick = () => datadispatch({ type: 'TOGGLE_IS_SELECTING_ZONE' });
+    const handleElementClick = () => dispatch({ type: 'TOGGLE_IS_SELECTING_ELEMENT' });
+    const handleZoneClick = () => {
+        useMenuStore.getState().setOpenSection('s3');
+    }
     const handleLayersClick = (layers: LayerName[]) => {
         uidispatch({type: 'SET_ACTIVE_LAYERS', activeLayers: layers})
     }

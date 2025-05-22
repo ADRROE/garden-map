@@ -1,6 +1,6 @@
 import React, { forwardRef, useImperativeHandle, useRef, useEffect } from 'react';
 import { LayerManager } from '../utils/LayerManager';
-import { CanvasLayer, GardenElement } from '../types';
+import { CanvasLayer, ColoredCell, GardenElement } from '../types';
 import { Canvas, FabricObject } from 'fabric';
 import { useUIStore } from '../stores/useUIStore';
 import { useSelectionStore } from '../stores/useSelectionStore';
@@ -15,7 +15,7 @@ const HEIGHT = NUM_ROWS * CELL_SIZE;
 
 export interface CanvasGridHandle {
   getTransformedElement: () => GardenElement | null;
-  colorCell: (row: number, col: number, color: string) => void;
+  colorCell: (cell: Partial<ColoredCell>) => void;
   clearColoring: () => void;
 }
 
@@ -47,11 +47,13 @@ const CanvasGrid = forwardRef<CanvasGridHandle, CanvasGridProps>(
           height: obj.height! * obj.scaleY!,
         };
       },
-      colorCell: (row, col, color) => {
+      colorCell: (cell) => {
         const ctx = colorCtxRef.current;
         if (!ctx) return;
-        ctx.fillStyle = color;
-        ctx.fillRect(col * CELL_SIZE, row * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+        if (cell.color && cell.x && cell.y) {
+          ctx.fillStyle = cell.color;
+          ctx.fillRect(cell.x * CELL_SIZE, cell.y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+        }
       },
 
       clearColoring: () => {

@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl';
 import React, {useState} from 'react'
 
 type NameModalProps = {
@@ -9,6 +10,7 @@ type NameModalProps = {
 const NameModal: React.FC<NameModalProps> = ({ onPlacement, onAbort }) => {
 
     const [inputName, setInputName] = useState("");
+    const t = useTranslations('NameModal');
 
     return (
         <div className="bg-background text-foreground fixed inset-0 z-50 flex items-center justify-center">
@@ -20,7 +22,7 @@ const NameModal: React.FC<NameModalProps> = ({ onPlacement, onAbort }) => {
 
             {/* Modal Content */}
             <div className="relative z-10 bg-white shadow-xl p-6 w-full max-w-sm mx-4 animate-fade-in border-2">
-                <h2 className="text-lg font-sans font-semibold mb-4">Name</h2>
+                <h2 className="text-lg font-sans font-semibold mb-4">{t('name')}</h2>
                 <input
                     value={inputName}
                     onChange={(e) => setInputName(e.target.value)}
@@ -30,7 +32,7 @@ const NameModal: React.FC<NameModalProps> = ({ onPlacement, onAbort }) => {
                         onClick={() => onPlacement(inputName)}
                         className="px-4 py-2 border w-full hover:bg-[#C5D4BC]"
                     >
-                        Place
+                        {t('place')}
                     </button>
                 </div>
             </div>

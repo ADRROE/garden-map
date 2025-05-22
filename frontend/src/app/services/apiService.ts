@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
-import { ColoredCell, GardenElement, GardenZone } from "../types";
+import { ColoredCell, GardenElement, GardenZone } from "@/types";
 
 const API_BASE_ELEMENTS = process.env.NEXT_PUBLIC_API_URL + "/api/elements/";
 const API_BASE_ZONES = process.env.NEXT_PUBLIC_API_URL + "/api/zones/";
@@ -20,11 +20,11 @@ export async function createElementAPI(newElement: GardenElement) {
     });
 }
 
-export async function updateElementAPI(updatedElement: Partial<GardenElement> & { id: string }) {
-    await fetch(`${API_BASE_ELEMENTS}${updatedElement.id}`, {
+export async function updateElementAPI(updates: Partial<GardenElement> & { id: string }) {
+    await fetch(`${API_BASE_ELEMENTS}${updates.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updatedElement)
+        body: JSON.stringify(updates)
     });
 }
 

@@ -5,6 +5,7 @@ export interface MenuElement {
   id: string;
   label: string;
   icon: string;
+  color?: string,
   defaultWidth?: number;
   defaultHeight?: number;
   cursor?: string;

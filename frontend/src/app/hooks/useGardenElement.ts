@@ -11,14 +11,14 @@ export function useGardenElement() {
   const createElement = useGardenStore((s) => s.createElement);
   const dispatch = useGardenStore((s) => s.dispatch);
 
-  const beginPlacing = (item: MenuElement) => {
+  const beginPlacement = (item: MenuElement) => {
     // Might be triggered from menu
     useSelectionStore.setState({
       selection: { kind: 'placing', menuItem: item},
     });
   };
 
-  const handleCellClick = (position: Vec2) => {
+  const placeElementAt = (position: Vec2) => {
     if (selection.kind !== 'placing' || !selection.menuItem) return;
     setPendingPosition(position);
   };
@@ -62,5 +62,5 @@ export function useGardenElement() {
     clear(); // end placing
   };
 
-  return { beginPlacing, handleCellClick, confirmPlacement };
+  return { beginPlacing: beginPlacement, placeElementAt, confirmPlacement };
 }

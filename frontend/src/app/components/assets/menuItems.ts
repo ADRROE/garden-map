@@ -70,5 +70,9 @@ export const menuItems: MenuElement[] =
     { "id": "66", "label": "whitepinkshrub1", "icon": "/icons/whitepinkshrub1.png", "defaultWidth": 75, "defaultHeight": 75, "cursor": "/icons/whitepinkshrub1-sm.png", "category": "vegetation", "subCategory": "shrubs"},
     { "id": "67", "label": "whitepinkshrub2", "icon": "/icons/whitepinkshrub2.png", "defaultWidth": 75, "defaultHeight": 75, "cursor": "/icons/whitepinkshrub2-sm.png", "category": "vegetation", "subCategory": "shrubs"},
     { "id": "68", "label": "yellowgreenshrub1", "icon": "/icons/yellowgreenshrub1.png", "defaultWidth": 75, "defaultHeight": 75, "cursor": "/icons/yellowgreenshrub1-sm.png", "category": "vegetation", "subCategory": "shrubs"},
-     { "id": "69", "label": "fern1", "icon": "/icons/fern1.png", "defaultWidth": 75, "defaultHeight": 75, "cursor": "/icons/fern1-sm.png", "category": "vegetation", "subCategory": "ferns"}
+    { "id": "69", "label": "fern1", "icon": "/icons/fern1.png", "defaultWidth": 75, "defaultHeight": 75, "cursor": "/icons/fern1-sm.png", "category": "vegetation", "subCategory": "ferns"},
+    { "id": "70", "label": "sand", "icon": "/icons/sand.png", "defaultWidth": 95, "defaultHeight": 95, "category": "soil", "color": "#c7b199"},
+    { "id": "71", "label": "loam", "icon": "/icons/loam.png", "defaultWidth": 95, "defaultHeight": 95, "category": "soil", "color": "#b88859"}, 
+    { "id": "72", "label": "clay", "icon": "/icons/clay.png", "defaultWidth": 95, "defaultHeight": 95, "category": "soil", "color": "#dad6ba"},
+    { "id": "73", "label": "compost", "icon": "/icons/compost.png", "defaultWidth": 95, "defaultHeight": 95, "category": "soil", "color": "#000000"}
 ]
