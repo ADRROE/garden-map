@@ -11,8 +11,6 @@ export type GardenDataAction =
     | { type: 'SET_ELEMENTS'; elements: GardenElement[] }
     | { type: 'SET_ZONES'; zones: GardenZone[] }
     | { type: 'SET_COLORED_CELLS'; coloredCells: Record<string, ColoredCell> }
-    | { type: 'TOGGLE_IS_SELECTING_ELEMENT' }
-    | { type: 'TOGGLE_IS_SELECTING_ZONE' }
     | { type: 'TOGGLE_MAP_LOCK' }
     | { type: 'UNDO' }
     | { type: 'REDO' }
@@ -25,6 +23,9 @@ export type UIAction =
     | { type: 'SET_SCALE'; scale: number }
     | { type: 'SET_PAN'; pan: { x: number; y: number } }
     | { type: 'TOGGLE_SIDEBAR'}
+    | { type: 'SHOW_SIDEBAR'}
+    | { type: 'HIDE_SIDEBAR'}
+
 
 
 

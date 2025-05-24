@@ -8,10 +8,8 @@ import debounce from "lodash.debounce";
 import { useUIStore } from "../stores/useUIStore";
 import { CanvasGridHandle } from "../components/CanvasGrid";
 import { useGardenStore } from "../stores/useGardenStore";
-import { useSelectionStore } from "../stores/useSelectionStore";
 import { useColorBuffer } from "@/hooks/useColorBuffer";
-
-
+import { log, warn } from "@/utils/utils";
 
 export default function Home() {
 
@@ -31,23 +29,23 @@ export default function Home() {
   const canvasGridRef = useRef<CanvasGridHandle>(null);
 
   const updateElement = useGardenStore((s) => s.updateElement);
-    const dispatch = useGardenStore((s) => s.dispatch);
   
-  const clearSelection = useSelectionStore((s) => s.clear);
-
   const handleEditConfirm = () => {
+    log("9 - handleEditConfirm triggered in page via Overlay onEditConfirm prop.")
     const updatedElement = canvasGridRef.current?.getTransformedElement();
-    const coloredCells = colorBuffer.getCells()
-
+    log("10 - updatedElement as seen by page: ", updatedElement)
     if (updatedElement) {
-      updateElement(updatedElement); // whatever logic you use to update your element list
-      clearSelection(); // etc.
-    };
-    if (coloredCells) {
-        console.log("🎨 Dispatching colored cells:", coloredCells);
+      log("11 - ✅ Calling updateElement from within page with: ", updatedElement);
+      updateElement(updatedElement);
 
-      dispatch({type: 'SET_COLORED_CELLS', coloredCells: coloredCells})
-    }
+    };
+  if (canvasGridRef.current?.handleEditConfirm) {
+    log("11 - canvasGridRef.current.handleConfirm is not null: ", canvasGridRef.current);
+    log("12 - Calling canvasGridRef.current.handleEditConfirm()");
+    canvasGridRef.current.handleEditConfirm();
+  } else {
+    warn("12 - GardenCanvas ref is not ready or handleEditConfirm is undefined");
+  }
   };
 
   useEffect(() => {

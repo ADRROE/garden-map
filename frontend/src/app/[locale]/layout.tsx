@@ -3,6 +3,7 @@ import Providers from "../providers";
 import "../globals.css";
 import { notFound } from 'next/navigation';
 import { NextIntlClientProvider } from 'next-intl';
+import { error } from "@/utils/utils";
 
 export const metadata: Metadata = {
   title: "Garden Map",
@@ -22,8 +23,8 @@ export default async function LocaleLayout({
   try {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     messages = (await import(`../../../messages/${locale}.json`)).default;
-  } catch (error) {
-    console.error('Failed to load messages for locale', locale, error);
+  } catch (err) {
+    error('Failed to load messages for locale', locale, err);
     notFound();
   }
 

@@ -5,12 +5,16 @@ import { SelectionState } from './SelectionState';
 import { MenuElement, GardenElement, Vec2 } from '../types';
 import { useGardenStore } from './useGardenStore';
 import { useUIStore } from './useUIStore';
+import { useMenuStore } from './useMenuStore';
 
 type SelectionStore = {
   selection: SelectionState;
   selectedElementId: string | null;
   selectedElement: GardenElement | null;
+  selectedItemId: string | null;
+  selectedItem: MenuElement | null;
   setSelectedElement: (id: string | null) => void;
+  setSelectedItem: (id: string) => void;
   setPlacing: (item: MenuElement) => void;
   setPendingPosition: (pos: Vec2) => void;
   setEditing: (item: GardenElement) => void;
@@ -20,9 +24,11 @@ type SelectionStore = {
 
 export const useSelectionStore = create<SelectionStore>()(
   devtools((set) => ({
-    selection: { kind: 'none' },
+    selection: { kind: null },
     selectedElementId: null,
     selectedElement: null,
+    selectedItemId: null,
+    selectedItem: null,
     setPlacing: (item) =>
       set({
         selection: { kind: 'placing', menuItem: item },
@@ -31,6 +37,11 @@ export const useSelectionStore = create<SelectionStore>()(
     setSelectedElement: (id: string | null) => {
       const element = useGardenStore.getState().present.elements.find(e => e.id === id);
       set({ selectedElementId: id, selectedElement: element ?? null });
+    },
+
+    setSelectedItem: (id: string | null) => {
+      const item = useMenuStore.getState().menuItems.find(i => i.id === id);
+      set({ selectedItemId: id, selectedItem: item ?? null });
     },
 
     setPendingPosition: (position: Vec2) =>
@@ -50,6 +61,8 @@ export const useSelectionStore = create<SelectionStore>()(
       if (useUIStore.getState().isMapLocked) return;
       set({
         selection: { kind: 'editing', element },
+        selectedElement: element,
+        selectedElementId: element.id
       })
     },
 
@@ -62,7 +75,9 @@ export const useSelectionStore = create<SelectionStore>()(
 
     clear: () =>
       set({
-        selection: { kind: 'none' },
+        selection: { kind: null },
+        selectedElement: null,
+        selectedItem: null
       }),
   }), { name: 'SelectionStore' })
 );

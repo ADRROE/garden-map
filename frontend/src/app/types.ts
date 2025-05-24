@@ -11,7 +11,7 @@ export interface MenuElement {
   cursor?: string;
   category: string;
   subCategory?: string;
-  metadata?: Record<string, unknown>;
+  metadata?: Record<string, string>;
   onClick?: () => void;
   children?: MenuElement[];
 }
@@ -62,7 +62,7 @@ export type ColoredCell = {
   x: number;
   y: number;
   color: string;
-  menuElementId: string;
+  menuElementId?: string;
   zoneId?: string;
 };
 
@@ -120,7 +120,7 @@ export type GardenDataContextType = {
   updateElement: (element: GardenElement) => void;
   updateZone: (zone: GardenZone) => void;
   selectElement: (element: ElementType | null) => void;
-  colorCell: (i: number, j: number, color: string, menuElementId: string) => void;
+  colorCell: (i: number, j: number, color: string, menuElementId?: string) => void;
   uncolorCell: (i: number, j: number) => void;
 };
 

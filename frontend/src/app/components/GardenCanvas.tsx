@@ -9,36 +9,66 @@ import { useCanvasInteraction } from '../hooks/useCanvasInteraction';
 import PropMenu from './PropMenu';
 import { useSelectionStore } from '../stores/useSelectionStore';
 import { useGardenElement } from '../hooks/useGardenElement';
-import { fetchElements } from '../services/apiService';
+import { fetchElements, fetchZones } from '../services/apiService';
 import { useUIStore } from '../stores/useUIStore';
 import { useColorBuffer } from '@/hooks/useColorBuffer';
+import { useGardenZone } from '@/hooks/useGardenZone';
+import { log, warn, error } from "@/utils/utils";
 
 const CELL_SIZE = 20;
 
-const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<typeof useColorBuffer> }>(({colorBuffer}, ref) => {
-  const canvasGridRef = useRef<CanvasGridHandle>(null);
+const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<typeof useColorBuffer> }>(({ colorBuffer }, ref) => {
+  const innerCanvasGridRef = useRef<CanvasGridHandle>(null);
 
   useImperativeHandle(ref, () => ({
     getTransformedElement: () => {
-      return canvasGridRef.current?.getTransformedElement() ?? null;
+      return innerCanvasGridRef.current?.getTransformedElement() ?? null;
     },
     colorCell: (cell) => {
-      console.log('🎨 Imperative colorCell called with:', cell);
-      canvasGridRef.current?.colorCell(cell);
+      log('🎨 Imperative colorCell called with:', cell);
+      innerCanvasGridRef.current?.colorCell(cell);
       colorBuffer.addCell(cell);
     },
     clearColoring: () => {
-      console.log('🧼 clearColoring called');
-      canvasGridRef.current?.clearColoring();
+      log('🧼 clearColoring called');
+      innerCanvasGridRef.current?.clearColoring();
     },
+
+    handleEditConfirm() {
+      log("13 - Now, handleEditConfirm is triggered in GardenCanvas.")
+      log("colorBuffer.getCells() as seen by GardenCanvas: ", colorBuffer.getCells());
+      log("innerCanvasGridRef.current?.getTransformedElement() as seen by GardenCanvas: ", innerCanvasGridRef.current?.getTransformedElement());
+
+    const updatedElement = innerCanvasGridRef.current?.getTransformedElement();
+    if (updatedElement) {
+      log('14 - ✅ Calling updateElement from within GardenCanvas with updatedElement:', updatedElement);
+      updateElement(updatedElement);
+      log("15 - Clearing selection...")
+      clearSelection();
+    }
+
+    const coloredCells = colorBuffer.getCells();
+    log('14 - 📦 Pulling coloredCells out of buffer from within GardenCanvas by calling colorBuffer.getCells():', coloredCells);
+
+    if (Object.keys(coloredCells).length > 0) {
+      log("15 - coloredCells are not null and now dispatched by GardenCanvas.")
+      gdispatch({ type: 'SET_COLORED_CELLS', coloredCells });
+      log("16 - Opening NameModal...")
+      setNaming(true);
+    } else {
+      warn('⚠️ No colored cells found in buffer');
+    }
+  },
   }));
 
   const { activeLayers } = useUIStore();
   const uidispatch = useUIStore((s) => s.dispatch);
 
   const isDrawing = useSelectionStore((s) => s.selection.kind === 'drawing');
-  const selectedItem = useSelectionStore((s) => s.selection.kind === 'placing' ? s.selection.menuItem : null);
-  const selectedElement = useSelectionStore((s) => s.selection.kind === 'editing' ? s.selection.element : null);
+  const isEditing = useSelectionStore((s) => s.selection.kind === 'editing');
+  const isPlacing = useSelectionStore((s) => s.selection.kind === 'placing');
+  const selectedItem = useSelectionStore((s) => s.selection.kind ? s.selectedItem : null);
+  const selectedElement = useSelectionStore((s) => s.selectedElement);
   const clearSelection = useSelectionStore((s) => s.clear);
 
   const elements = useGardenStore(state => state.present.elements);
@@ -59,59 +89,48 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
     onDeselect: () => {
       setPropMenu(null);
       setPropMenuPosition(null);
-      clearSelection();
-      uidispatch({type: 'TOGGLE_SIDEBAR'})
+      uidispatch({ type: 'HIDE_SIDEBAR' })
     }
   });
 
-  const { placeElementAt, confirmPlacement } = useGardenElement();
+  const { place: placeElementAt, confirmPlacement: confirmElementPlacement } = useGardenElement();
+  const { confirmPlacement: confirmZoneCreation } = useGardenZone();
 
   const handleWorldClick = (x: number, y: number) => {
+    log("2 - handleWorldClick triggered in GardenCanvas with coordinates: ", x, y)
     const col = Math.floor(x / CELL_SIZE);
+    log("3 - Converted and stored to col: ", col)
     const row = Math.floor(y / CELL_SIZE);
-    const cell = { x: col, y: row, color: 'black' };
+    log("4 - Converted and stored to row: ", row)
+    const cell = { x: col, y: row, color: selectedItem?.metadata?.brushColor };
+    log("5 - Defined 'cell': ", cell);
 
-    if (isDrawing && canvasGridRef.current) {
-      console.log('🖌️ Drawing mode — coloring cell at', col, row);
-      canvasGridRef.current.colorCell(cell);
+    if (isDrawing && innerCanvasGridRef.current) {
+      log('6 - 🖌️ Coloring cell at', col, row);
+      innerCanvasGridRef.current.colorCell(cell);
+      log("7 - innerCanvasGridRef.current.colorCell is now called. ")
 
       const fullCell: ColoredCell = {
         x: col,
         y: row,
-        color: cell.color,
-        menuElementId: 'placeholdermenuelementid',
-        zoneId: 'placeholderzoneid',
+        color: cell.color ?? "",
+        menuElementId: selectedItem!.id
       };
 
-      console.log('🧠 Adding to color buffer:', fullCell);
+      log('8 - 🧠 Adding fullCell to color buffer:', fullCell);
       colorBuffer.addCell(fullCell);
 
       return;
     }
 
+    log("6 - Now triggering onCanvasClick with x and y: ", x, y)
     const target = onCanvasClick(x, y);
-    if (!target) {
+    if (target) log("7 - onCanvasClick yielded non-null target: ", target)
+    if (!target && isPlacing) {
       const position: Vec2 = { x: col * CELL_SIZE, y: row * CELL_SIZE };
+      log("7 - onCanvasClick yielded null target so calling place hook with position: ", position);
       placeElementAt(position);
       if (selectedItem) setNaming(true);
-    }
-  };
-
-  const handleEditConfirm = () => {
-    const updatedElement = canvasGridRef.current?.getTransformedElement();
-    if (updatedElement) {
-      console.log('✅ Confirming element update:', updatedElement);
-      updateElement(updatedElement);
-      clearSelection();
-    }
-
-    const coloredCells = colorBuffer.getCells();
-    console.log('📦 Colored cells to dispatch:', coloredCells);
-
-    if (Object.keys(coloredCells).length > 0) {
-      gdispatch({ type: 'SET_COLORED_CELLS', coloredCells });
-    } else {
-      console.warn('⚠️ No colored cells found in buffer');
     }
   };
 
@@ -145,8 +164,11 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
               }
             }
 
-            ctx.strokeStyle = 'rgba(0, 128, 0, 0.5)';
-            ctx.strokeRect(el.x, el.y, el.width, el.height);
+
+            if (isEditing) {
+              ctx.strokeStyle = 'rgba(0, 128, 0, 0.5)';
+              ctx.strokeRect(el.x, el.y, el.width, el.height);
+            }
 
             if (el.id === selectedElement?.id) {
               ctx.globalAlpha = 0.3;
@@ -159,12 +181,12 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
       },
       deps: [selectedElement],
     }));
-  }, [activeLayers, elements, selectedElement]);
+  }, [activeLayers, elements, selectedElement, isEditing]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        console.log('🔚 Escape key pressed — clearing selection');
+        e.preventDefault()
         clearSelection();
       }
     };
@@ -180,11 +202,20 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
       try {
         const elements = await fetchElements();
         if (mounted) {
-          console.log('🌱 Initial elements loaded:', elements);
+          log('🌱 Initial elements loaded:', elements);
           gdispatch({ type: 'SET_ELEMENTS', elements });
         }
       } catch (err) {
-        console.error('🚨 Failed to load elements', err);
+        error('🚨 Failed to load elements', err);
+      }
+      try {
+      const zones = await fetchZones();
+        if (mounted) {
+          log('🌱 Initial zones loaded:', zones);
+          gdispatch({ type: 'SET_ZONES', zones });
+        }
+      } catch (err) {
+        error('🚨 Failed to load zones', err);
       }
     };
 
@@ -196,22 +227,31 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
   }, []);
 
   useEffect(() => {
-    if (selectedElement?.color) return useSelectionStore.getState().setDrawing(selectedElement.color)
-  }, [selectedElement])
+    if (selectedItem?.color) return useSelectionStore.getState().setDrawing(selectedItem.color)
+  }, [selectedItem])
 
   return (
     <div style={{ position: 'relative' }}>
       <CanvasGrid
-        ref={canvasGridRef}
+        ref={innerCanvasGridRef}
         layers={layers}
         selectedElement={selectedElement}
         onWorldClick={handleWorldClick}
-        onEditConfirm={handleEditConfirm}
+        // onEditConfirm={handleEditConfirm}
       />
       {naming && (
         <NameModal
           onPlacement={async (name) => {
-            await confirmPlacement(name);
+            if (isPlacing) {
+            log("10 - isPlacing, now calling await confirmElementPlacement(name) with name: ", name)
+            await confirmElementPlacement(name);
+            }
+            if (isDrawing) {
+              const cells = colorBuffer.getCells()
+              log("17 - isDrawing, colorBuffer.getCells() yields: ", cells)
+              log("18 - Calling 'await confirmZoneCreation(cells, name)' with arguments: ", cells, name)
+              await confirmZoneCreation(cells, name);
+            }
             setNaming(false);
           }}
           onAbort={() => {
@@ -232,7 +272,7 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
           <PropMenu
             element={propMenu}
             onUpdate={(updatedData) => {
-              console.log('🔧 PropMenu updated element:', updatedData);
+              log('🔧 PropMenu updated element:', updatedData);
               updateElement(updatedData);
               setPropMenu((prev) =>
                 prev && prev.id === updatedData.id

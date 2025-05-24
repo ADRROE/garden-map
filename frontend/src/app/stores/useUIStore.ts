@@ -1,5 +1,5 @@
 import { UIAction } from "../services/actions";
-import { ColoredCell, LayerName } from "../types";
+import { LayerName } from "../types";
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 
@@ -11,7 +11,6 @@ type UIState = {
   isMapLocked: boolean;
   showSideBar: boolean;
   activeLayers: LayerName[];
-  coloredCells: ColoredCell[];
 
   setScale: (scale: number) => void;
   setPan: (pan: Vec2) => void;
@@ -28,8 +27,7 @@ export const useUIStore = create<UIState>()(
       pan: { x: 0, y: 0 },
       isMapLocked: true,
       showSideBar: false,
-      activeLayers: ["background", "elements"],
-      coloredCells: [],
+      activeLayers: ["background", "elements", "zones"],
 
       setScale: (scale) => get().dispatch({ type: 'SET_SCALE', scale }),
       setPan: (pan) => get().dispatch({ type: 'SET_PAN', pan }),
@@ -75,7 +73,17 @@ function baseReducer(state: UIState, action: UIAction): Partial<UIState> {
     case "TOGGLE_SIDEBAR":
       return {
         showSideBar: !state.showSideBar
-      }
+      };
+    case "SHOW_SIDEBAR":
+      return {
+        ...state,
+        showSideBar: true
+      };
+    case "HIDE_SIDEBAR":
+      return {
+        ...state,
+        showSideBar: false
+      };
     default:
       return {};
   }

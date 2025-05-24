@@ -1,25 +1,23 @@
-import { useGardenStore } from "../stores/useGardenStore";
+
 import { useUIStore } from "../stores/useUIStore";
 import { LayerName } from "../types";
 import { useMenuStore } from "@/stores/useMenuStore";
 import { AnimatePresence, motion } from "framer-motion";
 import { useState } from "react";
 
-const MenuController = () => {
+const QuickMenu = () => {
 
-    const dispatch = useGardenStore(state => state.dispatch);
     const uidispatch = useUIStore(state => state.dispatch);
     const isMapLocked = useUIStore(state => state.isMapLocked);
     const { toggleMapLock } = useUIStore();
 
     const [isOpen, setIsOpen] = useState(false);
 
-
     // const handleZoneClick = () => datadispatch({ type: 'TOGGLE_SHOW_ZONES' });
     const handleLockClick = () => {
         toggleMapLock()
     }
-    const handleElementClick = () => dispatch({ type: 'TOGGLE_IS_SELECTING_ELEMENT' });
+    const handleElementClick = () => uidispatch({type: 'SHOW_SIDEBAR'})
     const handleZoneClick = () => {
         useMenuStore.getState().setOpenSection('s3');
     }
@@ -28,9 +26,9 @@ const MenuController = () => {
     }
 
     const buttons = [
-        { src: "/icons/lightbulb.png", alt: "Tool 1", onClick: () => {} },
-        { src: "/icons/database.png", alt: "Database", onClick: () => {} },
-        { src: "/icons/workflow.png", alt: "Workflow", onClick: () => {} },
+        { src: "/icons/lightbulb.png", alt: "Tool 1", onClick: () => {setIsOpen(false)} },
+        { src: "/icons/database.png", alt: "Database", onClick: () => {setIsOpen(false)} },
+        { src: "/icons/workflow.png", alt: "Workflow", onClick: () => {setIsOpen(false)} },
         { src: "/icons/layers.png", alt: "Layers", onClick: () => handleLayersClick(['background']) },
         { src: "/zone.png", alt: "Zones", onClick: handleZoneClick },
         { src: "/element.png", alt: "Elements", onClick: handleElementClick },
@@ -56,7 +54,6 @@ const MenuController = () => {
                                 whileTap={{ scale: 0.95 }}
                                 onClick={() => {
                                     btn.onClick();
-                                    setIsOpen(false); // optional: auto-close
                                 }}
                                 className="bg-white rounded-full p-3 shadow-lg hover:bg-gray-100 transition"
                             >
@@ -72,7 +69,7 @@ const MenuController = () => {
                 onClick={() => setIsOpen(prev => !prev)}
                 whileHover={{ scale: 1.1, rotate: 10 }}
                 whileTap={{ scale: 0.95 }}
-                className="bg-blue-600 text-white rounded-full p-3 shadow-xl hover:bg-blue-700 transition"
+                className="bg-[#C5D4BC] text-white rounded-full p-3 shadow-xl hover:bg-[#9BB58B] transition"
             >
                 <span className="text-xl font-bold">...</span>
             </motion.button>
@@ -80,4 +77,4 @@ const MenuController = () => {
     );
 }
 
-export default MenuController;
+export default QuickMenu;

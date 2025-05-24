@@ -1,6 +1,7 @@
 import { useSelectionStore } from "@/stores/useSelectionStore";
 import { useGardenStore } from "../stores/useGardenStore";
 import { GardenElement } from "@/types";
+import { log } from '@/utils/utils'
 
 type CanvasInteractionOptions = {
   onSelect?: (element: GardenElement) => void;
@@ -12,6 +13,7 @@ export function useCanvasInteraction ({ onSelect, onDeselect }: CanvasInteractio
   const datastate = useGardenStore(state => state.present);
   const selectElement = (element: GardenElement) => {
     useSelectionStore.getState().setEditing(element)
+    log("CanvasInteraction now setting Editing with el: ", element)
   }
 
   const onCanvasClick = (worldX: number, worldY: number): GardenElement | null => {

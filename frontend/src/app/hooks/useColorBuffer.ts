@@ -1,6 +1,7 @@
 // hooks/useColorBuffer.ts
 import { useRef } from 'react';
 import { ColoredCell } from '../types';
+import { log } from '@/utils/utils';
 
 export function useColorBuffer() {
   const bufferRef = useRef<Record<string, ColoredCell>>({});
@@ -10,17 +11,17 @@ export function useColorBuffer() {
   const addCell = (cell: ColoredCell) => {
     const key = getKey(cell.x, cell.y);
     bufferRef.current[key] = cell;
-    console.log('🧩 addCell:', key, cell);
-    console.log('📦 Buffer after addCell:', { ...bufferRef.current });
+    log('🧩 [useColorBuffer] - addCell:', key, cell);
+    log('📦 [useColorBuffer] - Buffer after addCell:', { ...bufferRef.current });
   };
 
   const getCells = (): Record<string, ColoredCell> => {
-    console.log('🧪 getCells() called — current buffer:', { ...bufferRef.current });
+    log(' [useColorBuffer] - 🧪 getCells() called — current buffer:', { ...bufferRef.current });
     return { ...bufferRef.current };
   };
 
   const clearCells = () => {
-    console.log('🗑️ clearCells() called — clearing buffer');
+    log(' [useColorBuffer] - 🗑️ clearCells() called — clearing buffer');
     bufferRef.current = {};
   };
 

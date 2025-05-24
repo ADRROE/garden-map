@@ -1,11 +1,15 @@
 
-import MenuController from "./MenuController";
-import { SideBar, SideBarSection } from "./SideBar";
+import QuickMenu from "./QuickMenu";
+import { SideBar } from "./SideBar";
 import { useMenuElements } from "../hooks/useMenuElements";
 import { useSelectionStore } from "../stores/useSelectionStore";
 import { useTranslations } from "next-intl";
 import LanguageSwitcher from "./LanguageSwitcher";
 import { useUIStore } from "@/stores/useUIStore";
+import StatusBar from "./StatusBar";
+import { useTransientFlag } from "@/hooks/useTransientFlag";
+import { capitalizeFirstLetter } from "@/utils/utils";
+import { MenuSection } from "@/stores/useMenuStore";
 
 
 export default function Overlay({ onEditConfirm }: { onEditConfirm: () => void }) {
@@ -15,13 +19,18 @@ export default function Overlay({ onEditConfirm }: { onEditConfirm: () => void }
   const btnClass =
     'w-12 h-12 flex rounded-full bg-[#C5D4BC] items-center justify-center hover:bg-green-700 shadow-lg transition';
 
-  const { data: menuElements = [] } = useMenuElements();
-  const isEditing = useSelectionStore((s) => s.selection.kind === 'editing');
-  const isDrawing = useSelectionStore((s) => s.selection.kind === 'drawing');
-  const { clear } = useSelectionStore();
-  const { showSideBar } = useUIStore();
 
-  const sideBarSections: SideBarSection[] = [{
+  const { data: menuElements = [] } = useMenuElements();
+
+  const clear = useSelectionStore((s) => s.clear);
+  const selection = useSelectionStore((s) => s.selection);
+  const isInteracting = selection.kind === 'drawing' || selection.kind === 'editing';
+  
+  const showSideBar = useUIStore();
+  const showStatusBar = useTransientFlag(selection.kind, 2000); // shown for 2s after any change
+
+
+  const sideBarSections: MenuSection[] = [{
     id: "s1",
     title: "Vegetation",
     items: menuElements.filter(element => element.category === "vegetation")
@@ -35,13 +44,12 @@ export default function Overlay({ onEditConfirm }: { onEditConfirm: () => void }
     title: "Soil",
     items: menuElements.filter(element => element.category === "soil")
   }]
-
+  
   return (
     <>
-      <MenuController />
+      <QuickMenu />
       <LanguageSwitcher />
-
-      {(isEditing || isDrawing) &&
+      {isInteracting &&
         <>
           <div className="fixed top-4 right-4 -translate-x-1/2 z-50 space-x-4 flex">
             <button onClick={onEditConfirm}>
@@ -61,12 +69,21 @@ export default function Overlay({ onEditConfirm }: { onEditConfirm: () => void }
           </div>
         </>
       }
-      {showSideBar &&
+      {showSideBar && !isInteracting &&
         <SideBar
           title={t('elementchooser')}
           sections={sideBarSections}>
         </SideBar>
       }
+      {showStatusBar && (
+        <StatusBar
+          text={selection.kind ? `${capitalizeFirstLetter(selection.kind)}... `: ""}
+          status={selection}
+          className={showStatusBar ? "opacity-100" : "opacity-0"}
+        />
+      )}
+
+
     </>
   );
 }

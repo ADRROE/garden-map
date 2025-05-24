@@ -5,6 +5,7 @@ import { Canvas, FabricObject } from 'fabric';
 import { useUIStore } from '../stores/useUIStore';
 import { useSelectionStore } from '../stores/useSelectionStore';
 import { createFabricElement } from '../utils/FabricHelpers';
+import { log, warn } from "@/utils/utils";
 
 const NUM_ROWS = 225;
 const NUM_COLS = 225;
@@ -17,6 +18,7 @@ export interface CanvasGridHandle {
   getTransformedElement: () => GardenElement | null;
   colorCell: (cell: Partial<ColoredCell>) => void;
   clearColoring: () => void;
+  handleEditConfirm?: () => void;
 }
 
 interface CanvasGridProps {
@@ -51,6 +53,7 @@ const CanvasGrid = forwardRef<CanvasGridHandle, CanvasGridProps>(
         const ctx = colorCtxRef.current;
         if (!ctx) return;
         if (cell.color && cell.x && cell.y) {
+          log("8 - Now coloring cell from within CanvasGrid.")
           ctx.fillStyle = cell.color;
           ctx.fillRect(cell.x * CELL_SIZE, cell.y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
         }
@@ -209,7 +212,7 @@ const CanvasGrid = forwardRef<CanvasGridHandle, CanvasGridProps>(
         };
 
         img.onerror = () => {
-          console.warn("Failed to load cursor image:", cursorImage);
+          warn("Failed to load cursor image:", cursorImage);
           document.body.style.cursor = "crosshair";
           fabricCanvas.defaultCursor = "crosshair";
         };
@@ -226,11 +229,13 @@ const CanvasGrid = forwardRef<CanvasGridHandle, CanvasGridProps>(
       canvas.clear(); // Clear previously added Fabric objects
 
       if (selectedElement) {
+        log("selectedElement as seen in canvasGrid:", selectedElement)
 
         createFabricElement(selectedElement, true).then(fabricEl => {
           fabricObjectRef.current = fabricEl;
           canvas.add(fabricEl);
           canvas.setActiveObject(fabricEl);
+          log(fabricEl)
           canvas.renderAll();
         });
       }
@@ -246,6 +251,7 @@ const CanvasGrid = forwardRef<CanvasGridHandle, CanvasGridProps>(
       const worldX = xCss / scaleRef.current + panRef.current.x;
       const worldY = yCss / scaleRef.current + panRef.current.y;
 
+      log("1 - Mousedown triggered in CanvasGrid, passing worldX, worldY to GardenCanvas: ", worldX, worldY)
       onWorldClick?.(worldX, worldY);
     };
 
@@ -318,15 +324,16 @@ const CanvasGrid = forwardRef<CanvasGridHandle, CanvasGridProps>(
             width={WIDTH}
             height={HEIGHT} />
           <canvas
-            id="fabric-overlay"
-            style={{ position: 'absolute', top: 0, left: 0, cursor: 'inherit' }}
-            width={WIDTH}
-            height={HEIGHT} />
-          <canvas
             ref={colorCanvasRef}
             style={{ position: 'absolute', top: 0, left: 0, cursor: 'inherit' }}
             width={WIDTH}
             height={HEIGHT} />
+          <canvas
+            id="fabric-overlay"
+            style={{ position: 'absolute', top: 0, left: 0, cursor: 'inherit' }}
+            width={WIDTH}
+            height={HEIGHT} />
+
         </div>
       </div>
     );

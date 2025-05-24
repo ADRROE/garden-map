@@ -15,6 +15,7 @@ import {
   fetchZones,
   updateZoneAPI,
 } from '@/services/apiService';
+import { log, error } from '@/utils/utils';
 
 type GardenActions = {
   undo: () => void;
@@ -99,8 +100,8 @@ export const useGardenStore = create<GardenStore>()(
       get().dispatch({ type: 'UPDATE_ELEMENT', id: update.id, updates: update });
       try {
         await updateElementAPI(update);
-      } catch (error) {
-        console.error('Failed to update element:', error);
+      } catch (err) {
+        error('Failed to update element:', err);
       }
     },
 
@@ -108,8 +109,8 @@ export const useGardenStore = create<GardenStore>()(
       get().dispatch({ type: 'DELETE_ELEMENT', id });
       try {
         await deleteElementAPI(id);
-      } catch (error) {
-        console.error('Failed to delete element:', error);
+      } catch (err) {
+        error('Failed to delete element:', err);
       }
     },
 
@@ -119,8 +120,8 @@ export const useGardenStore = create<GardenStore>()(
         await updateZoneAPI(updatedZone);
         const zones = await fetchZones();
         get().dispatch({ type: 'SET_ZONES', zones });
-      } catch (error) {
-        console.error('Failed to update zone:', error);
+      } catch (err) {
+        error('Failed to update zone:', err);
       }
     },
   }),     {
@@ -165,7 +166,7 @@ function baseReducer(state: GardenDataState, action: GardenDataAction): GardenDa
       return { ...state, elements: action.elements };
     
     case "SET_COLORED_CELLS":
-        console.log("Reducer received coloredCells:", action.coloredCells);
+        log("16 - Reducer received coloredCells:", action.coloredCells);
 
       return { ...state, coloredCells: {
           ...state.coloredCells,

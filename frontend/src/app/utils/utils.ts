@@ -1,3 +1,5 @@
+const DEBUG = false; // Toggle this to false in production
+
 export const toColumnLetter = (col: number): string => {
   let letter = '';
   while (col >= 0) {
@@ -48,3 +50,21 @@ export function darkenColor(hex: string, amount: number = 20): string {
 
   return '#' + (r << 16 | g << 8 | b).toString(16).padStart(6, '0');
 }
+
+export const log = (...args: any[]) => {
+  if (DEBUG) {
+    console.log(...args);
+  }
+};
+
+export const warn = (...args: any[]) => {
+  if (DEBUG) {
+    console.warn(...args);
+  }
+};
+
+export const error = (...args: any[]) => {
+  if (DEBUG) {
+    console.error(...args);
+  }
+};

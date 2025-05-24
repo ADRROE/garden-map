@@ -1,11 +1,11 @@
 import type { GardenElement, MenuElement, Vec2 } from '../types';
 
 export type SelectionState =
-  | { kind: 'none' }
+  | { kind: null }
   | {
       kind: 'placing';
       menuItem: MenuElement;
-      pendingPosition?: Vec2; // 🔍 Add this here
+      pendingPosition?: Vec2;
     }
   | { kind: 'editing'; element: GardenElement }
   | { kind: 'drawing'; color: string };

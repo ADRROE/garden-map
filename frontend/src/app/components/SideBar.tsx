@@ -1,23 +1,17 @@
-import { useMenuStore } from "../stores/useMenuStore";
+import { MenuSection, useMenuStore } from "../stores/useMenuStore";
 import { MenuElement } from "../types";
-import { useGardenElement } from "../hooks/useGardenElement";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslations } from "next-intl";
-
-export type SideBarSection = {
-    id: string;
-    title: string;
-    items: MenuElement[];
-};
+import { useMenuActions } from "@/hooks/useMenuActions";
 
 type SideBarProps = {
     title: string;
-    sections: SideBarSection[];
+    sections: MenuSection[];
 };
 
 export function SideBar({ title, sections }: SideBarProps) {
-    const { openSectionId, setOpenSection, setSelectedItem } = useMenuStore();
-    const { beginPlacing } = useGardenElement();
+    const { openSectionId, setOpenSection } = useMenuStore();
+    const { handleItemClick } = useMenuActions();
     const t = useTranslations('Menu');
 
     const toggleSection = (id: string) => {
@@ -48,10 +42,7 @@ export function SideBar({ title, sections }: SideBarProps) {
                                         {section.items.map((item) => (
                                             <li key={item.id}>
                                                 <button
-                                                    onClick={() => {
-                                                        setSelectedItem(item.id);
-                                                        beginPlacing(item);
-                                                    }}
+                                                    onClick={() => handleItemClick(item)}
                                                     className={`block w-full text-left py-1 px-2 rounded hover:bg-gray-100 `}
                                                     style={{ cursor: "pointer" }}
                                                 >
@@ -64,10 +55,7 @@ export function SideBar({ title, sections }: SideBarProps) {
                                                         {item.children.map((child: MenuElement) => (
                                                             <li key={child.id}>
                                                                 <button
-                                                                    onClick={() => {
-                                                                        setSelectedItem(child.id);
-                                                                        beginPlacing(child);
-                                                                    }}
+                                                                    onClick={() => handleItemClick(item)}
                                                                     className={`block w-full text-left py-1 px-2 rounded hover:bg-gray-100`}
                                                                 >
 
