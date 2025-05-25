@@ -22,6 +22,7 @@
     "konva": "^9.3.20",
     "lodash.debounce": "^4.0.8",
     "lodash.isequal": "^4.5.0",
+    "lottie-react": "^2.4.1",
     "next": "15.2.4",
     "next-intl": "4",
     "process": "^0.11.10",

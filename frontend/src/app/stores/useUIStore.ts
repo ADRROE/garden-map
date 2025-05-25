@@ -10,12 +10,14 @@ type UIState = {
   pan: Vec2;
   isMapLocked: boolean;
   showSideBar: boolean;
+  isLoading: boolean;
   activeLayers: LayerName[];
 
   setScale: (scale: number) => void;
   setPan: (pan: Vec2) => void;
   toggleMapLock: () => void;
   toggleSideBar: () => void;
+  toggleIsLoading: () => void;
 
   dispatch: (action: UIAction) => void;
 };
@@ -27,6 +29,7 @@ export const useUIStore = create<UIState>()(
       pan: { x: 0, y: 0 },
       isMapLocked: true,
       showSideBar: false,
+      isLoading: false,
       activeLayers: ["background", "elements", "zones"],
 
       setScale: (scale) => get().dispatch({ type: 'SET_SCALE', scale }),
@@ -36,6 +39,9 @@ export const useUIStore = create<UIState>()(
         set((state) => ({ isMapLocked: !state.isMapLocked })),
       toggleSideBar: () =>
         set((state) => ({ showSideBar: !state.showSideBar })),
+      toggleIsLoading: () =>
+        set((state) => ({ isLoading: !state.isLoading })),
+
 
       dispatch: (action: UIAction) =>
         set((state) => ({
@@ -50,6 +56,8 @@ function baseReducer(state: UIState, action: UIAction): Partial<UIState> {
   switch (action.type) {
     case 'SET_SCALE':
       return { scale: action.scale };
+    case 'SET_PAN':
+      return { pan: action.pan };
     case "TOGGLE_LAYER":
       return {
         activeLayers: state.activeLayers.includes(action.layer)
@@ -72,6 +80,7 @@ function baseReducer(state: UIState, action: UIAction): Partial<UIState> {
       };
     case "TOGGLE_SIDEBAR":
       return {
+        ...state,
         showSideBar: !state.showSideBar
       };
     case "SHOW_SIDEBAR":

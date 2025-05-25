@@ -26,7 +26,7 @@ export default function Overlay({ onEditConfirm }: { onEditConfirm: () => void }
   const selection = useSelectionStore((s) => s.selection);
   const isInteracting = selection.kind === 'drawing' || selection.kind === 'editing';
   
-  const showSideBar = useUIStore();
+  const showSideBar = useUIStore((s) => s.showSideBar);
   const showStatusBar = useTransientFlag(selection.kind, 2000); // shown for 2s after any change
 
 

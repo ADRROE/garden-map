@@ -74,5 +74,5 @@ export const menuItems: MenuElement[] =
     { "id": "70", "label": "sand", "icon": "/icons/sand.png", "defaultWidth": 95, "defaultHeight": 95, "category": "soil", "color": "#c7b199", "metadata": {"kind": "zone", "brushColor": "#c7b199"}},
     { "id": "71", "label": "loam", "icon": "/icons/loam.png", "defaultWidth": 95, "defaultHeight": 95, "category": "soil", "color": "#b88859", "metadata": {"kind": "zone", "brushColor": "#b88859"}}, 
     { "id": "72", "label": "clay", "icon": "/icons/clay.png", "defaultWidth": 95, "defaultHeight": 95, "category": "soil", "color": "#dad6ba", "metadata": {"kind": "zone", "brushColor": "#dad6ba"}},
-    { "id": "73", "label": "compost", "icon": "/icons/compost.png", "defaultWidth": 95, "defaultHeight": 95, "category": "soil", "color": "#000000", "metadata": {"kind": "zone", "brushColor": "#000000"}}
+    { "id": "73", "label": "compost", "icon": "/icons/compost.png", "defaultWidth": 95, "defaultHeight": 95, "category": "soil", "color": "#5c6b73", "metadata": {"kind": "zone", "brushColor": "#5c6b73"}}
 ]

@@ -73,6 +73,20 @@ export default React.memo(function Ruler() {
           );
         })}
       </div>
+          <div style={{
+      position: 'absolute',
+      bottom: 8,
+      right: 8,
+      background: 'rgba(0,0,0,0.6)',
+      color: 'white',
+      padding: '2px 6px',
+      fontSize: '12px',
+      borderRadius: '4px',
+      pointerEvents: 'none',
+      zIndex: 10,
+    }}>
+      Scale: {scale.toFixed(2)}x
+    </div>
     </div>
   );
 });

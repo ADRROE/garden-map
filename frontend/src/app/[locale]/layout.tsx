@@ -4,6 +4,7 @@ import "../globals.css";
 import { notFound } from 'next/navigation';
 import { NextIntlClientProvider } from 'next-intl';
 import { error } from "@/utils/utils";
+import LoadingOverlayClient from "@/components/LoadingOverlayClient";
 
 export const metadata: Metadata = {
   title: "Garden Map",
@@ -28,13 +29,14 @@ export default async function LocaleLayout({
     notFound();
   }
 
-
   return (
     <html lang={locale} className="bg-background text-foreground">
       <body className="font-sans antialiased bg-background text-foreground">
         <NextIntlClientProvider locale={locale} >
           <Providers>
+            <LoadingOverlayClient>
             {children}
+            </LoadingOverlayClient>
           </Providers>
         </NextIntlClientProvider>
       </body>

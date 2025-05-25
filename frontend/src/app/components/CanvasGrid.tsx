@@ -18,6 +18,10 @@ export interface CanvasGridHandle {
   getTransformedElement: () => GardenElement | null;
   colorCell: (cell: Partial<ColoredCell>) => void;
   clearColoring: () => void;
+  getBounds: () => DOMRect | undefined;
+  wrapper?: HTMLDivElement | null;
+  mainCanvas?: HTMLCanvasElement | null;
+  colorCanvas?: HTMLCanvasElement | null;
   handleEditConfirm?: () => void;
 }
 
@@ -26,15 +30,18 @@ interface CanvasGridProps {
   selectedElement: GardenElement | null
   onWorldClick: (row: number, col: number) => void;
   onEditConfirm?: (updated: GardenElement) => void;
+  onMouseMove?: (e: React.MouseEvent<HTMLDivElement>) => void;
 }
 
 
 const CanvasGrid = forwardRef<CanvasGridHandle, CanvasGridProps>(
-  ({ layers, selectedElement, onWorldClick }, ref) => {
+  ({ layers, selectedElement, onWorldClick, onMouseMove }, ref) => {
     const fabricCanvasRef = useRef<Canvas | null>(null);
     const fabricObjectRef = useRef<FabricObject | null>(null);
     const colorCtxRef = useRef<CanvasRenderingContext2D | null>(null);
-    const colorCanvasRef = useRef<HTMLCanvasElement | null>(null);
+    const wrapperRef = useRef<HTMLDivElement>(null);
+    const mainCanvasRef = useRef<HTMLCanvasElement>(null);
+    const colorCanvasRef = useRef<HTMLCanvasElement>(null);
 
     useImperativeHandle(ref, () => ({
       getTransformedElement: () => {
@@ -64,15 +71,19 @@ const CanvasGrid = forwardRef<CanvasGridHandle, CanvasGridProps>(
         if (!ctx) return;
         ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
       },
+      getBounds: () => wrapperRef.current?.getBoundingClientRect(),
+      wrapper: wrapperRef.current,
+      colorCanvas: colorCanvasRef.current,
+      mainCanvas: mainCanvasRef.current,
     }));
 
-    const { scale: initialScale, setScale } = useUIStore();
+    const { scale: initialScale, setScale, pan: initialPan, setPan } = useUIStore();
 
     const scaleRef = useRef(initialScale);
-    const panRef = useRef({ x: 0, y: 0 });
+    const panRef = useRef(initialPan);
     const containerRef = useRef<HTMLDivElement>(null);
-    const wrapperRef = useRef<HTMLDivElement>(null);
-    const mainRef = useRef<HTMLCanvasElement>(null);
+
+
     const lmRef = useRef<LayerManager | null>(null);
 
     const menuItem = useSelectionStore((s) => s.selection.kind === 'placing' ? s.selection.menuItem : null)
@@ -100,15 +111,23 @@ const CanvasGrid = forwardRef<CanvasGridHandle, CanvasGridProps>(
       });
     };
 
-    const getRenderResolution = (scale: number) => {
-      if (scale < 1.1) return 0.8;
-      if (scale < 1.3) return 0.9;
-      if (scale < 1.5) return 1.0;
-      return 2.0;
-    };
+const getRenderResolution = (scale: number): number => {
+  if (scale <= 0.8) return 0.75;
 
+  if (scale <= 1.0) {
+    // Smoothly interpolate from 0.75 to 0.85 between 0.8 and 1.0
+    return 0.75 + ((scale - 0.8) / (1.0 - 0.8)) * (0.85 - 0.75);
+  }
+
+  if (scale <= 1.5) {
+    // Interpolate from 0.85 to 2.0
+    return 0.85 + ((scale - 1.0) / (1.5 - 1.0)) * (2.0 - 0.85);
+  }
+
+  return 2.0;
+};
     const redraw = () => {
-      const canvas = mainRef.current!;
+      const canvas = mainCanvasRef.current!;
       if (!canvas) return
 
       const ctx = canvas.getContext('2d')!;
@@ -132,7 +151,7 @@ const CanvasGrid = forwardRef<CanvasGridHandle, CanvasGridProps>(
     };
 
     useEffect(() => {
-      if (!mainRef.current) return;
+      if (!mainCanvasRef.current) return;
 
       // Initialize Fabric only once
       fabricCanvasRef.current = new Canvas('fabric-overlay', {
@@ -185,7 +204,7 @@ const CanvasGrid = forwardRef<CanvasGridHandle, CanvasGridProps>(
         });
 
       // composite to main canvas
-      const main = mainRef.current!;
+      const main = mainCanvasRef.current!;
       const ctx = main.getContext('2d')!;
       ctx.clearRect(0, 0, WIDTH, HEIGHT);
       lm.drawToMain(ctx, layers.map(l => l.name));
@@ -279,7 +298,7 @@ const CanvasGrid = forwardRef<CanvasGridHandle, CanvasGridProps>(
             const FACTOR = 1.05;
             const dir = e.deltaY > 0 ? 1 / FACTOR : FACTOR;
             let next = scaleRef.current * dir;
-            next = Math.min(Math.max(next, 0.5), 4);
+            next = Math.min(Math.max(next, 0.5), 2);
 
             // keep pointer world‑pos fixed
             const worldX = px / scaleRef.current + panRef.current.x;
@@ -299,6 +318,7 @@ const CanvasGrid = forwardRef<CanvasGridHandle, CanvasGridProps>(
           translate(${-panRef.current.x}px,${-panRef.current.y}px)
         `;
           setScale(scaleRef.current);
+          setPan(panRef.current);
           // 👉 composite layers immediately:
           throttledRedraw()
         });
@@ -317,9 +337,10 @@ const CanvasGrid = forwardRef<CanvasGridHandle, CanvasGridProps>(
         <div
           ref={wrapperRef}
           onMouseDown={handleMouseDown}
+          onMouseMove={onMouseMove}
           style={{ position: 'relative', width: WIDTH, height: HEIGHT, cursor: 'inherit' }}>
           <canvas
-            ref={mainRef}
+            ref={mainCanvasRef}
             style={{ position: 'absolute', top: 0, left: 0, cursor: 'inherit' }}
             width={WIDTH}
             height={HEIGHT} />

@@ -67,8 +67,6 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
 
   const { activeLayers } = useUIStore();
   const uidispatch = useUIStore((s) => s.dispatch);
-  const scale = useUIStore((s) => s.scale);
-  const pan = useUIStore((s) => s.pan);
 
   const isDrawing = useSelectionStore((s) => s.selection.kind === 'drawing');
   const isEditing = useSelectionStore((s) => s.selection.kind === 'editing');
@@ -85,17 +83,9 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
   const [naming, setNaming] = useState(false);
   const [propMenu, setPropMenu] = useState<GardenElement | null>(null);
   const [propMenuPosition, setPropMenuPosition] = useState<{ x: number; y: number } | null>(null);
-  const [floatingLabel, setFloatingLabel] = useState<string | null>(null);
-  const [floatingLabelPosition, setFloatingLabelPosition] = useState<{ x: number; y: number } | null>(null);
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
   const imageCacheRef = useRef<Map<string, HTMLImageElement>>(new Map());
   const zonePathCache = useRef<Map<string, Path2D>>(new Map());;
-  const scaleRef = useRef<number>(null);
-  const panRef = useRef<Vec2>(null);
-
-  scaleRef.current = scale;
-  panRef.current = pan;
 
   const { onCanvasClick } = useCanvasInteraction({
     onSelect: (el) => {
@@ -148,27 +138,6 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
       placeElementAt(position);
       if (selectedItem) setNaming(true);
     }
-  };
-
-    const { onCanvasHover } = useCanvasInteraction({
-    onHoverChange: (el) => {
-      setFloatingLabel(el ? el.name || el.id : null);
-      if (el) setFloatingLabelPosition({x: el.x, y: el.y})
-    }
-  });
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!innerCanvasGridRef || !scaleRef) return
-
-    const rect = innerCanvasGridRef.current?.getBounds();
-      const xCss = e.clientX - rect.left;
-      const yCss = e.clientY - rect.top;
-
-      const worldX = xCss / scaleRef.current + panRef.current.x;
-      const worldY = yCss / scaleRef.current + panRef.current.y;
-
-    setMousePos({ x: xCss, y: yCss });
-    onCanvasHover(worldX, worldY); // ⬅️ still efficient — no state update unless hover actually changes
   };
 
   const layers = useMemo((): CanvasLayer[] => {
@@ -274,10 +243,12 @@ useEffect(() => {
   if (!wrapper || !isDrawing) return;
 
   const handleMouseDown = () => {
+    console.log("mousedown");
     isMouseDownRef.current = true;
   };
 
   const handleMouseUp = () => {
+    console.log("mouseup");
     isMouseDownRef.current = false;
   };
 
@@ -288,6 +259,7 @@ useEffect(() => {
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
 
+    console.log("mousemove with mouse down", { x, y });
     handleWorldClick(x, y);
   };
 
@@ -309,41 +281,8 @@ useEffect(() => {
         layers={layers}
         selectedElement={selectedElement}
         onWorldClick={handleWorldClick}
-        onMouseMove={handleMouseMove}
-
       // onEditConfirm={handleEditConfirm}
       />
-{floatingLabel && floatingLabelPosition && (
-  <div
-    style={{
-      position: 'absolute',
-      top: (mousePos.y - pan.y) * scale,
-      left: (mousePos.x - pan.x) * scale,
-      backgroundColor: 'rgba(0, 0, 0, 0.7)',
-      color: 'white',
-      padding: '2px 6px',
-      borderRadius: '4px',
-      pointerEvents: 'none',
-      fontSize: '12px',
-      zIndex: 1000,
-    }}
-  >
-    {floatingLabel}
-  </div>
-)}
-<div
-  style={{
-    position: 'absolute',
-    left: mousePos.x,
-    top: (mousePos.y - pan.y) * scale,
-    width: 4,
-    height: 4,
-    background: 'red',
-    borderRadius: '50%',
-    pointerEvents: 'none',
-    zIndex: 9999
-  }}
-/>
       {naming && (
         <NameModal
           onPlacement={async (name) => {
