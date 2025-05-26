@@ -30,12 +30,12 @@ interface CanvasGridProps {
   selectedElement: GardenElement | null
   onWorldClick: (row: number, col: number) => void;
   onEditConfirm?: (updated: GardenElement) => void;
-  onMouseMove?: (e: React.MouseEvent<HTMLDivElement>) => void;
+  onWorldMove: (row: number, col: number) => void;
 }
 
 
 const CanvasGrid = forwardRef<CanvasGridHandle, CanvasGridProps>(
-  ({ layers, selectedElement, onWorldClick, onMouseMove }, ref) => {
+  ({ layers, selectedElement, onWorldClick, onWorldMove }, ref) => {
     const fabricCanvasRef = useRef<Canvas | null>(null);
     const fabricObjectRef = useRef<FabricObject | null>(null);
     const colorCtxRef = useRef<CanvasRenderingContext2D | null>(null);
@@ -83,7 +83,6 @@ const CanvasGrid = forwardRef<CanvasGridHandle, CanvasGridProps>(
     const panRef = useRef(initialPan);
     const containerRef = useRef<HTMLDivElement>(null);
 
-
     const lmRef = useRef<LayerManager | null>(null);
 
     const menuItem = useSelectionStore((s) => s.selection.kind === 'placing' ? s.selection.menuItem : null)
@@ -111,21 +110,21 @@ const CanvasGrid = forwardRef<CanvasGridHandle, CanvasGridProps>(
       });
     };
 
-const getRenderResolution = (scale: number): number => {
-  if (scale <= 0.8) return 0.75;
+    const getRenderResolution = (scale: number): number => {
+      if (scale <= 0.8) return 0.75;
 
-  if (scale <= 1.0) {
-    // Smoothly interpolate from 0.75 to 0.85 between 0.8 and 1.0
-    return 0.75 + ((scale - 0.8) / (1.0 - 0.8)) * (0.85 - 0.75);
-  }
+      if (scale <= 1.0) {
+        // Smoothly interpolate from 0.75 to 0.85 between 0.8 and 1.0
+        return 0.75 + ((scale - 0.8) / (1.0 - 0.8)) * (0.85 - 0.75);
+      }
 
-  if (scale <= 1.5) {
-    // Interpolate from 0.85 to 2.0
-    return 0.85 + ((scale - 1.0) / (1.5 - 1.0)) * (2.0 - 0.85);
-  }
+      if (scale <= 1.5) {
+        // Interpolate from 0.85 to 2.0
+        return 0.85 + ((scale - 1.0) / (1.5 - 1.0)) * (2.0 - 0.85);
+      }
 
-  return 2.0;
-};
+      return 2.0;
+    };
     const redraw = () => {
       const canvas = mainCanvasRef.current!;
       if (!canvas) return
@@ -274,6 +273,17 @@ const getRenderResolution = (scale: number): number => {
       onWorldClick?.(worldX, worldY);
     };
 
+    const handleMouseMove = (e: React.MouseEvent) => {
+      const rect = containerRef.current!.getBoundingClientRect();
+      const xCss = e.clientX - rect.left;
+      const yCss = e.clientY - rect.top;
+
+      const worldX = xCss / scaleRef.current + panRef.current.x;
+      const worldY = yCss / scaleRef.current + panRef.current.y;
+
+      onWorldMove?.(worldX, worldY);
+    };
+
     // 6️⃣  Wheel → update pan/scale state only
     useEffect(() => {
       const container = containerRef.current!;
@@ -337,7 +347,7 @@ const getRenderResolution = (scale: number): number => {
         <div
           ref={wrapperRef}
           onMouseDown={handleMouseDown}
-          onMouseMove={onMouseMove}
+          onMouseMove={handleMouseMove}
           style={{ position: 'relative', width: WIDTH, height: HEIGHT, cursor: 'inherit' }}>
           <canvas
             ref={mainCanvasRef}

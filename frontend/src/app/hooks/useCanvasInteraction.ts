@@ -2,18 +2,18 @@ import { useSelectionStore } from "@/stores/useSelectionStore";
 import { useGardenStore } from "../stores/useGardenStore";
 import { GardenElement } from "@/types";
 import { log } from '@/utils/utils'
-import { useCallback, useRef } from "react";
+import { useRef } from "react";
 
 type CanvasInteractionOptions = {
   onSelect?: (element: GardenElement) => void;
   onDeselect?: () => void;
-  onHoverChange?: (element: GardenElement | null) => void; // 🆕 new prop
+  onHoverChange?: (element: GardenElement | null) => void;
 };
 
 export function useCanvasInteraction({
   onSelect,
   onDeselect,
-  onHoverChange, // ⬅️ allow listening to hover
+  onHoverChange,
 }: CanvasInteractionOptions = {}) {
 
   const datastate = useGardenStore(state => state.present);
@@ -41,7 +41,7 @@ export function useCanvasInteraction({
     }
   };
 
-  const onCanvasHover = useCallback((worldX: number, worldY: number): GardenElement | null => {
+  const onCanvasHover = (worldX: number, worldY: number): GardenElement | null => {
     const hoveredEl = elements.find(el =>
       worldX >= el.x &&
       worldX <= el.x + el.width &&
@@ -56,7 +56,7 @@ export function useCanvasInteraction({
     }
 
     return hoveredEl;
-  }, [elements, onHoverChange]);
+  };
 
   return { onCanvasHover, onCanvasClick };
 }

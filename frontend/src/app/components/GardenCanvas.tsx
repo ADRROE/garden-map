@@ -150,25 +150,16 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
     }
   };
 
-    const { onCanvasHover } = useCanvasInteraction({
+  const { onCanvasHover } = useCanvasInteraction({
     onHoverChange: (el) => {
       setFloatingLabel(el ? el.name || el.id : null);
-      if (el) setFloatingLabelPosition({x: el.x, y: el.y})
+      if (el) setFloatingLabelPosition({ x: el.x, y: el.y })
     }
   });
 
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!innerCanvasGridRef || !scaleRef) return
-
-    const rect = innerCanvasGridRef.current?.getBounds();
-      const xCss = e.clientX - rect.left;
-      const yCss = e.clientY - rect.top;
-
-      const worldX = xCss / scaleRef.current + panRef.current.x;
-      const worldY = yCss / scaleRef.current + panRef.current.y;
-
-    setMousePos({ x: xCss, y: yCss });
-    onCanvasHover(worldX, worldY); // ⬅️ still efficient — no state update unless hover actually changes
+  const handleWorldMove = (x: number, y: number) => {
+    setMousePos({ x, y });
+    onCanvasHover(x, y); // ⬅️ still efficient — no state update unless hover actually changes
   };
 
   const layers = useMemo((): CanvasLayer[] => {
@@ -274,10 +265,12 @@ useEffect(() => {
   if (!wrapper || !isDrawing) return;
 
   const handleMouseDown = () => {
+    console.log("mousedown");
     isMouseDownRef.current = true;
   };
 
   const handleMouseUp = () => {
+    console.log("mouseup");
     isMouseDownRef.current = false;
   };
 
@@ -288,6 +281,7 @@ useEffect(() => {
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
 
+    console.log("mousemove with mouse down", { x, y });
     handleWorldClick(x, y);
   };
 
@@ -309,41 +303,26 @@ useEffect(() => {
         layers={layers}
         selectedElement={selectedElement}
         onWorldClick={handleWorldClick}
-        onMouseMove={handleMouseMove}
-
-      // onEditConfirm={handleEditConfirm}
+        onWorldMove={handleWorldMove}
       />
-{floatingLabel && floatingLabelPosition && (
-  <div
-    style={{
-      position: 'absolute',
-      top: (mousePos.y - pan.y) * scale,
-      left: (mousePos.x - pan.x) * scale,
-      backgroundColor: 'rgba(0, 0, 0, 0.7)',
-      color: 'white',
-      padding: '2px 6px',
-      borderRadius: '4px',
-      pointerEvents: 'none',
-      fontSize: '12px',
-      zIndex: 1000,
-    }}
-  >
-    {floatingLabel}
-  </div>
-)}
-<div
-  style={{
-    position: 'absolute',
-    left: mousePos.x,
-    top: (mousePos.y - pan.y) * scale,
-    width: 4,
-    height: 4,
-    background: 'red',
-    borderRadius: '50%',
-    pointerEvents: 'none',
-    zIndex: 9999
-  }}
-/>
+      {floatingLabel && floatingLabelPosition && (
+        <div
+          style={{
+            position: 'absolute',
+            top: mousePos.y,
+            left: mousePos.x,
+            backgroundColor: 'rgba(0, 0, 0, 0.7)',
+            color: 'white',
+            padding: '2px 6px',
+            borderRadius: '4px',
+            pointerEvents: 'none',
+            fontSize: '12px',
+            zIndex: 1000,
+          }}
+        >
+          {floatingLabel}
+        </div>
+      )}
       {naming && (
         <NameModal
           onPlacement={async (name) => {
