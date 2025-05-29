@@ -10,6 +10,7 @@ import StatusBar from "./StatusBar";
 import { useTransientFlag } from "@/hooks/useTransientFlag";
 import { capitalizeFirstLetter } from "@/utils/utils";
 import { MenuSection } from "@/stores/useMenuStore";
+import MatrixDebugger from "./Matrix";
 
 
 export default function Overlay({ onEditConfirm }: { onEditConfirm: () => void }) {
@@ -28,7 +29,6 @@ export default function Overlay({ onEditConfirm }: { onEditConfirm: () => void }
   
   const showSideBar = useUIStore((s) => s.showSideBar);
   const showStatusBar = useTransientFlag(selection.kind, 2000); // shown for 2s after any change
-
 
   const sideBarSections: MenuSection[] = [{
     id: "s1",
@@ -49,6 +49,7 @@ export default function Overlay({ onEditConfirm }: { onEditConfirm: () => void }
     <>
       <QuickMenu />
       <LanguageSwitcher />
+      
       {isInteracting &&
         <>
           <div className="fixed top-4 right-4 -translate-x-1/2 z-50 space-x-4 flex">
@@ -69,6 +70,7 @@ export default function Overlay({ onEditConfirm }: { onEditConfirm: () => void }
           </div>
         </>
       }
+      {process.env.NODE_ENV === "development" && <MatrixDebugger />}
       {showSideBar && !isInteracting &&
         <SideBar
           title={t('elementchooser')}

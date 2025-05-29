@@ -66,8 +66,8 @@ class GardenElementUpdate(BaseModel):
         populate_by_name = True
 
 class ColoredCell(BaseModel):
-    x: float
-    y: float
+    col: float
+    row: float
     color: str
     menuElementId: str = Field(default=None, alias="menu_element_id")
 

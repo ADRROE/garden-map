@@ -1,28 +1,15 @@
 "use client";
 
-import { useEffect, useCallback, useRef } from "react";
+import { useRef } from "react";
 import Overlay from "../components/Overlay";
 import Ruler from "../components/Ruler";
 import GardenCanvas from "../components/GardenCanvas";
-import debounce from "lodash.debounce";
-import { useUIStore } from "../stores/useUIStore";
 import { CanvasGridHandle } from "../components/CanvasGrid";
 import { useGardenStore } from "../stores/useGardenStore";
 import { useColorBuffer } from "@/hooks/useColorBuffer";
 import { log, warn } from "@/utils/utils";
 
 export default function Home() {
-
-  const updateScale = useCallback(() => {
-    const targetWidth = 2560;
-    const targetHeight = 1440;
-    const newScale = Math.min(
-      window.innerWidth / targetWidth,
-      window.innerHeight / targetHeight
-    );
-    useUIStore.getState().setScale(newScale);
-
-  }, []);
 
   const colorBuffer = useColorBuffer()
 
@@ -48,13 +35,6 @@ export default function Home() {
   }
   };
 
-  useEffect(() => {
-    const debounced = debounce(updateScale, 100);
-    debounced(); // run immediately on mount
-    window.addEventListener("resize", debounced);
-    return () => window.removeEventListener("resize", debounced);
-  }, [updateScale]);
-
   // useEffect(() => {
   //   if (process.env.NODE_ENV === "development") {
   //     setInterval(() => {
@@ -67,8 +47,6 @@ export default function Home() {
 
     <div
       style={{
-        width: 1440,
-        height: 1024,
         position: "relative", // this ensures absolute children work as expected
       }}
     >

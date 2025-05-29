@@ -1,14 +1,13 @@
 'use client';
 
 import { useRouter, usePathname } from '../../i18n/navigation';
-import { useTranslations } from 'next-intl';
+import {useLocale} from 'next-intl';
 
 
 export default function LanguageSwitcher() {
   const router = useRouter();
   const pathname = usePathname();
-  const t = useTranslations(); // Access locale here
-  const locale = t.locale;
+  const locale = useLocale();
 
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newLocale = e.target.value;

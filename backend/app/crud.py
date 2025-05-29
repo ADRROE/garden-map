@@ -35,8 +35,8 @@ def create_zone_with_cells(db: Session, zone: schemas.GardenZone):
     db_cells = [
         models.ColoredCell(
             id=str(uuid.uuid4()),
-            x=cell.x,
-            y=cell.y,
+            col=cell.col,
+            row=cell.row,
             color=cell.color,
             menu_element_id=cell.menuElementId,
         )
@@ -74,8 +74,8 @@ def update_zone(db: Session, zone_id: str, updates: schemas.GardenZoneUpdate):
         new_cells = [
             models.ColoredCell(
                 id=str(uuid.uuid4()),
-                x=cell['x'],
-                y=cell['y'],
+                col=cell['col'],
+                row=cell['row'],
                 color=cell['color'],
                 menu_element_id=cell['menuElementId'],
                 zone_id=zone.id
@@ -88,8 +88,8 @@ def update_zone(db: Session, zone_id: str, updates: schemas.GardenZoneUpdate):
         # 3.1 Convert to schemas.ColoredCell (needed for algorithm)
         schema_cells = [
             schemas.ColoredCell(
-                x=cell.x,
-                y=cell.y,
+                col=cell.col,
+                row=cell.row,
                 color=cell.color,
                 menuElementId=cell.menu_element_id
             )
@@ -117,7 +117,7 @@ def get_zone_by_name(db: Session, name: str):
 def deduplicate_cells(cells: list[schemas.ColoredCell]) -> list[schemas.ColoredCell]:
     unique = {}
     for cell in cells:
-        key = (int(cell.x), int(cell.y))
+        key = (int(cell.col), int(cell.row))
         unique[key] = cell  # overwrite if duplicate
     return list(unique.values())
 
@@ -128,16 +128,16 @@ def merge_cells_into_existing_zone(db: Session, existing_zone: models.GardenZone
     # 2. Merge and deduplicate cells
     all_cells = [
         schemas.ColoredCell(
-            x=cell.x,
-            y=cell.y,
+            col=cell.col,
+            row=cell.row,
             color=cell.color,
             menuElementId=cell.menu_element_id
         )
         for cell in existing_zone.coverage
     ] + [
         schemas.ColoredCell(
-            x=cell.x,
-            y=cell.y,
+            col=cell.col,
+            row=cell.row,
             color=cell.color,
             menuElementId=cell.menuElementId
         )
@@ -150,8 +150,8 @@ def merge_cells_into_existing_zone(db: Session, existing_zone: models.GardenZone
     new_db_cells = [
         models.ColoredCell(
             id=str(uuid.uuid4()),
-            x=cell.x,
-            y=cell.y,
+            col=cell.col,
+            row=cell.row,
             color=cell.color,
             menu_element_id=cell.menuElementId,
             zone_id=existing_zone.id

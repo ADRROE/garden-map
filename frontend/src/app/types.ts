@@ -59,8 +59,8 @@ export interface GardenZone {
 }
 
 export type ColoredCell = {
-  x: number;
-  y: number;
+  col: number;
+  row: number;
   color: string;
   menuElementId?: string;
   zoneId?: string;

@@ -10,7 +10,7 @@ export default function drawZone(ctx: CanvasRenderingContext2D, zone: GardenZone
     if (!path) {
         path = new Path2D();
         for (const cell of zone.coverage) {
-            path.rect(cell.x * CELL_SIZE, cell.y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+            path.rect(cell.col * CELL_SIZE, cell.row * CELL_SIZE, CELL_SIZE, CELL_SIZE);
         }
         cache?.set(zone.id, path);
     }
@@ -19,8 +19,8 @@ export default function drawZone(ctx: CanvasRenderingContext2D, zone: GardenZone
     ctx.beginPath();
 
     for (const cell of zone.coverage) {
-        const { x, y } = cell;
-        ctx.rect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+        const { col, row } = cell;
+        ctx.rect(col * CELL_SIZE, row * CELL_SIZE, CELL_SIZE, CELL_SIZE);
     }
 
     ctx.fill();
@@ -39,10 +39,10 @@ export default function drawZone(ctx: CanvasRenderingContext2D, zone: GardenZone
 
   // 🏷 Draw name at center of zone
   if (zone.name && zone.coverage.length > 0) {
-    const minX = Math.min(...zone.coverage.map(c => c.x));
-    const maxX = Math.max(...zone.coverage.map(c => c.x));
-    const minY = Math.min(...zone.coverage.map(c => c.y));
-    const maxY = Math.max(...zone.coverage.map(c => c.y));
+    const minX = Math.min(...zone.coverage.map(c => c.col));
+    const maxX = Math.max(...zone.coverage.map(c => c.col));
+    const minY = Math.min(...zone.coverage.map(c => c.row));
+    const maxY = Math.max(...zone.coverage.map(c => c.row));
 
     const centerX = ((minX + maxX + 1) / 2) * CELL_SIZE;
     const centerY = ((minY + maxY + 1) / 2) * CELL_SIZE;

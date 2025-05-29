@@ -6,10 +6,10 @@ import { log } from '@/utils/utils';
 export function useColorBuffer() {
   const bufferRef = useRef<Record<string, ColoredCell>>({});
 
-  const getKey = (x: number, y: number) => `${x},${y}`;
+  const getKey = (col: number, row: number) => `${col},${row}`;
 
   const addCell = (cell: ColoredCell) => {
-    const key = getKey(cell.x, cell.y);
+    const key = getKey(cell.col, cell.row);
     bufferRef.current[key] = cell;
     log('🧩 [useColorBuffer] - addCell:', key, cell);
     log('📦 [useColorBuffer] - Buffer after addCell:', { ...bufferRef.current });

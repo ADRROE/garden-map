@@ -1,4 +1,73 @@
-const DEBUG = false; // Toggle this to false in production
+const DEBUG = true; // Toggle this to false in production
+
+// matrixUtils.ts
+
+export const screenToWorld = (
+  x: number,
+  y: number,
+  transform: DOMMatrix
+) => {
+  const inv = transform.inverse(); // be sure this is stable
+  const point = new DOMPoint(x, y).matrixTransform(inv);
+  return { x: point.x, y: point.y };
+};
+
+export const worldToScreen = (
+  x: number,
+  y: number,
+  transform: DOMMatrix
+) => {
+  const point = new DOMPoint(x, y).matrixTransform(transform);
+  return { x: point.x, y: point.y };
+};
+
+export const zoomMatrix = (matrix: DOMMatrix, factor: number, center: { x: number, y: number }) => {
+  return matrix
+    .translate(center.x, center.y)
+    .scale(factor)
+    .translate(-center.x, -center.y);
+};
+
+export const panMatrix = (matrix: DOMMatrix, dx: number, dy: number) => {
+  return matrix.translate(dx, dy);
+};
+
+export function constrainMatrix(
+  matrix: DOMMatrix,
+  bounds: { width: number; height: number },
+  viewport: { width: number; height: number }
+): DOMMatrix {
+  const scale = matrix.a; // assume uniform scale (same for x/y)
+  let tx = matrix.e;
+  let ty = matrix.f;
+
+  const scaledWidth = bounds.width * scale;
+  const scaledHeight = bounds.height * scale;
+
+  const maxX = 0;
+  const minX = viewport.width - scaledWidth;
+  const maxY = 0;
+  const minY = viewport.height - scaledHeight;
+
+  // clamp tx, ty
+  tx = Math.min(maxX, Math.max(minX, tx));
+  ty = Math.min(maxY, Math.max(minY, ty));
+
+  // return a new constrained matrix
+  const constrained = new DOMMatrix([matrix.a, matrix.b, matrix.c, matrix.d, tx, ty]);
+  return constrained;
+}
+
+export function domMatrixToValues(m: DOMMatrix) {
+  return {
+    a: m.a,
+    b: m.b,
+    c: m.c,
+    d: m.d,
+    e: m.e,
+    f: m.f,
+  };
+}
 
 export const toColumnLetter = (col: number): string => {
   let letter = '';
@@ -48,18 +117,21 @@ export function darkenColor(hex: string, amount = 0.5): string {
   return `rgb(${r}, ${g}, ${b})`;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const log = (...args: any[]) => {
   if (DEBUG) {
     console.log(...args);
   }
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const warn = (...args: any[]) => {
   if (DEBUG) {
     console.warn(...args);
   }
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const error = (...args: any[]) => {
   if (DEBUG) {
     console.error(...args);

@@ -10,16 +10,24 @@ RUN apt-get update && apt-get install -y \
     librsvg2-dev \
     && rm -rf /var/lib/apt/lists/*
 
+# Manually install pnpm globally
+RUN npm install -g pnpm
 
 WORKDIR /app
 
-COPY package.json package-lock.json* ./
-RUN npm install
+# Copy dependency files first for caching
+COPY package.json pnpm-lock.yaml ./
 
+# Install dependencies with pnpm
+RUN pnpm install
+
+# Copy rest of the source code
 COPY . .
 
-RUN npm run build
+# Build the frontend
+RUN pnpm build
 
 EXPOSE 3000
 
-CMD ["npm", "run", "dev"]
+# Start the dev server
+CMD ["pnpm", "run", "dev"]

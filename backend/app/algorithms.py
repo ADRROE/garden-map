@@ -4,9 +4,9 @@ import uuid
 from app.schemas import ColoredCell, GardenZone
 
 def group_cells_into_zones(cells: List[ColoredCell]) -> List[GardenZone]:
-    # Index the cells by their (x, y) coordinates
+    # Index the cells by their (col, row) coordinates
     cell_map: Dict[Tuple[int, int], ColoredCell] = {
-        (int(cell.x), int(cell.y)): cell for cell in cells
+        (int(cell.col), int(cell.row)): cell for cell in cells
     }
 
     visited: Set[Tuple[int, int]] = set()

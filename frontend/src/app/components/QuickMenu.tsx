@@ -21,6 +21,7 @@ const QuickMenu = () => {
     const handleElementClick = () => uidispatch({ type: 'TOGGLE_SIDEBAR' })
     const handleZoneClick = () => {
         uidispatch({ type: 'SHOW_SIDEBAR'});
+        toggleMapLock();
         useMenuStore.getState().setOpenSection('s3');
     }
 

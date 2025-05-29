@@ -1,7 +1,7 @@
 // components/Ruler.tsx
 import React from "react";
-import { useUIStore } from "../stores/useUIStore";
 import "./assets/css/ruler.css";
+import { useViewportStore } from "@/stores/useViewportStore";
 
 // number of “1 m” segments
 const SEGMENTS = 5;
@@ -10,16 +10,17 @@ const BASE_UNIT = 100;
 
 export default React.memo(function Ruler() {
 
-    const scale  = useUIStore((s) => s.scale)
-  
+  const matrix = useViewportStore((s) => s.matrix);
 
+  // Extract horizontal scale (DOMMatrix.a == scaleX)
+  const scaleX = matrix?.a ?? 1;  
 
   return (
     <div className="ruler-outer">
       <div
         className="ruler-inner"
         style={{
-          width: `${SEGMENTS * BASE_UNIT * scale}px`,
+          width: `${SEGMENTS * BASE_UNIT * scaleX}px`,
           position: "relative",
         }}
       >
@@ -27,7 +28,7 @@ export default React.memo(function Ruler() {
         <div
           className="ruler-bars"
           style={{
-            transform: `scaleX(${scale})`,
+            transform: `scaleX(${scaleX})`,
             transformOrigin: "left",
             position: "absolute",
             top: 0,
@@ -56,7 +57,7 @@ export default React.memo(function Ruler() {
         {/* Labels aligned to bar centers */}
         {[...Array(SEGMENTS)].map((_, i) => {
           const value = 2.5 * (i + 1);
-          const scaledLeft = (i + 0.5) * BASE_UNIT * scale;
+          const scaledLeft = (i + 0.5) * BASE_UNIT * scaleX;
 
           return (
             <div
@@ -73,20 +74,6 @@ export default React.memo(function Ruler() {
           );
         })}
       </div>
-          <div style={{
-      position: 'absolute',
-      bottom: 8,
-      right: 8,
-      background: 'rgba(0,0,0,0.6)',
-      color: 'white',
-      padding: '2px 6px',
-      fontSize: '12px',
-      borderRadius: '4px',
-      pointerEvents: 'none',
-      zIndex: 10,
-    }}>
-      Scale: {scale.toFixed(2)}x
-    </div>
     </div>
   );
 });

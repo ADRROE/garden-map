@@ -2,13 +2,14 @@ import React, { forwardRef, useImperativeHandle, useRef, useEffect } from 'react
 import { LayerManager } from '../utils/LayerManager';
 import { CanvasLayer, ColoredCell, GardenElement } from '../types';
 import { Canvas, FabricObject } from 'fabric';
-import { useUIStore } from '../stores/useUIStore';
 import { useSelectionStore } from '../stores/useSelectionStore';
 import { createFabricElement } from '../utils/FabricHelpers';
-import { log, warn } from "@/utils/utils";
+import { constrainMatrix, log, warn } from "@/utils/utils";
+import { useViewportStore } from "@/stores/useViewportStore";
 
-const NUM_ROWS = 225;
-const NUM_COLS = 225;
+
+const NUM_ROWS = 270;
+const NUM_COLS = 270;
 const CELL_SIZE = 20;
 const WIDTH = NUM_COLS * CELL_SIZE;
 const HEIGHT = NUM_ROWS * CELL_SIZE;
@@ -56,13 +57,13 @@ const CanvasGrid = forwardRef<CanvasGridHandle, CanvasGridProps>(
           height: obj.height! * obj.scaleY!,
         };
       },
-      colorCell: (cell) => {
+      colorCell: (cell: Partial<ColoredCell>) => {
         const ctx = colorCtxRef.current;
         if (!ctx) return;
-        if (cell.color && cell.x && cell.y) {
-          log("8 - Now coloring cell from within CanvasGrid.")
+        if (cell.color != null && cell.col && cell.row) {
+          log(`8 - Now coloring cell from within CanvasGrid: Cell col: ${cell.col}, Cell row: ${cell.row}`)
           ctx.fillStyle = cell.color;
-          ctx.fillRect(cell.x * CELL_SIZE, cell.y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+          ctx.fillRect(cell.col * CELL_SIZE, cell.row * CELL_SIZE, CELL_SIZE, CELL_SIZE);
         }
       },
 
@@ -77,10 +78,10 @@ const CanvasGrid = forwardRef<CanvasGridHandle, CanvasGridProps>(
       mainCanvas: mainCanvasRef.current,
     }));
 
-    const { scale: initialScale, setScale, pan: initialPan, setPan } = useUIStore();
+    // 1. Replace legacy transform tracking with the viewportStore state
+    const { matrix: transformMatrix } = useViewportStore();
 
-    const scaleRef = useRef(initialScale);
-    const panRef = useRef(initialPan);
+
     const containerRef = useRef<HTMLDivElement>(null);
 
     const lmRef = useRef<LayerManager | null>(null);
@@ -125,13 +126,16 @@ const CanvasGrid = forwardRef<CanvasGridHandle, CanvasGridProps>(
 
       return 2.0;
     };
+
     const redraw = () => {
       const canvas = mainCanvasRef.current!;
       if (!canvas) return
 
       const ctx = canvas.getContext('2d')!;
 
-      const renderFactor = getRenderResolution(scaleRef.current);
+      const scale = useViewportStore.getState().getScale()
+
+      const renderFactor = scale ? getRenderResolution(scale) : 1;
       const renderWidth = WIDTH * renderFactor;
       const renderHeight = HEIGHT * renderFactor;
 
@@ -171,21 +175,38 @@ const CanvasGrid = forwardRef<CanvasGridHandle, CanvasGridProps>(
 
 
     // 1️⃣ init LayerManager
+
     useEffect(() => {
       lmRef.current = new LayerManager(WIDTH, HEIGHT, layers.map(l => l.name));
+      const scale = useViewportStore.getState().getScale()
       const bgCtx = lmRef.current.getContext('background')!;
+      const renderFactor = scale ? getRenderResolution(scale) : 1;
       const img = new Image();
       img.src = '/grid.png';
+
+
       img.onload = () => {
         // draw static grid
-        bgCtx.drawImage(img, 0, 0, WIDTH, HEIGHT);
-        bgCtx.strokeStyle = '#CCC'; bgCtx.lineWidth = 0.5;
+        bgCtx.drawImage(img, 0, 0, WIDTH * renderFactor, HEIGHT * renderFactor);
+        bgCtx.strokeStyle = '#CCC';
+
+        // Line width shrinks when zooming out, so use 1/scale to maintain visibility
+        if (scale) bgCtx.lineWidth = 0.25 / scale;
+
         for (let x = 0; x <= WIDTH; x += CELL_SIZE) {
-          bgCtx.beginPath(); bgCtx.moveTo(x, 0); bgCtx.lineTo(x, HEIGHT); bgCtx.stroke();
+          bgCtx.beginPath();
+          bgCtx.moveTo(x, 0);
+          bgCtx.lineTo(x, HEIGHT);
+          bgCtx.stroke();
         }
+
         for (let y = 0; y <= HEIGHT; y += CELL_SIZE) {
-          bgCtx.beginPath(); bgCtx.moveTo(0, y); bgCtx.lineTo(WIDTH, y); bgCtx.stroke();
+          bgCtx.beginPath();
+          bgCtx.moveTo(0, y);
+          bgCtx.lineTo(WIDTH, y);
+          bgCtx.stroke();
         }
+
         throttledRedraw();
       };
     }, [layers]);
@@ -213,7 +234,7 @@ const CanvasGrid = forwardRef<CanvasGridHandle, CanvasGridProps>(
 
     useEffect(() => {
       throttledRedraw();
-    }, [layers]);
+    }, [layers, transformMatrix]);
 
     useEffect(() => {
       const fabricCanvas = fabricCanvasRef.current;
@@ -259,32 +280,49 @@ const CanvasGrid = forwardRef<CanvasGridHandle, CanvasGridProps>(
       }
     }, [selectedElement]);
 
-
-    // 5️⃣ Compute world‑coordinates on click & toggle the Set
     const handleMouseDown = (e: React.MouseEvent) => {
       const rect = containerRef.current!.getBoundingClientRect();
-      const xCss = e.clientX - rect.left;
-      const yCss = e.clientY - rect.top;
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
 
-      const worldX = xCss / scaleRef.current + panRef.current.x;
-      const worldY = yCss / scaleRef.current + panRef.current.y;
-
-      log("1 - Mousedown triggered in CanvasGrid, passing worldX, worldY to GardenCanvas: ", worldX, worldY)
-      onWorldClick?.(worldX, worldY);
+      const matrix = useViewportStore.getState().matrix;
+      if (matrix) {
+        const transform = new DOMMatrix([
+          matrix.a,
+          matrix.b,
+          matrix.c,
+          matrix.d,
+          matrix.e,
+          matrix.f,
+        ]);
+        const pt = new DOMPoint(x, y).matrixTransform(transform.inverse());
+        onWorldClick?.(pt.x, pt.y);
+      }
     };
 
     const handleMouseMove = (e: React.MouseEvent) => {
       const rect = containerRef.current!.getBoundingClientRect();
-      const xCss = e.clientX - rect.left;
-      const yCss = e.clientY - rect.top;
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
 
-      const worldX = xCss / scaleRef.current + panRef.current.x;
-      const worldY = yCss / scaleRef.current + panRef.current.y;
-
-      onWorldMove?.(worldX, worldY);
+      const matrix = useViewportStore.getState().matrix;
+      if (matrix) {
+        const transform = new DOMMatrix([
+          matrix.a,
+          matrix.b,
+          matrix.c,
+          matrix.d,
+          matrix.e,
+          matrix.f,
+        ]);
+        const pt = new DOMPoint(x, y).matrixTransform(transform.inverse());
+        onWorldMove?.(pt.x, pt.y);
+      }
     };
 
+
     // 6️⃣  Wheel → update pan/scale state only
+    // 3. Update wheel zoom logic to use viewport store directly
     useEffect(() => {
       const container = containerRef.current!;
       let raf = 0;
@@ -298,48 +336,56 @@ const CanvasGrid = forwardRef<CanvasGridHandle, CanvasGridProps>(
 
         cancelAnimationFrame(raf);
         raf = requestAnimationFrame(() => {
-          // 👉 Update panRef or scaleRef directly:
-          if (e.ctrlKey || e.metaKey) {
-            panRef.current = {
-              x: panRef.current.x + e.deltaX / scaleRef.current,
-              y: panRef.current.y + e.deltaY / scaleRef.current,
-            };
-          } else {
-            const FACTOR = 1.05;
-            const dir = e.deltaY > 0 ? 1 / FACTOR : FACTOR;
-            let next = scaleRef.current * dir;
-            next = Math.min(Math.max(next, 0.5), 2);
+          const { matrix: transformMatrix, setMatrix } = useViewportStore.getState(); // ✅ from store
+          if (!transformMatrix) return;
 
-            // keep pointer world‑pos fixed
-            const worldX = px / scaleRef.current + panRef.current.x;
-            const worldY = py / scaleRef.current + panRef.current.y;
-            panRef.current = {
-              x: worldX - px / next,
-              y: worldY - py / next,
-            };
-            scaleRef.current = next;
+          let newMatrix = new DOMMatrix([
+            transformMatrix.a,
+            transformMatrix.b,
+            transformMatrix.c,
+            transformMatrix.d,
+            transformMatrix.e,
+            transformMatrix.f,
+          ]);
+
+          if (e.ctrlKey || e.metaKey) {
+            // Pan
+            newMatrix = newMatrix.translate(-e.deltaX, -e.deltaY);
+          } else {
+            // Zoom
+            const FACTOR = 1.05;
+            const rawScale = e.deltaY > 0 ? 1 / FACTOR : FACTOR;
+            const currentScale = transformMatrix.a;
+            const newScale = currentScale * rawScale;
+            const clampedScale = Math.max(0.5, Math.min(newScale, 2.0));
+
+            const scaleFactor = clampedScale / currentScale;
+            newMatrix = newMatrix
+              .translate(px, py)
+              .scale(scaleFactor)
+              .translate(-px, -py);
           }
 
-          // 👉 apply transform once:
-          const w = wrapperRef.current!;
-          w.style.transformOrigin = '0 0';
-          w.style.transform = `
-          scale(${scaleRef.current})
-          translate(${-panRef.current.x}px,${-panRef.current.y}px)
-        `;
-          setScale(scaleRef.current);
-          setPan(panRef.current);
-          // 👉 composite layers immediately:
-          throttledRedraw()
+          // ✅ Constrain the result
+          const bounds = { width: 4500, height: 4500 };
+          const viewport = { width: window.innerWidth, height: window.innerHeight };
+          const constrained = constrainMatrix(newMatrix, bounds, viewport);
+
+          // ✅ Store + visual transform
+          setMatrix(constrained);
+          wrapperRef.current!.style.transformOrigin = '0 0';
+          wrapperRef.current!.style.transform = constrained.toString();
+
+          throttledRedraw();
         });
       };
 
-      container.addEventListener('wheel', onWheel, { passive: false });
+      container.addEventListener("wheel", onWheel, { passive: false });
       return () => {
         cancelAnimationFrame(raf);
-        container.removeEventListener('wheel', onWheel);
+        container.removeEventListener("wheel", onWheel);
       };
-    }, [layers]);  // only rebind if layer set changes
+    }, [transformMatrix]);
 
 
     return (

@@ -47,8 +47,8 @@ class ColoredCell(Base):
     __tablename__ = "t_colored_cells"
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, index=True)
-    x: Mapped[float] = mapped_column(Float, nullable=False)
-    y: Mapped[float] = mapped_column(Float, nullable=False)
+    col: Mapped[float] = mapped_column(Float, nullable=False)
+    row: Mapped[float] = mapped_column(Float, nullable=False)
     color: Mapped[str] = mapped_column(String(20), nullable=False)
     menu_element_id: Mapped[str] = mapped_column(String(50), nullable=False)
 
