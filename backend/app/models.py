@@ -34,8 +34,7 @@ class GardenZone(Base):
     id: Mapped[str] = mapped_column(String(36), primary_key=True, index=True)
     name: Mapped[str | None] = mapped_column(String(255), nullable=True)
     color: Mapped[str] = mapped_column(String(255), nullable=False)
-    borders: Mapped[List[Tuple[Tuple[int, int], Tuple[int, int]]]] = mapped_column(JSON, nullable=False)
-
+    border_path: Mapped[List[Tuple[int, int]]] = mapped_column(JSON, nullable=False)
 
     coverage: Mapped[list["ColoredCell"]] = relationship(
         back_populates="zone",

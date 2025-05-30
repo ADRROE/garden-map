@@ -31,7 +31,7 @@ export const useUIStore = create<UIState>()(
       isMapLocked: true,
       showSideBar: false,
       isLoading: false,
-      activeLayers: ["background", "elements", "zones"],
+      activeLayers: ["background", "zones", "elements"],
       cursor: "default",
 
       setScale: (scale) => get().dispatch({ type: 'SET_SCALE', scale }),

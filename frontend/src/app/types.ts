@@ -55,7 +55,7 @@ export interface GardenZone {
   name?: string;
   color: string;
   coverage: ColoredCell[];
-  borders: LineSegment[];
+  borderPath: Point[];
 }
 
 export type ColoredCell = {
@@ -76,8 +76,8 @@ export type Vec2 = {
 };
 
 
-type Point = [number, number];
-type LineSegment = [Point, Point];
+export type Point = [number, number];
+export type LineSegment = [Point, Point];
 
 export type ElementType = GardenElement | MenuElement;
 

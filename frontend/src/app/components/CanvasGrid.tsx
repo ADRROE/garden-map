@@ -71,7 +71,7 @@ const CanvasGrid = forwardRef<CanvasGridHandle, CanvasGridProps>(
       uncolorCell: (col: number, row: number) => {
         const ctx = colorCtxRef.current;
         if (!ctx) return;
-        ctx.clearRect(col *CELL_SIZE, row * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+        ctx.clearRect(col * CELL_SIZE, row * CELL_SIZE, CELL_SIZE, CELL_SIZE);
       },
 
       clearColoring: () => {
@@ -261,7 +261,7 @@ const CanvasGrid = forwardRef<CanvasGridHandle, CanvasGridProps>(
           useUIStore.getState().dispatch({ type: 'SET_CURSOR', cursor: "crosshair" })
 
         };
-        
+
       } else {
         useUIStore.getState().dispatch({ type: 'SET_CURSOR', cursor: "default" })
       }
@@ -387,10 +387,17 @@ const CanvasGrid = forwardRef<CanvasGridHandle, CanvasGridProps>(
             const clampedScale = Math.max(0.5, Math.min(newScale, 2.0));
 
             const scaleFactor = clampedScale / currentScale;
+            // Convert screen-space mouse position (px, py) to world space
+            const inverseMatrix = transformMatrix.inverse();
+            const pt = new DOMPoint(px, py).matrixTransform(inverseMatrix);
+            const wx = pt.x;
+            const wy = pt.y;
+
+            // Now apply the scale around the world point (wx, wy)
             newMatrix = newMatrix
-              .translate(px, py)
+              .translate(wx, wy)
               .scale(scaleFactor)
-              .translate(-px, -py);
+              .translate(-wx, -wy);
           }
 
           // ✅ Constrain the result

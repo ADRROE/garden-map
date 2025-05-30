@@ -51,21 +51,6 @@ export default function Home() {
   //   }
   // }, []);
 
-  useEffect(() => {
-  const preventSelection = (e: Event) => {
-    e.preventDefault();
-    return false;
-  };
-
-  document.addEventListener('selectstart', preventSelection);
-  document.addEventListener('mousedown', preventSelection);
-
-  return () => {
-    document.removeEventListener('selectstart', preventSelection);
-    document.removeEventListener('mousedown', preventSelection);
-  };
-}, []);
-
   return (
 
     <div

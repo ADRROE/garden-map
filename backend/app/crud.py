@@ -49,7 +49,7 @@ def create_zone_with_cells(db: Session, zone: schemas.GardenZone):
         name=zone.name,
         color=zone.color,
         coverage=db_cells,
-        borders=zone.borders
+        border_path=zone.border_path
     )
 
     db.add(db_zone)
@@ -97,7 +97,7 @@ def update_zone(db: Session, zone_id: str, updates: schemas.GardenZoneUpdate):
         ]
         merged_zones = algorithms.group_cells_into_zones(schema_cells)
         if merged_zones:
-            zone.borders = merged_zones[0].borders
+            zone.border_path = merged_zones[0].border_path
 
         updates_data.pop("coverage")  # we've already handled it manually
 
@@ -164,7 +164,7 @@ def merge_cells_into_existing_zone(db: Session, existing_zone: models.GardenZone
     merged_zones = algorithms.group_cells_into_zones(all_cells)
     if merged_zones:
         merged_zone = merged_zones[0]
-        existing_zone.borders = merged_zone.borders
+        existing_zone.border_path = merged_zone.border_path
 
     db.commit()
     db.refresh(existing_zone)

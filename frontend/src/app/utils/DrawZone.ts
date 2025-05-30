@@ -2,9 +2,12 @@ import { GardenZone } from "@/types";
 import { darkenColor } from "./utils";
 
 const CELL_SIZE = 20; // adjust if needed
+const RADIUS = 6
 
 export default function drawZone(ctx: CanvasRenderingContext2D, zone: GardenZone, cache?: Map<string, Path2D>) {
     if (!zone.coverage || zone.coverage.length === 0) return;
+
+      const scaled = zone.borderPath.map(([x, y]) => [x * CELL_SIZE, y * CELL_SIZE] as [number, number]);
 
     let path = cache?.get(zone.id);
     if (!path) {
@@ -15,27 +18,45 @@ export default function drawZone(ctx: CanvasRenderingContext2D, zone: GardenZone
         cache?.set(zone.id, path);
     }
 
-    ctx.fillStyle = zone.color;
-    ctx.beginPath();
+ctx.save(); // Save canvas state
 
-    for (const cell of zone.coverage) {
-        const { col, row } = cell;
-        ctx.rect(col * CELL_SIZE, row * CELL_SIZE, CELL_SIZE, CELL_SIZE);
-    }
+// 1. Build the rounded border path
+ctx.beginPath();
+ctx.moveTo(scaled[0][0], scaled[0][1]);
 
-    ctx.fill();
+for (let i = 0; i < scaled.length; i++) {
+  const [x2, y2] = scaled[(i + 1) % scaled.length];
+  const [x3, y3] = scaled[(i + 2) % scaled.length];
+  ctx.arcTo(x2, y2, x3, y3, RADIUS);
+}
 
-  // Draw borders
-  if (zone.borders && zone.borders.length > 0) {
-    ctx.strokeStyle = darkenColor(zone.color, 0.6);
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    for (const [[x1, y1], [x2, y2]] of zone.borders) {
-      ctx.moveTo(x1 * CELL_SIZE, y1 * CELL_SIZE);
-      ctx.lineTo(x2 * CELL_SIZE, y2 * CELL_SIZE);
-    }
-    ctx.stroke();
-  }
+ctx.closePath();
+
+// 2. Set clip region to this rounded path
+ctx.clip();
+
+// 3. Fill the coverage inside the clip
+ctx.fillStyle = zone.color;
+for (const { col, row } of zone.coverage) {
+  ctx.fillRect(col * CELL_SIZE, row * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+}
+
+ctx.restore(); // Restore to remove clipping
+
+// 4. Stroke the rounded border for visual outline
+ctx.beginPath();
+ctx.moveTo(scaled[0][0], scaled[0][1]);
+
+for (let i = 0; i < scaled.length; i++) {
+  const [x2, y2] = scaled[(i + 1) % scaled.length];
+  const [x3, y3] = scaled[(i + 2) % scaled.length];
+  ctx.arcTo(x2, y2, x3, y3, RADIUS);
+}
+
+ctx.closePath();
+ctx.strokeStyle = darkenColor(zone.color, 0.6);
+ctx.lineWidth = 1;
+ctx.stroke();
 
   // 🏷 Draw name at center of zone
   if (zone.name && zone.coverage.length > 0) {

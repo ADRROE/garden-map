@@ -11,6 +11,7 @@ import { useTransientFlag } from "@/hooks/useTransientFlag";
 import { capitalizeFirstLetter } from "@/utils/utils";
 import { MenuSection } from "@/stores/useMenuStore";
 import MatrixDebugger from "./Matrix";
+import { useGardenStore } from "@/stores/useGardenStore";
 
 
 export default function Overlay({ onEditConfirm, onEditAbort }: { onEditConfirm: () => void, onEditAbort: () => void }) {
@@ -18,7 +19,7 @@ export default function Overlay({ onEditConfirm, onEditAbort }: { onEditConfirm:
   const t = useTranslations('Overlay');
 
   const btnClass =
-    'w-12 h-12 flex rounded-full bg-[#C5D4BC] items-center justify-center hover:bg-green-700 shadow-lg transition';
+    'w-12 h-12 flex items-center justify-center bg-white rounded-full p-2 shadow-lg hover:bg-gray-100 transition';
 
 
   const { data: menuElements = [] } = useMenuElements();
@@ -50,7 +51,6 @@ export default function Overlay({ onEditConfirm, onEditAbort }: { onEditConfirm:
       <LanguageSwitcher />
 
       {isInteracting &&
-        <>
           <div className="fixed top-4 right-4 -translate-x-1/2 z-50 space-x-4 flex">
             <button onClick={onEditConfirm}>
               <img src='/icons/check.png' width={30} height={30} />
@@ -59,16 +59,15 @@ export default function Overlay({ onEditConfirm, onEditAbort }: { onEditConfirm:
               <img src='/icons/remove.png' width={30} height={30} />
             </button>
           </div>
-          <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 space-x-4 flex">
-            <button className={btnClass}>
+      }
+                <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 space-x-4 flex">
+            <button className={btnClass} onClick={() => useGardenStore.getState().undo()}>
               <img src="/icons/undo.svg" alt="undo" className="w-[50%]" />
             </button>
-            <button className={btnClass}>
+            <button className={btnClass} onClick={() => useGardenStore.getState().redo()}>
               <img src="/icons/redo.svg" alt="redo" className="w-[50%]" />
             </button>
           </div>
-        </>
-      }
       {process.env.NODE_ENV === "development" && <MatrixDebugger />}
       {showSideBar && !isInteracting &&
         <SideBar

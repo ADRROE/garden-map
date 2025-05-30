@@ -80,19 +80,28 @@ class GardenZone(BaseModel):
     name: str | None = None
     color: str
     coverage: List[ColoredCell]
-    borders: List[Tuple[Tuple[int, int], Tuple[int, int]]]
+    border_path: List[Tuple[int, int]] = Field(default=None, alias="borderPath")
 
     class Config:
         from_attributes = True
+        populate_by_name = True
 
 class GardenZoneUpdate(BaseModel):
     name: str | None = None
     color: str | None = None
     coverage: List[ColoredCell] | None = None
-    borders: List[Tuple[Tuple[int, int], Tuple[int, int]]] | None = None
+    border_path: List[Tuple[int, int]] | None = Field(default=None, alias="borderPath")
+
+    class Config:
+        from_attributes = True
+        populate_by_name = True
 
 class CreateZonePayload(BaseModel):
     name: str
     cells: list[ColoredCell]
     color: str | None = None
-    borders: List[Tuple[Tuple[int, int], Tuple[int, int]]] | None = None
+    border_path: List[Tuple[int, int]] | None = Field(default=None, alias="borderPath")
+
+    class Config:
+        from_attributes = True
+        populate_by_name = True
