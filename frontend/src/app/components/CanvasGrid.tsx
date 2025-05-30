@@ -6,6 +6,7 @@ import { useSelectionStore } from '../stores/useSelectionStore';
 import { createFabricElement } from '../utils/FabricHelpers';
 import { constrainMatrix, log, warn } from "@/utils/utils";
 import { useViewportStore } from "@/stores/useViewportStore";
+import { useUIStore } from '@/stores/useUIStore';
 
 
 const NUM_ROWS = 270;
@@ -18,6 +19,7 @@ const HEIGHT = NUM_ROWS * CELL_SIZE;
 export interface CanvasGridHandle {
   getTransformedElement: () => GardenElement | null;
   colorCell: (cell: Partial<ColoredCell>) => void;
+  uncolorCell: (col: number, row: number) => void;
   clearColoring: () => void;
   getBounds: () => DOMRect | undefined;
   wrapper?: HTMLDivElement | null;
@@ -60,11 +62,16 @@ const CanvasGrid = forwardRef<CanvasGridHandle, CanvasGridProps>(
       colorCell: (cell: Partial<ColoredCell>) => {
         const ctx = colorCtxRef.current;
         if (!ctx) return;
-        if (cell.color != null && cell.col && cell.row) {
-          log(`8 - Now coloring cell from within CanvasGrid: Cell col: ${cell.col}, Cell row: ${cell.row}`)
+        if (cell.color && cell.col && cell.row) {
+          log(`8 - Now coloring cell from within CanvasGrid: Cell col: ${cell.col}, Cell row: ${cell.row}, Color: ${cell.color}`);
           ctx.fillStyle = cell.color;
           ctx.fillRect(cell.col * CELL_SIZE, cell.row * CELL_SIZE, CELL_SIZE, CELL_SIZE);
         }
+      },
+      uncolorCell: (col: number, row: number) => {
+        const ctx = colorCtxRef.current;
+        if (!ctx) return;
+        ctx.clearRect(col *CELL_SIZE, row * CELL_SIZE, CELL_SIZE, CELL_SIZE);
       },
 
       clearColoring: () => {
@@ -158,7 +165,7 @@ const CanvasGrid = forwardRef<CanvasGridHandle, CanvasGridProps>(
 
       // Initialize Fabric only once
       fabricCanvasRef.current = new Canvas('fabric-overlay', {
-        selection: true,
+        selection: false,
         preserveObjectStacking: true,
       });
       fabricCanvasRef.current.defaultCursor = `url(${cursorImage}) 16 16, auto`;
@@ -246,20 +253,41 @@ const CanvasGrid = forwardRef<CanvasGridHandle, CanvasGridProps>(
 
         img.onload = () => {
           const cursorUrl = `url(${cursorImage}) 16 16, auto`;
-          document.body.style.cursor = cursorUrl;
-          fabricCanvas.defaultCursor = cursorUrl;
+          useUIStore.getState().dispatch({ type: 'SET_CURSOR', cursor: cursorUrl })
         };
 
         img.onerror = () => {
           warn("Failed to load cursor image:", cursorImage);
-          document.body.style.cursor = "crosshair";
-          fabricCanvas.defaultCursor = "crosshair";
+          useUIStore.getState().dispatch({ type: 'SET_CURSOR', cursor: "crosshair" })
+
         };
+        
       } else {
-        document.body.style.cursor = "default";
-        fabricCanvas.defaultCursor = "default";
+        useUIStore.getState().dispatch({ type: 'SET_CURSOR', cursor: "default" })
       }
     }, [menuItem]);
+
+    useEffect(() => {
+      const unsubscribe = useUIStore.subscribe((state) => {
+        const cursor = state.cursor
+        // 1. Apply to body
+        document.body.style.cursor = cursor;
+
+        // 2. Apply to fabric canvas if initialized
+        const fabricCanvas = fabricCanvasRef.current;
+        if (fabricCanvas) {
+          fabricCanvas.defaultCursor = cursor;
+
+          // Also apply to the DOM element if needed
+          const el = fabricCanvas.getElement?.();
+          if (el) el.style.cursor = cursor;
+        }
+      });
+
+      return () => {
+        unsubscribe();
+      };
+    }, []);
 
     useEffect(() => {
       const canvas = fabricCanvasRef.current;
@@ -320,7 +348,6 @@ const CanvasGrid = forwardRef<CanvasGridHandle, CanvasGridProps>(
       }
     };
 
-
     // 6️⃣  Wheel → update pan/scale state only
     // 3. Update wheel zoom logic to use viewport store directly
     useEffect(() => {
@@ -367,7 +394,7 @@ const CanvasGrid = forwardRef<CanvasGridHandle, CanvasGridProps>(
           }
 
           // ✅ Constrain the result
-          const bounds = { width: 4500, height: 4500 };
+          const bounds = { width: 4700, height: 4700 };
           const viewport = { width: window.innerWidth, height: window.innerHeight };
           const constrained = constrainMatrix(newMatrix, bounds, viewport);
 
@@ -392,7 +419,7 @@ const CanvasGrid = forwardRef<CanvasGridHandle, CanvasGridProps>(
       <div ref={containerRef} style={{ width: WIDTH, height: HEIGHT, overflow: 'hidden', cursor: 'inherit' }}>
         <div
           ref={wrapperRef}
-          onMouseDown={handleMouseDown}
+          onMouseDown={(e) => handleMouseDown(e)}
           onMouseMove={handleMouseMove}
           style={{ position: 'relative', width: WIDTH, height: HEIGHT, cursor: 'inherit' }}>
           <canvas
@@ -410,7 +437,6 @@ const CanvasGrid = forwardRef<CanvasGridHandle, CanvasGridProps>(
             style={{ position: 'absolute', top: 0, left: 0, cursor: 'inherit' }}
             width={WIDTH}
             height={HEIGHT} />
-
         </div>
       </div>
     );

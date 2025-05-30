@@ -5,7 +5,7 @@ import { resolve } from 'path';
 const nextConfig: import('next').NextConfig = {
   reactStrictMode: true,
   env: {
-    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || "http://garden-map-backend:8000",
+    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000",
   },
   webpack: (config) => {
     config.resolve.fallback = {

@@ -12,6 +12,7 @@ type UIState = {
   showSideBar: boolean;
   isLoading: boolean;
   activeLayers: LayerName[];
+  cursor: string;
 
   setScale: (scale: number) => void;
   setPan: (pan: Vec2) => void;
@@ -31,6 +32,7 @@ export const useUIStore = create<UIState>()(
       showSideBar: false,
       isLoading: false,
       activeLayers: ["background", "elements", "zones"],
+      cursor: "default",
 
       setScale: (scale) => get().dispatch({ type: 'SET_SCALE', scale }),
       setPan: (pan) => get().dispatch({ type: 'SET_PAN', pan }),
@@ -93,6 +95,16 @@ function baseReducer(state: UIState, action: UIAction): Partial<UIState> {
         ...state,
         showSideBar: false
       };
+    case "SET_CURSOR":
+      return {
+        ...state,
+        cursor: action.cursor
+      };
+    case "SET_MAP_LOCK":
+      return {
+        ...state,
+        isMapLocked: action.value
+      }
     default:
       return {};
   }

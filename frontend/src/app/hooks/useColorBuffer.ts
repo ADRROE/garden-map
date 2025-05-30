@@ -20,6 +20,13 @@ export function useColorBuffer() {
     return { ...bufferRef.current };
   };
 
+  const clearCell = (col: number, row: number) => {
+  const key = getKey(col, row);
+  const newBuffer = { ...bufferRef.current };
+  delete newBuffer[key];
+  bufferRef.current = newBuffer;
+  }
+
   const clearCells = () => {
     log(' [useColorBuffer] - 🗑️ clearCells() called — clearing buffer');
     bufferRef.current = {};
@@ -28,6 +35,7 @@ export function useColorBuffer() {
   return {
     addCell,
     getCells,
+    clearCell,
     clearCells,
   };
 }

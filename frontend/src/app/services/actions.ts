@@ -25,6 +25,11 @@ export type UIAction =
     | { type: 'TOGGLE_SIDEBAR'}
     | { type: 'SHOW_SIDEBAR'}
     | { type: 'HIDE_SIDEBAR'}
+    | { type: 'SET_CURSOR'; cursor: string}
+    | { type: 'SET_MAP_LOCK'; value: boolean }
+
+
+
 
 
 

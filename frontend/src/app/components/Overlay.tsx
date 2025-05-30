@@ -13,7 +13,7 @@ import { MenuSection } from "@/stores/useMenuStore";
 import MatrixDebugger from "./Matrix";
 
 
-export default function Overlay({ onEditConfirm }: { onEditConfirm: () => void }) {
+export default function Overlay({ onEditConfirm, onEditAbort }: { onEditConfirm: () => void, onEditAbort: () => void }) {
 
   const t = useTranslations('Overlay');
 
@@ -23,10 +23,9 @@ export default function Overlay({ onEditConfirm }: { onEditConfirm: () => void }
 
   const { data: menuElements = [] } = useMenuElements();
 
-  const clear = useSelectionStore((s) => s.clear);
   const selection = useSelectionStore((s) => s.selection);
   const isInteracting = selection.kind === 'drawing' || selection.kind === 'editing';
-  
+
   const showSideBar = useUIStore((s) => s.showSideBar);
   const showStatusBar = useTransientFlag(selection.kind, 2000); // shown for 2s after any change
 
@@ -44,19 +43,19 @@ export default function Overlay({ onEditConfirm }: { onEditConfirm: () => void }
     title: "Soil",
     items: menuElements.filter(element => element.category === "soil")
   }]
-  
+
   return (
     <>
       <QuickMenu />
       <LanguageSwitcher />
-      
+
       {isInteracting &&
         <>
           <div className="fixed top-4 right-4 -translate-x-1/2 z-50 space-x-4 flex">
             <button onClick={onEditConfirm}>
               <img src='/icons/check.png' width={30} height={30} />
             </button>
-            <button onClick={clear}>
+            <button onClick={onEditAbort}>
               <img src='/icons/remove.png' width={30} height={30} />
             </button>
           </div>
@@ -79,7 +78,7 @@ export default function Overlay({ onEditConfirm }: { onEditConfirm: () => void }
       }
       {showStatusBar && (
         <StatusBar
-          text={selection.kind ? `${capitalizeFirstLetter(selection.kind)}... `: ""}
+          text={selection.kind ? `${capitalizeFirstLetter(selection.kind)}... ` : ""}
           status={selection}
           className={showStatusBar ? "opacity-100" : "opacity-0"}
         />

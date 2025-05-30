@@ -23,7 +23,8 @@ const CELL_SIZE = 20;
 
 const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<typeof useColorBuffer> }>(({ colorBuffer }, ref) => {
   const innerCanvasGridRef = useRef<CanvasGridHandle>(null);
-  const isMouseDownRef = useRef(false);
+  const isMouseDown = useSelectionStore(s => s.isMouseDown);
+  const isModifierKeyDown = useSelectionStore(s => s.isModifierKeyDown);
 
   useImperativeHandle(ref, () => ({
     getTransformedElement: () => {
@@ -33,6 +34,10 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
       log('🎨 Imperative colorCell called with:', cell);
       innerCanvasGridRef.current?.colorCell(cell);
     },
+     uncolorCell: (col, row) => {
+      log('🎨 Imperative uncolorCell called with:', col, row);
+      innerCanvasGridRef.current?.uncolorCell(col, row);
+    },   
     clearColoring: () => {
       log('🧼 clearColoring called');
       innerCanvasGridRef.current?.clearColoring();
@@ -107,46 +112,6 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
 
   const { place: placeElementAt, confirmPlacement: confirmElementPlacement } = useGardenElement();
   const { confirmPlacement: confirmZoneCreation } = useGardenZone();
-
-  const handleWorldClick = useCallback((x: number, y: number) => {
-    log("2 - handleWorldClick triggered in GardenCanvas with coordinates: ", x, y)
-    const col = Math.floor(x / CELL_SIZE);
-    log("3 - Converted and stored to col: ", col)
-    const row = Math.floor(y / CELL_SIZE);
-    log("4 - Converted and stored to row: ", row)
-    const cell = { col: col, row: row, color: selectedItem?.metadata?.brushColor };
-    log("5 - Defined 'cell': ", cell);
-
-    if (isDrawing && innerCanvasGridRef.current) {
-
-      log('6 - 🖌️ Coloring cell at', col, row);
-      innerCanvasGridRef.current.colorCell(cell);
-      log("7 - innerCanvasGridRef.current.colorCell is now called. ")
-
-      const fullCell: ColoredCell = {
-        col: col,
-        row: row,
-        color: cell.color ?? "",
-        menuElementId: selectedItem!.id
-      };
-
-      log('8 - 🧠 Adding fullCell to color buffer:', fullCell);
-      colorBuffer.addCell(fullCell);
-
-      return;
-    }
-
-    log("6 - Now triggering onCanvasClick with x and y: ", x, y)
-    const target = onCanvasClick(x, y);
-    if (target) log("7 - onCanvasClick yielded non-null target: ", target)
-    if (!target && isPlacing) {
-      const position: Vec2 = { x: col * CELL_SIZE, y: row * CELL_SIZE };
-      log("7 - onCanvasClick yielded null target so calling place hook with position: ", position);
-      placeElementAt(position);
-      if (selectedItem) setNaming(true);
-    }
-  }, [isDrawing, isPlacing, selectedItem, colorBuffer, onCanvasClick, placeElementAt, setNaming]);
-
   const { onCanvasHover } = useCanvasInteraction({
     onHoverChange: (el) => {
       if (el) {
@@ -159,28 +124,83 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
     }
   });
 
-  const handleWorldMove = useCallback((x: number, y: number) => {
+  const handleWorldClick = useCallback((x: number, y: number) => {
+    log("2 - handleWorldClick triggered in GardenCanvas with coordinates: ", x, y)
+    const col = Math.floor(x / CELL_SIZE);
+    log("3 - Converted and stored to col: ", col)
+    const row = Math.floor(y / CELL_SIZE);
+    log("4 - Converted and stored to row: ", row)
+    const cell = { col: col, row: row, color: selectedItem?.metadata?.brushColor };
+    log("5 - Defined 'cell': ", cell);
+
+    if (isDrawing && innerCanvasGridRef.current) {
+      if (!isModifierKeyDown) {
+        log('6 - 🖌️ Coloring cell at', col, row);
+        log("7 - innerCanvasGridRef.current.colorCell is now called. ");
+        innerCanvasGridRef.current.colorCell(cell);
+        const fullCell: ColoredCell = {
+          col: col,
+          row: row,
+          color: cell.color ?? "",
+          menuElementId: selectedItem!.id
+        };
+        log('8 - 🧠 Adding fullCell to color buffer:', fullCell);
+        colorBuffer.addCell(fullCell);
+        return;
+      } else {
+        log("6 - Detected modifierkey down");
+        log("7 - innerCanvasGridRef.current.uncolorCell is now called. ");
+        innerCanvasGridRef.current.uncolorCell(col, row);
+        log("8 - Erasing from color buffer: ", col, row);
+        colorBuffer.clearCell(col, row);
+        return;
+      }
+    }
+    log("6 - Now triggering onCanvasClick with x and y: ", x, y)
+    const target = onCanvasClick(x, y);
+    if (target) log("7 - onCanvasClick yielded non-null target: ", target)
+    if (!target && isPlacing) {
+      const position: Vec2 = { x: col * CELL_SIZE, y: row * CELL_SIZE };
+      log("7 - onCanvasClick yielded null target so calling place hook with position: ", position);
+      placeElementAt(position);
+      if (selectedItem) setNaming(true);
+    }
+  }, [isDrawing, isModifierKeyDown, isPlacing, selectedItem, colorBuffer, onCanvasClick, placeElementAt, setNaming]);
+
+    const handleWorldMove = useCallback((x: number, y: number) => {
     setMousePos({ x, y });
     onCanvasHover(x, y); // ⬅️ still efficient — no state update unless hover actually changes
 
-    if (!isMouseDownRef.current) return;
+    if (!isMouseDown) return;
 
     const col = Math.floor(x / CELL_SIZE);
     const row = Math.floor(y / CELL_SIZE);
     const cell = { col: col, row: row, color: selectedItem?.metadata?.brushColor };
 
     if (isDrawing && innerCanvasGridRef.current) {
-      innerCanvasGridRef.current.colorCell(cell);
-      const fullCell: ColoredCell = {
-        col: col,
-        row: row,
-        color: cell.color ?? "",
-        menuElementId: selectedItem!.id
-      };
-      colorBuffer.addCell(fullCell);
-      return;
+      if (!isModifierKeyDown) {
+        log('6 - 🖌️ Coloring cell at', col, row);
+        log("7 - innerCanvasGridRef.current.colorCell is now called. ");
+        innerCanvasGridRef.current.colorCell(cell);
+        const fullCell: ColoredCell = {
+          col: col,
+          row: row,
+          color: cell.color ?? "",
+          menuElementId: selectedItem!.id
+        };
+        log('8 - 🧠 Adding fullCell to color buffer:', fullCell);
+        colorBuffer.addCell(fullCell);
+        return;
+      } else {
+        log("6 - Detected modifierkey down");
+        log("7 - innerCanvasGridRef.current.uncolorCell is now called. ");
+        innerCanvasGridRef.current.uncolorCell(col, row);
+        log("8 - Erasing from color buffer: ", col, row);
+        colorBuffer.clearCell(col, row);
+        return;
+      }
     }
-  }, [isDrawing, selectedItem, colorBuffer, onCanvasHover]);
+  }, [isDrawing, isModifierKeyDown, isMouseDown, selectedItem, colorBuffer, onCanvasHover]);
 
   const layers = useMemo((): CanvasLayer[] => {
     return activeLayers.map((layer) => ({
@@ -233,17 +253,6 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
     }));
   }, [activeLayers, elements, zones, selectedElement, isEditing]);
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        e.preventDefault()
-        clearSelection();
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [clearSelection]);
 
   useEffect(() => {
     let mounted = true;
@@ -275,44 +284,6 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
       mounted = false;
     };
   }, []);
-
-  useEffect(() => {
-    if (selectedItem?.color) return useSelectionStore.getState().setDrawing(selectedItem.color)
-  }, [selectedItem])
-
-  useEffect(() => {
-    const wrapper = innerCanvasGridRef.current?.wrapper;
-    if (!wrapper || !isDrawing) return;
-
-    const handleMouseDown = () => {
-      console.log("mousedown");
-      isMouseDownRef.current = true;
-    };
-
-    const handleMouseUp = () => {
-      console.log("mouseup");
-      isMouseDownRef.current = false;
-    };
-
-    const handleMouseMove = (e: MouseEvent) => {
-      if (!isMouseDownRef.current) return;
-      const x = e.clientX
-      const y = e.clientY
-
-      console.log("mousemove with mouse down", { x, y });
-      handleWorldMove(x, y);
-    };
-
-    wrapper.addEventListener("mousedown", handleMouseDown);
-    wrapper.addEventListener("mouseup", handleMouseUp);
-    wrapper.addEventListener("mousemove", handleMouseMove);
-
-    return () => {
-      wrapper.removeEventListener("mousedown", handleMouseDown);
-      wrapper.removeEventListener("mouseup", handleMouseUp);
-      wrapper.removeEventListener("mousemove", handleMouseMove);
-    };
-  }, [isDrawing, handleWorldMove]);  // ✅ Keep just this one
 
   return (
     <div style={{ position: 'relative' }}>

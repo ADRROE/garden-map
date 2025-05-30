@@ -13,7 +13,7 @@ type ViewportState = {
 export const useViewportStore = create<ViewportState>((set, get) => ({
     matrix: typeof window !== "undefined" ? new DOMMatrix() : null,
     setMatrix: (m) => {
-        const bounds = { width: 4500, height: 4500 };
+        const bounds = { width: 4700, height: 4700 };
         const viewport = { width: window.innerWidth, height: window.innerHeight };
         const constrained = constrainMatrix(m, bounds, viewport);
 
@@ -25,7 +25,7 @@ export const useViewportStore = create<ViewportState>((set, get) => ({
         }),
     setScale: (scale, center = {  x: window.innerWidth / 2, y: window.innerHeight / 2 }) => {
         if (typeof window === "undefined") return;
-        const bounds = { width: 4500, height: 4500 };
+        const bounds = { width: 4700, height: 4700 };
         const viewport = { width: window.innerWidth, height: window.innerHeight };
         const clampedScale = Math.max(0.5, Math.min(scale, 2.0)); // or whatever range you want
 

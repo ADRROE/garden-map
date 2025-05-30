@@ -1,13 +1,15 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import Overlay from "../components/Overlay";
 import Ruler from "../components/Ruler";
 import GardenCanvas from "../components/GardenCanvas";
 import { CanvasGridHandle } from "../components/CanvasGrid";
 import { useGardenStore } from "../stores/useGardenStore";
+import { useSelectionStore } from "@/stores/useSelectionStore";
 import { useColorBuffer } from "@/hooks/useColorBuffer";
 import { log, warn } from "@/utils/utils";
+import { useUIStore } from "@/stores/useUIStore";
 
 export default function Home() {
 
@@ -35,6 +37,12 @@ export default function Home() {
   }
   };
 
+  const handleEditAbort = () => {
+        useSelectionStore.getState().clear();
+        canvasGridRef.current?.clearColoring();
+        useUIStore.getState().dispatch({type: 'SET_MAP_LOCK', value: true})
+  }
+
   // useEffect(() => {
   //   if (process.env.NODE_ENV === "development") {
   //     setInterval(() => {
@@ -43,6 +51,21 @@ export default function Home() {
   //   }
   // }, []);
 
+  useEffect(() => {
+  const preventSelection = (e: Event) => {
+    e.preventDefault();
+    return false;
+  };
+
+  document.addEventListener('selectstart', preventSelection);
+  document.addEventListener('mousedown', preventSelection);
+
+  return () => {
+    document.removeEventListener('selectstart', preventSelection);
+    document.removeEventListener('mousedown', preventSelection);
+  };
+}, []);
+
   return (
 
     <div
@@ -50,7 +73,9 @@ export default function Home() {
         position: "relative", // this ensures absolute children work as expected
       }}
     >
-      <Overlay onEditConfirm={handleEditConfirm} />
+      <Overlay 
+        onEditConfirm={handleEditConfirm}
+        onEditAbort={handleEditAbort} />
 
       {/* Stick ruler to bottom center */}
       <div className="fixed bottom-6 left-1/2 z-50" style={{ transform: "translateX(-50%)" }}>

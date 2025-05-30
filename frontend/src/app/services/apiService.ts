@@ -8,6 +8,7 @@ const API_BASE_ELEMENTS = process.env.NEXT_PUBLIC_API_URL + "/api/elements/";
 const API_BASE_ZONES = process.env.NEXT_PUBLIC_API_URL + "/api/zones/";
 
 export async function fetchElements(): Promise<GardenElement[]> {
+    console.log(API_BASE_ELEMENTS)
     const res = await fetch(API_BASE_ELEMENTS);
     return res.json();
 }

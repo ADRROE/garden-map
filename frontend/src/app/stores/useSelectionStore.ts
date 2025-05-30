@@ -13,6 +13,10 @@ type SelectionStore = {
   selectedElement: GardenElement | null;
   selectedItemId: string | null;
   selectedItem: MenuElement | null;
+  isMouseDown: boolean;
+  isModifierKeyDown: boolean;
+  setMouseDown: (down: boolean) => void;
+  setModifierKeyDown: (down: boolean) => void;
   setSelectedElement: (id: string | null) => void;
   setSelectedItem: (id: string) => void;
   setPlacing: (item: MenuElement) => void;
@@ -79,5 +83,10 @@ export const useSelectionStore = create<SelectionStore>()(
         selectedElement: null,
         selectedItem: null
       }),
+          isMouseDown: false,
+    isModifierKeyDown: false,
+
+    setMouseDown: (down) => set({ isMouseDown: down }),
+    setModifierKeyDown: (down) => set({ isModifierKeyDown: down }),
   }), { name: 'SelectionStore' })
 );
