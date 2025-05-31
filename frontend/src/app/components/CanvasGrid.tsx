@@ -136,13 +136,16 @@ const CanvasGrid = forwardRef<CanvasGridHandle, CanvasGridProps>(
 
     const redraw = () => {
       const canvas = mainCanvasRef.current!;
-      if (!canvas) return
+      if (!canvas) return;
 
       const ctx = canvas.getContext('2d')!;
+      const matrix = useViewportStore.getState().matrix;
 
-      const scale = useViewportStore.getState().getScale()
+      if (!matrix) return;
 
-      const renderFactor = scale ? getRenderResolution(scale) : 1;
+      const scale = matrix.a; // Assuming uniform scale
+      const renderFactor = getRenderResolution(scale);
+
       const renderWidth = WIDTH * renderFactor;
       const renderHeight = HEIGHT * renderFactor;
 
@@ -150,12 +153,21 @@ const CanvasGrid = forwardRef<CanvasGridHandle, CanvasGridProps>(
       canvas.width = renderWidth;
       canvas.height = renderHeight;
 
-      // Keep visual size the same via CSS
+      // CSS size stays the same
       canvas.style.width = `${WIDTH}px`;
       canvas.style.height = `${HEIGHT}px`;
 
-      ctx.setTransform(renderFactor, 0, 0, renderFactor, 0, 0);  // scale context
-      ctx.clearRect(0, 0, WIDTH, HEIGHT);
+      // 🔥 Clear the full canvas in raw pixel space
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.clearRect(0, 0, renderWidth, renderHeight);
+
+      // 🔁 Now apply scaled transform
+      const scaledMatrix = new DOMMatrix([
+        matrix.a * renderFactor, matrix.b,
+        matrix.c, matrix.d * renderFactor,
+        matrix.e * renderFactor, matrix.f * renderFactor,
+      ]);
+      ctx.setTransform(scaledMatrix);
 
       lmRef.current!.drawToMain(ctx, layers.map(l => l.name));
     };
@@ -191,6 +203,7 @@ const CanvasGrid = forwardRef<CanvasGridHandle, CanvasGridProps>(
       const img = new Image();
       img.src = '/grid.png';
 
+        useUIStore.getState().setIsLoading(true);
 
       img.onload = () => {
         // draw static grid
@@ -215,6 +228,8 @@ const CanvasGrid = forwardRef<CanvasGridHandle, CanvasGridProps>(
         }
 
         throttledRedraw();
+          useUIStore.getState().setIsLoading(false);
+
       };
     }, [layers]);
 
@@ -408,7 +423,6 @@ const CanvasGrid = forwardRef<CanvasGridHandle, CanvasGridProps>(
           // ✅ Store + visual transform
           setMatrix(constrained);
           wrapperRef.current!.style.transformOrigin = '0 0';
-          wrapperRef.current!.style.transform = constrained.toString();
 
           throttledRedraw();
         });

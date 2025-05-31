@@ -16,9 +16,9 @@ type UIState = {
 
   setScale: (scale: number) => void;
   setPan: (pan: Vec2) => void;
+  setIsLoading: (value: boolean) => void;
   toggleMapLock: () => void;
   toggleSideBar: () => void;
-  toggleIsLoading: () => void;
 
   dispatch: (action: UIAction) => void;
 };
@@ -37,12 +37,11 @@ export const useUIStore = create<UIState>()(
       setScale: (scale) => get().dispatch({ type: 'SET_SCALE', scale }),
       setPan: (pan) => get().dispatch({ type: 'SET_PAN', pan }),
       setActiveLayers: (activeLayers: LayerName[]) => get().dispatch({ type: 'SET_ACTIVE_LAYERS', activeLayers }),
+      setIsLoading: (value) => set((state) => ({...state, isLoading: value})),
       toggleMapLock: () =>
         set((state) => ({ isMapLocked: !state.isMapLocked })),
       toggleSideBar: () =>
         set((state) => ({ showSideBar: !state.showSideBar })),
-      toggleIsLoading: () =>
-        set((state) => ({ isLoading: !state.isLoading })),
 
 
       dispatch: (action: UIAction) =>

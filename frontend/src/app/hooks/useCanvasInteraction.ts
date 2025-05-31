@@ -100,13 +100,13 @@ useEffect(() => {
   }, [isDrawing]);
 
   useEffect(() => {
-    if (selectedItem?.color) {
-      useSelectionStore.getState().setDrawing(selectedItem.color);
+    if (isDrawing && selectedItem?.metadata?.brushColor) {
+      useSelectionStore.getState().setDrawing(selectedItem.metadata.brushColor);
       useUIStore.getState().dispatch({ type: 'SET_CURSOR', cursor: "crosshair" })
     } else {
       useUIStore.getState().dispatch({ type: 'SET_CURSOR', cursor: "default" })
     }
-  }, [selectedItem])
+  }, [isDrawing, selectedItem])
 
   const onCanvasClick = (worldX: number, worldY: number): GardenElement | null => {
     const clickedEl = datastate.elements.find(el =>

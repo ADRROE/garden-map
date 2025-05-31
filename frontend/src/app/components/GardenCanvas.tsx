@@ -203,55 +203,68 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
   }, [isDrawing, isModifierKeyDown, isMouseDown, selectedItem, colorBuffer, onCanvasHover]);
 
   const layers = useMemo((): CanvasLayer[] => {
-    return activeLayers.map((layer) => ({
-      name: layer,
-      draw: (ctx) => {
-        if (layer === 'elements') {
-          const cache = selectedElement ? null : imageCacheRef.current;
+  return activeLayers.map((layer) => ({
+    name: layer,
+    draw: (ctx) => {
+      if (layer === 'elements') {
+        const cache = selectedElement ? null : imageCacheRef.current;
 
-          elements.forEach(el => {
-            const iconSrc = el.icon;
+        elements.forEach(el => {
+          const img = cache?.get(el.icon);
+          if (img) {
+            ctx.drawImage(img, el.x, el.y, el.width, el.height);
+          }
 
-            let img = cache?.get(iconSrc);
+          if (isEditing) {
+            ctx.strokeStyle = 'rgba(0, 128, 0, 0.5)';
+            ctx.strokeRect(el.x, el.y, el.width, el.height);
+          }
 
-            if (!img) {
-              img = new Image();
-              img.src = iconSrc;
+          if (el.id === selectedElement?.id) {
+            ctx.globalAlpha = 0.3;
+            ctx.strokeStyle = 'blue';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(el.x, el.y, el.width, el.height);
+          }
+        });
+      }
 
-              img.onload = () => {
-                if (img) {
-                  cache?.set(iconSrc, img);
-                  ctx.drawImage(img!, el.x, el.y, el.width, el.height);
-                }
-              };
+      if (layer === 'zones') {
+        zones.forEach(zone => drawZone(ctx, zone, zonePathCache.current));
+      }
+    },
+    deps: [selectedElement],
+  }));
+}, [activeLayers, elements, zones, selectedElement, isEditing]);
 
-              cache?.set(iconSrc, img);
-            } else {
-              if (img.complete) {
-                ctx.drawImage(img, el.x, el.y, el.width, el.height);
-              }
-            }
+  useEffect(() => {
+  const preloadImages = async () => {
+    const newCache = new Map<string, HTMLImageElement>();
 
-            if (isEditing) {
-              ctx.strokeStyle = 'rgba(0, 128, 0, 0.5)';
-              ctx.strokeRect(el.x, el.y, el.width, el.height);
-            }
-
-            if (el.id === selectedElement?.id) {
-              ctx.globalAlpha = 0.3;
-              ctx.strokeStyle = 'blue';
-              ctx.lineWidth = 2;
-              ctx.strokeRect(el.x, el.y, el.width, el.height);
-            }
-          });
-        }
-        if (layer === 'zones') {
-          zones.forEach(zone => drawZone(ctx, zone, zonePathCache.current));
-        }
-      },
-      deps: [selectedElement],
+    await Promise.all(elements.map(el => {
+      const src = el.icon;
+      return new Promise<void>((resolve, reject) => {
+        const img = new Image();
+        img.src = src;
+        img.onload = () => {
+          newCache.set(src, img);
+          resolve();
+        };
+        img.onerror = reject;
+      });
     }));
-  }, [activeLayers, elements, zones, selectedElement, isEditing]);
+
+    imageCacheRef.current = newCache;
+  };
+  preloadImages()
+
+  // preloadImages().then(() => {
+  //   // Force a redraw or re-render once images are loaded
+  //   uidispatch({ type: 'FORCE_CANVAS_REFRESH' });
+  // }).catch(err => {
+  //   console.error("Error preloading images", err);
+  // });
+}, [elements]);
 
 
   useEffect(() => {
