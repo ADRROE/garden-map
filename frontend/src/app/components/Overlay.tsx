@@ -12,9 +12,11 @@ import { capitalizeFirstLetter } from "@/utils/utils";
 import { MenuSection } from "@/stores/useMenuStore";
 import MatrixDebugger from "./Matrix";
 import { useGardenStore } from "@/stores/useGardenStore";
+import { useState } from "react";
+import UpdateModal from "./UpdateModal";
 
 
-export default function Overlay({ onEditConfirm, onEditAbort }: { onEditConfirm: () => void, onEditAbort: () => void }) {
+export default function Overlay({ onEditConfirm, onEditAbort }: { onEditConfirm: (operation: string) => void, onEditAbort: () => void }) {
 
   const t = useTranslations('Overlay');
 
@@ -23,6 +25,7 @@ export default function Overlay({ onEditConfirm, onEditAbort }: { onEditConfirm:
 
 
   const { data: menuElements = [] } = useMenuElements();
+  const [confirming, setConfirming] = useState(false);
 
   const selection = useSelectionStore((s) => s.selection);
   const isInteracting = selection.kind === 'drawing' || selection.kind === 'editing';
@@ -51,23 +54,27 @@ export default function Overlay({ onEditConfirm, onEditAbort }: { onEditConfirm:
       <LanguageSwitcher />
 
       {isInteracting &&
-          <div className="fixed top-4 right-4 -translate-x-1/2 z-50 space-x-4 flex">
-            <button onClick={onEditConfirm}>
-              <img src='/icons/check.png' width={30} height={30} />
-            </button>
-            <button onClick={onEditAbort}>
-              <img src='/icons/remove.png' width={30} height={30} />
-            </button>
-          </div>
+        <div className="fixed top-4 right-4 -translate-x-1/2 z-50 space-x-4 flex">
+          <button onClick={() => setConfirming(true)}>
+            <img src='/icons/check.png' width={30} height={30} />
+          </button>
+          <button onClick={() => {
+            onEditAbort();
+            setConfirming(false);
+          }
+          }>
+            <img src='/icons/remove.png' width={30} height={30} />
+          </button>
+        </div>
       }
-                <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 space-x-4 flex">
-            <button className={btnClass} onClick={() => useGardenStore.getState().undo()}>
-              <img src="/icons/undo.svg" alt="undo" className="w-[50%]" />
-            </button>
-            <button className={btnClass} onClick={() => useGardenStore.getState().redo()}>
-              <img src="/icons/redo.svg" alt="redo" className="w-[50%]" />
-            </button>
-          </div>
+      <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 space-x-4 flex">
+        <button className={btnClass} onClick={() => useGardenStore.getState().undo()}>
+          <img src="/icons/undo.svg" alt="undo" className="w-[50%]" />
+        </button>
+        <button className={btnClass} onClick={() => useGardenStore.getState().redo()}>
+          <img src="/icons/redo.svg" alt="redo" className="w-[50%]" />
+        </button>
+      </div>
       {process.env.NODE_ENV === "development" && <MatrixDebugger />}
       {showSideBar && !isInteracting &&
         <SideBar
@@ -82,8 +89,12 @@ export default function Overlay({ onEditConfirm, onEditAbort }: { onEditConfirm:
           className={showStatusBar ? "opacity-100" : "opacity-0"}
         />
       )}
-
-
+      {confirming &&
+        <UpdateModal
+          onEditConfirm={onEditConfirm}
+          onEditAbort={onEditAbort}
+        />
+      }
     </>
   );
 }

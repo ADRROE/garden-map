@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 import Overlay from "../components/Overlay";
 import Ruler from "../components/Ruler";
 import GardenCanvas from "../components/GardenCanvas";
@@ -19,7 +19,8 @@ export default function Home() {
 
   const updateElement = useGardenStore((s) => s.updateElement);
   
-  const handleEditConfirm = () => {
+  const handleEditConfirm = (operation: string) => {
+    console.log(operation);
     log("9 - handleEditConfirm triggered in page via Overlay onEditConfirm prop.")
     const updatedElement = canvasGridRef.current?.getTransformedElement();
     log("10 - updatedElement as seen by page: ", updatedElement)

@@ -203,7 +203,7 @@ const CanvasGrid = forwardRef<CanvasGridHandle, CanvasGridProps>(
       const img = new Image();
       img.src = '/grid.png';
 
-        useUIStore.getState().setIsLoading(true);
+      useUIStore.getState().setIsLoading(true);
 
       img.onload = () => {
         // draw static grid
@@ -228,7 +228,7 @@ const CanvasGrid = forwardRef<CanvasGridHandle, CanvasGridProps>(
         }
 
         throttledRedraw();
-          useUIStore.getState().setIsLoading(false);
+        useUIStore.getState().setIsLoading(false);
 
       };
     }, [layers]);
@@ -308,7 +308,7 @@ const CanvasGrid = forwardRef<CanvasGridHandle, CanvasGridProps>(
       const canvas = fabricCanvasRef.current;
       if (!canvas) return;
 
-      canvas.clear(); // Clear previously added Fabric objects
+      canvas.clear();
 
       if (selectedElement) {
         log("selectedElement as seen in canvasGrid:", selectedElement)
@@ -322,6 +322,21 @@ const CanvasGrid = forwardRef<CanvasGridHandle, CanvasGridProps>(
         });
       }
     }, [selectedElement]);
+
+    useEffect(() => {
+      const wrapper = wrapperRef.current;
+      const canvas = document.getElementById("fabric-overlay");
+
+      if (!canvas || !wrapper) return;
+
+      const matrix = useViewportStore.getState().matrix;
+      if (!matrix) return;
+
+      // CSS-compatible 2D matrix: matrix(a, b, c, d, e, f)
+      const cssMatrix = `matrix(${matrix.a}, ${matrix.b}, ${matrix.c}, ${matrix.d}, ${matrix.e}, ${matrix.f})`;
+      canvas.style.transform = cssMatrix;
+      canvas.style.transformOrigin = '0 0';
+    }, [transformMatrix]);
 
     const handleMouseDown = (e: React.MouseEvent) => {
       const rect = containerRef.current!.getBoundingClientRect();

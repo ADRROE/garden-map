@@ -347,12 +347,12 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
           }}
         />
       )}
-      {propMenu && propMenuPosition && (
+      {propMenu && propMenuPosition && !isEditing && (
         <div
           style={{
             position: 'absolute',
-            top: Math.min(propMenuPosition.y, window.innerHeight - 200),
-            left: Math.min(propMenuPosition.x, window.innerWidth - 300),
+            top: Math.min(propMenuPosition.y, window.innerHeight - 400),
+            left: Math.min(propMenuPosition.x, window.innerWidth - 100),
             zIndex: 1000,
           }}
         >
