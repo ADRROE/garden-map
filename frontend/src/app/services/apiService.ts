@@ -1,6 +1,4 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
 import { ColoredCell, GardenElement, GardenZone } from "@/types";
 
@@ -21,11 +19,12 @@ export async function createElementAPI(newElement: GardenElement) {
     });
 }
 
-export async function updateElementAPI(updates: Partial<GardenElement> & { id: string }) {
+export async function updateElementAPI(updates: Partial<GardenElement> & { id: string }, operation: 'create' | 'modify') {
+    console.log(`UpdateElementAPI called with updates: ${updates}, operation: ${operation}`);
     await fetch(`${API_BASE_ELEMENTS}${updates.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updates)
+        body: JSON.stringify({updates, operation})
     });
 }
 
@@ -60,11 +59,11 @@ export async function createZoneAPI(cells: ColoredCell[], name: string) {
     });
 }
 
-export async function updateZoneAPI( updatedZone: { id: string } & Partial<GardenZone>) {
+export async function updateZoneAPI( updatedZone: { id: string } & Partial<GardenZone>, operation: 'create' | 'modify') {
     await fetch(`${API_BASE_ZONES}${updatedZone.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updatedZone)
+        body: JSON.stringify({updatedZone, operation})
     });
 }
 

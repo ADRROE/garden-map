@@ -22,6 +22,7 @@ type SelectionStore = {
   setPlacing: (item: MenuElement) => void;
   setPendingPosition: (pos: Vec2) => void;
   setEditing: (item: GardenElement) => void;
+  setConfirming: () => void;
   setDrawing: (color: string) => void;
   clear: () => void;
 };
@@ -67,6 +68,11 @@ export const useSelectionStore = create<SelectionStore>()(
         selection: { kind: 'editing', element },
         selectedElement: element,
         selectedElementId: element.id
+      })
+    },
+    setConfirming: () => {
+      set({
+        selection: { kind: 'confirming'}
       })
     },
 

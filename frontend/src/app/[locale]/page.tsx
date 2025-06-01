@@ -19,15 +19,14 @@ export default function Home() {
 
   const updateElement = useGardenStore((s) => s.updateElement);
   
-  const handleEditConfirm = (operation: string) => {
+  const handleEditConfirm = (operation: 'create' | 'modify') => {
     console.log(operation);
     log("9 - handleEditConfirm triggered in page via Overlay onEditConfirm prop.")
     const updatedElement = canvasGridRef.current?.getTransformedElement();
     log("10 - updatedElement as seen by page: ", updatedElement)
     if (updatedElement) {
       log("11 - ✅ Calling updateElement from within page with: ", updatedElement);
-      updateElement(updatedElement);
-
+      updateElement(updatedElement, operation);
     };
   if (canvasGridRef.current?.handleEditConfirm) {
     log("11 - canvasGridRef.current.handleConfirm is not null: ", canvasGridRef.current);
@@ -60,7 +59,7 @@ export default function Home() {
       }}
     >
       <Overlay 
-        onEditConfirm={handleEditConfirm}
+        onEditConfirm={(operation) => handleEditConfirm(operation)}
         onEditAbort={handleEditAbort} />
 
       {/* Stick ruler to bottom center */}

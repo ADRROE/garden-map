@@ -16,7 +16,7 @@ import { useState } from "react";
 import UpdateModal from "./UpdateModal";
 
 
-export default function Overlay({ onEditConfirm, onEditAbort }: { onEditConfirm: (operation: string) => void, onEditAbort: () => void }) {
+export default function Overlay({ onEditConfirm, onEditAbort }: { onEditConfirm: (operation: 'create' | 'modify') => void, onEditAbort: () => void }) {
 
   const t = useTranslations('Overlay');
 
@@ -58,11 +58,7 @@ export default function Overlay({ onEditConfirm, onEditAbort }: { onEditConfirm:
           <button onClick={() => setConfirming(true)}>
             <img src='/icons/check.png' width={30} height={30} />
           </button>
-          <button onClick={() => {
-            onEditAbort();
-            setConfirming(false);
-          }
-          }>
+          <button onClick={onEditAbort}>
             <img src='/icons/remove.png' width={30} height={30} />
           </button>
         </div>
@@ -92,7 +88,10 @@ export default function Overlay({ onEditConfirm, onEditAbort }: { onEditConfirm:
       {confirming &&
         <UpdateModal
           onEditConfirm={onEditConfirm}
-          onEditAbort={onEditAbort}
+          onEditAbort={() => {
+            onEditAbort();
+            setConfirming(false);
+          }}
         />
       }
     </>

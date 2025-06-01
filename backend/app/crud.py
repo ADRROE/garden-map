@@ -1,4 +1,6 @@
 from sqlalchemy.orm import Session
+from datetime import datetime
+from typing import Literal
 from app import models, schemas, algorithms
 import uuid
 
@@ -12,12 +14,57 @@ def create_element(db: Session, element: schemas.GardenElementCreate):
     db.refresh(db_element)
     return db_element
 
-def update_element(db: Session, id: str, updates: schemas.GardenElementUpdate):
+def update_element(
+    db: Session, 
+    id: str, 
+    updates: schemas.GardenElementUpdate, 
+    record: Literal["create", "modify"]
+):
+    timestamp = datetime.now()
+    updates_data = updates.dict(exclude_unset=True)
+
+    # Always update the main element
     db_element = db.query(models.GardenElement).filter(models.GardenElement.id == id).first()
-    for key, value in updates.dict(exclude_unset=True).items():
+    if not db_element:
+        return None
+
+    for key, value in updates_data.items():
         setattr(db_element, key, value)
-    db.commit()
-    return db_element
+
+    db_element.last_modified = timestamp
+
+    # Add to history if requested
+    if record == "create":
+
+        # Prepare history data — exclude the primary key!
+        history_data = updates_data.copy()
+        history_data.pop("id", None)  # 🚨 remove existing id
+        history_data["garden_element_id"] = id
+        history_data["last_modified"] = timestamp
+
+        db_history = models.GardenElementHistory(**history_data)
+        db.add(db_history)
+
+        db.commit()
+        db.refresh(db_element)
+        return db_element
+
+    elif record == "modify":
+        db_element = db.query(models.GardenElement).filter(models.GardenElement.id == id).first()
+        if not db_element:
+            return None
+
+        updates_data = updates.dict(exclude_unset=True)
+
+        # Apply changes
+        for key, value in updates_data.items():
+            setattr(db_element, key, value)
+
+        db_element.last_modified = timestamp
+
+        db.commit()
+        db.refresh(db_element)
+        return db_element
 
 def delete_element(db: Session, id: str):
     db_element = db.query(models.GardenElement).filter(models.GardenElement.id == id).first()
@@ -59,56 +106,74 @@ def create_zone_with_cells(db: Session, zone: schemas.GardenZone):
     return db_zone
 
 
-def update_zone(db: Session, zone_id: str, updates: schemas.GardenZoneUpdate):
-    zone = db.query(models.GardenZone).filter(models.GardenZone.id == zone_id).first()
-    if not zone:
+def update_zone(
+    db: Session,
+    zone_id: str,
+    updates: schemas.GardenZoneUpdate,
+    record: Literal["create", "modify"]
+):
+    timestamp = datetime.now()
+    db_zone = db.query(models.GardenZone).filter(models.GardenZone.id == zone_id).first()
+    if not db_zone:
         return None
 
     updates_data = updates.dict(exclude_unset=True)
 
-    if "coverage" in updates_data:
-        # 1. Delete old coverage
-        db.query(models.ColoredCell).filter(models.ColoredCell.zone_id == zone.id).delete()
+    if record == "create":
+        # Prepare history data — exclude the primary key!
+        history_data = updates_data.copy()
+        history_data.pop("id", None)  # 🚨 remove existing id
+        history_data["garden_zone_id"] = id
+        history_data["last_modified"] = timestamp
 
-        # 2. Add new coverage
-        new_cells = [
-            models.ColoredCell(
-                id=str(uuid.uuid4()),
-                col=cell['col'],
-                row=cell['row'],
-                color=cell['color'],
-                menu_element_id=cell['menuElementId'],
-                zone_id=zone.id
-            )
-            for cell in updates_data["coverage"]
-        ]
-        db.add_all(new_cells)
+        db_history = models.GardenZoneHistory(**history_data)
+        db.add(db_history)
 
-        # 3. RECOMPUTE borders
-        # 3.1 Convert to schemas.ColoredCell (needed for algorithm)
-        schema_cells = [
-            schemas.ColoredCell(
-                col=cell.col,
-                row=cell.row,
-                color=cell.color,
-                menuElementId=cell.menu_element_id
-            )
-            for cell in new_cells
-        ]
-        merged_zones = algorithms.group_cells_into_zones(schema_cells)
-        if merged_zones:
-            zone.border_path = merged_zones[0].border_path
+        db.commit()
+        db.refresh(db_zone)
+        return db_zone
 
-        updates_data.pop("coverage")  # we've already handled it manually
+    elif record == "modify":
 
-    # Update other fields (name, color, etc.)
-    for key, value in updates_data.items():
-        setattr(zone, key, value)
+        # Handle coverage update (ColoredCells)
+        if "coverage" in updates_data:
+            db.query(models.ColoredCell).filter(models.ColoredCell.zone_id == zone.id).delete()
+            new_cells = [
+                models.ColoredCell(
+                    id=str(uuid.uuid4()),
+                    col=cell["col"],
+                    row=cell["row"],
+                    color=cell["color"],
+                    menu_element_id=cell["menuElementId"],
+                    zone_id=zone.id
+                )
+                for cell in updates_data["coverage"]
+            ]
+            db.add_all(new_cells)
 
-    db.commit()
-    db.refresh(zone)
+            schema_cells = [
+                schemas.ColoredCell(
+                    col=cell.col,
+                    row=cell.row,
+                    color=cell.color,
+                    menuElementId=cell.menu_element_id
+                )
+                for cell in new_cells
+            ]
+            merged_zones = algorithms.group_cells_into_zones(schema_cells)
+            if merged_zones:
+                zone.border_path = merged_zones[0].border_path
 
-    return zone
+            updates_data.pop("coverage")
+
+        # Apply updates
+        for key, value in updates_data.items():
+            setattr(zone, key, value)
+
+        zone.last_modified = timestamp
+        db.commit()
+        db.refresh(zone)
+        return zone
 
 
 def get_zone_by_name(db: Session, name: str):

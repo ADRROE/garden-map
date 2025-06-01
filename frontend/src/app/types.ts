@@ -67,8 +67,8 @@ export type ColoredCell = {
 };
 
 export type CreateElementFn = (element: Omit<GardenElement, "name" | "x" | "y" | "width" | "height">, name: string, x: number, y: number, width: number, height: number) => void;
-export type UpdateElementFn = (updatedElement: { id: string } & Partial<GardenElement>) => void;
-export type UpdateZoneFn = (updatedZone: { id: string } & Partial<GardenZone>) => void;
+export type UpdateElementFn = (updatedElement: { id: string } & Partial<GardenElement>, record?: "create" | "update") => void;
+export type UpdateZoneFn = (updatedZone: { id: string } & Partial<GardenZone>, record?: "create" | "modify") => void;
 
 export type Vec2 = {
   x: number;
@@ -117,8 +117,8 @@ export type GardenDataContextType = {
   datadispatch: React.Dispatch<GardenDataAction>;
   placeElement: (name: string) => void;
   deleteElement: (id: string) => void;
-  updateElement: (element: GardenElement) => void;
-  updateZone: (zone: GardenZone) => void;
+  updateElement: (element: GardenElement, record?: 'create' | 'modify') => void;
+  updateZone: (zone: GardenZone, record?: 'create' | 'update') => void;
   selectElement: (element: ElementType | null) => void;
   colorCell: (i: number, j: number, color: string, menuElementId?: string) => void;
   uncolorCell: (i: number, j: number) => void;

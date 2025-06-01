@@ -21,6 +21,10 @@ def get_zones(db: Session = Depends(get_db)):
     print("GET ZONES CALLED with response:", crud.get_zones(db))
     return crud.get_zones(db)
 
+@router.get("/zones/{id}/history", response_model=list[schemas.GardenZoneHistory])
+def get_zone_history(id: str, db: Session = Depends(get_db)):
+    return db.query(models.GardenZoneHistory).filter_by(garden_zone_id=id).order_by(models.GardenZoneHistory.last_modified.desc()).all()
+
 @router.post("/", response_model=list[schemas.GardenZone])
 def calculate_zones(
     payload: schemas.CreateZonePayload,
@@ -41,8 +45,12 @@ def calculate_zones(
         return saved_zones
 
 @router.put("/{id}", response_model=schemas.GardenZone)
-def update_zone(id: str, updates: schemas.GardenZoneUpdate, db: Session = Depends(get_db)):
-    updated_zone = crud.update_zone(db, id, updates)
+def update_zone(
+    id: str,
+    payload: schemas.GardenZoneUpdateWrapper,
+    db: Session = Depends(get_db)
+):
+    updated_zone = crud.update_zone(db, id, payload.updatedZone, payload.operation)
     if not updated_zone:
         raise HTTPException(status_code=404, detail="Zone not found")
     return updated_zone

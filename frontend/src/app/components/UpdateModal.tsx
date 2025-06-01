@@ -2,7 +2,7 @@
 import React from 'react'
 
 type UpdateModalProps = {
-    onEditConfirm: (operation: string) => void;
+    onEditConfirm: (operation: 'create' | 'modify') => void;
     onEditAbort: () => void;
 }
 

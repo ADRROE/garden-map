@@ -23,8 +23,8 @@ type GardenActions = {
   dispatch: (action: GardenDataAction) => void;
   createElement: (element: GardenElement) => void;
   deleteElement: (id: string) => Promise<void>;
-  updateElement: (update: { id: string } & Partial<GardenElement>) => Promise<void>;
-  updateZone: (updatedZone: GardenZone) => Promise<void>;
+  updateElement: (update: { id: string } & Partial<GardenElement>, record: 'create' | 'modify') => Promise<void>;
+  updateZone: (updatedZone: GardenZone, record: 'create' | 'modify') => Promise<void>;
 };
 
 type GardenStore = HistoryState<GardenDataState> & GardenActions;
@@ -96,10 +96,11 @@ export const useGardenStore = create<GardenStore>()(
       get().dispatch({ type: 'CREATE_ELEMENT', element });
     },
 
-    updateElement: async (update) => {
-      get().dispatch({ type: 'UPDATE_ELEMENT', id: update.id, updates: update });
+    updateElement: async (update, record) => {
+      console.log(`updateElement called with updates: ${update}, operation: ${record}`);
+      get().dispatch({ type: 'UPDATE_ELEMENT', id: update.id, updates: update, record: record });
       try {
-        await updateElementAPI(update);
+        await updateElementAPI(update, record);
       } catch (err) {
         error('Failed to update element:', err);
       }
@@ -114,10 +115,10 @@ export const useGardenStore = create<GardenStore>()(
       }
     },
 
-    updateZone: async (updatedZone) => {
-      get().dispatch({ type: 'UPDATE_ZONE', updatedZone });
+    updateZone: async (updatedZone, record) => {
+      get().dispatch({ type: 'UPDATE_ZONE', updatedZone, record });
       try {
-        await updateZoneAPI(updatedZone);
+        await updateZoneAPI(updatedZone, record);
         const zones = await fetchZones();
         get().dispatch({ type: 'SET_ZONES', zones });
       } catch (err) {

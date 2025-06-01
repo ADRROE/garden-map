@@ -4,31 +4,32 @@ import { GardenElement, UpdateElementFn } from "../types"
 import { useTranslations } from "next-intl";
 
 interface ElementProps {
-  element: GardenElement,
+  element: GardenElement | null,
   onUpdate: (UpdateElementFn),
   onClose: () => void,
 };
 
 const PropMenu: React.FC<ElementProps> = ({ element, onUpdate, onClose }) => {
-  const [datePlanted, setDatePlanted] = useState(element.datePlanted ? new Date(element.datePlanted).toISOString().split("T")[0] : "");
-  const [price, setPrice] = useState(element.price?.toString() ?? "");
-  const [rhsId, setRhsId] = useState(element.rhsId ?? "");
-  const [wcvpId, setWcvpId] = useState(element.wcvpId ?? "");
+  const [datePlanted, setDatePlanted] = useState(element?.datePlanted ? new Date(element?.datePlanted).toISOString().split("T")[0] : "");
+  const [price, setPrice] = useState(element?.price?.toString() ?? "");
+  const [rhsId, setRhsId] = useState(element?.rhsId ?? "");
+  const [wcvpId, setWcvpId] = useState(element?.wcvpId ?? "");
 
   const t = useTranslations('PropMenu');
 
-const datePlantedDefault = element.datePlanted ? new Date(element.datePlanted).toISOString().split("T")[0] : "";
+const datePlantedDefault = element?.datePlanted ? new Date(element?.datePlanted).toISOString().split("T")[0] : "";
 
 const hasChanged =
   datePlantedDefault !== datePlanted ||
-  (element.price?.toString() ?? "") !== price ||
-  (element.rhsId ?? "") !== rhsId ||
-  (element.wcvpId ?? "") !== wcvpId;
+  (element?.price?.toString() ?? "") !== price ||
+  (element?.rhsId ?? "") !== rhsId ||
+  (element?.wcvpId ?? "") !== wcvpId;
 
   const handleSave = () => {
+    if (!element) return;
     onUpdate({
-      id: element.id,
-      datePlanted: element.datePlanted ? new Date(datePlanted) : undefined,
+      id: element?.id,
+      datePlanted: element?.datePlanted ? new Date(datePlanted) : undefined,
       price: price ? parseFloat(price) : undefined,
       rhsId: rhsId || undefined,
       wcvpId: wcvpId || undefined,
@@ -38,7 +39,7 @@ const hasChanged =
   return (
     <div className="absolute right-4 top-4 w-64 bg-white shadow-lg p-4 border z-50 rounded mb-1">
       <div className="flex justify-between mb-4">
-        <h2 className="text-lg text-black font-semibold">{element.name}</h2>
+        <h2 className="text-lg text-black font-semibold">{element?.name}</h2>
         <button onClick={onClose} className="text-gray-900 hover:text-black">✕</button>
       </div>
 

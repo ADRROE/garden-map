@@ -28,14 +28,10 @@ function drawRoundedPolygon(ctx: CanvasRenderingContext2D, points: [number, numb
     // Normalize directions
     const n1x = v1x / len1;
     const n1y = v1y / len1;
-    const n2x = v2x / len2;
-    const n2y = v2y / len2;
 
     // Compute the tangent points
     const startX = p1x - n1x * r;
     const startY = p1y - n1y * r;
-    const endX = p1x + n2x * r;
-    const endY = p1y + n2y * r;
 
     if (i === 0) {
       ctx.moveTo(startX, startY);

@@ -3,9 +3,9 @@ import { GardenElement, GardenZone, LayerName } from "../types";
 
 export type GardenDataAction =
     | { type: 'CREATE_ELEMENT'; element: GardenElement }
-    | { type: 'UPDATE_ELEMENT'; id: string; updates: Partial<GardenElement> }
+    | { type: 'UPDATE_ELEMENT'; id: string; updates: Partial<GardenElement>; record: 'create' | 'modify' }
     | { type: 'DELETE_ELEMENT'; id: string }
-    | { type: 'UPDATE_ZONE'; updatedZone: { id: string } & Partial<GardenZone> }
+    | { type: 'UPDATE_ZONE'; updatedZone: { id: string } & Partial<GardenZone>; record: 'create' | 'modify' }
     | { type: 'SET_SELECTED_ELEMENT'; element: ElementType | null }
     | { type: 'SET_PENDING_POSITION'; pos: Vec2 | null }
     | { type: 'SET_ELEMENTS'; elements: GardenElement[] }

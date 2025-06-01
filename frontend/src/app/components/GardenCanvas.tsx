@@ -18,6 +18,7 @@ import { log, warn, error } from "@/utils/utils";
 import drawZone from '@/utils/DrawZone';
 import { withLoading } from '@/utils/withLoading';
 import { useViewportStore } from '@/stores/useViewportStore';
+import UpdateModal from './UpdateModal';
 
 const CELL_SIZE = 20;
 
@@ -34,10 +35,10 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
       log('🎨 Imperative colorCell called with:', cell);
       innerCanvasGridRef.current?.colorCell(cell);
     },
-     uncolorCell: (col, row) => {
+    uncolorCell: (col, row) => {
       log('🎨 Imperative uncolorCell called with:', col, row);
       innerCanvasGridRef.current?.uncolorCell(col, row);
-    },   
+    },
     clearColoring: () => {
       log('🧼 clearColoring called');
       innerCanvasGridRef.current?.clearColoring();
@@ -49,13 +50,13 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
       log("colorBuffer.getCells() as seen by GardenCanvas: ", colorBuffer.getCells());
       log("innerCanvasGridRef.current?.getTransformedElement() as seen by GardenCanvas: ", innerCanvasGridRef.current?.getTransformedElement());
 
-      const updatedElement = innerCanvasGridRef.current?.getTransformedElement();
-      if (updatedElement) {
-        log('14 - ✅ Calling updateElement from within GardenCanvas with updatedElement:', updatedElement);
-        updateElement(updatedElement);
-        log("15 - Clearing selection...")
-        clearSelection();
-      }
+      // const updatedElement = innerCanvasGridRef.current?.getTransformedElement();
+      // if (updatedElement) {
+      //   log('14 - ✅ Calling updateElement from within GardenCanvas with updatedElement:', updatedElement);
+      //   updateElement(updatedElement);
+      //   log("15 - Clearing selection...")
+      //   clearSelection();
+      // }
 
       const coloredCells = colorBuffer.getCells();
       log('14 - 📦 Pulling coloredCells out of buffer from within GardenCanvas by calling colorBuffer.getCells():', coloredCells);
@@ -77,6 +78,7 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
   const isDrawing = useSelectionStore((s) => s.selection.kind === 'drawing');
   const isEditing = useSelectionStore((s) => s.selection.kind === 'editing');
   const isPlacing = useSelectionStore((s) => s.selection.kind === 'placing');
+  const isConfirming = useSelectionStore((s) => s.selection.kind === 'confirming');
   const selectedItem = useSelectionStore((s) => s.selection.kind ? s.selectedItem : null);
   const selectedElement = useSelectionStore((s) => s.selectedElement);
   const clearSelection = useSelectionStore((s) => s.clear);
@@ -95,6 +97,8 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
 
   const imageCacheRef = useRef<Map<string, HTMLImageElement>>(new Map());
   const zonePathCache = useRef<Map<string, Path2D>>(new Map());;
+  const lastPropMenuRef = useRef<GardenElement | null>(null);
+
 
   const matrix = useViewportStore((s) => s.matrix);
 
@@ -167,7 +171,7 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
     }
   }, [isDrawing, isModifierKeyDown, isPlacing, selectedItem, colorBuffer, onCanvasClick, placeElementAt, setNaming]);
 
-    const handleWorldMove = useCallback((x: number, y: number) => {
+  const handleWorldMove = useCallback((x: number, y: number) => {
     setMousePos({ x, y });
     onCanvasHover(x, y); // ⬅️ still efficient — no state update unless hover actually changes
 
@@ -203,68 +207,55 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
   }, [isDrawing, isModifierKeyDown, isMouseDown, selectedItem, colorBuffer, onCanvasHover]);
 
   const layers = useMemo((): CanvasLayer[] => {
-  return activeLayers.map((layer) => ({
-    name: layer,
-    draw: (ctx) => {
-      if (layer === 'elements') {
-        const cache = selectedElement ? null : imageCacheRef.current;
+    return activeLayers.map((layer) => ({
+      name: layer,
+      draw: (ctx) => {
+        if (layer === 'elements') {
+          const cache = selectedElement ? null : imageCacheRef.current;
 
-        elements.forEach(el => {
-          const img = cache?.get(el.icon);
-          if (img) {
-            ctx.drawImage(img, el.x, el.y, el.width, el.height);
-          }
+          elements.forEach(el => {
+            const iconSrc = el.icon;
 
-          if (isEditing) {
-            ctx.strokeStyle = 'rgba(0, 128, 0, 0.5)';
-            ctx.strokeRect(el.x, el.y, el.width, el.height);
-          }
+            let img = cache?.get(iconSrc);
 
-          if (el.id === selectedElement?.id) {
-            ctx.globalAlpha = 0.3;
-            ctx.strokeStyle = 'blue';
-            ctx.lineWidth = 2;
-            ctx.strokeRect(el.x, el.y, el.width, el.height);
-          }
-        });
-      }
+            if (!img) {
+              img = new Image();
+              img.src = iconSrc;
 
-      if (layer === 'zones') {
-        zones.forEach(zone => drawZone(ctx, zone, zonePathCache.current));
-      }
-    },
-    deps: [selectedElement],
-  }));
-}, [activeLayers, elements, zones, selectedElement, isEditing]);
+              img.onload = () => {
+                if (img) {
+                  cache?.set(iconSrc, img);
+                  ctx.drawImage(img!, el.x, el.y, el.width, el.height);
+                }
+              };
 
-  useEffect(() => {
-  const preloadImages = async () => {
-    const newCache = new Map<string, HTMLImageElement>();
+              cache?.set(iconSrc, img);
+            } else {
+              if (img.complete) {
+                ctx.drawImage(img, el.x, el.y, el.width, el.height);
+              }
+            }
 
-    await Promise.all(elements.map(el => {
-      const src = el.icon;
-      return new Promise<void>((resolve, reject) => {
-        const img = new Image();
-        img.src = src;
-        img.onload = () => {
-          newCache.set(src, img);
-          resolve();
-        };
-        img.onerror = reject;
-      });
+            if (isEditing) {
+              ctx.strokeStyle = 'rgba(0, 128, 0, 0.5)';
+              ctx.strokeRect(el.x, el.y, el.width, el.height);
+            }
+
+            if (el.id === selectedElement?.id) {
+              ctx.globalAlpha = 0.3;
+              ctx.strokeStyle = 'blue';
+              ctx.lineWidth = 2;
+              ctx.strokeRect(el.x, el.y, el.width, el.height);
+            }
+          });
+        }
+        if (layer === 'zones') {
+          zones.forEach(zone => drawZone(ctx, zone, zonePathCache.current));
+        }
+      },
+      deps: [selectedElement],
     }));
-
-    imageCacheRef.current = newCache;
-  };
-  preloadImages()
-
-  // preloadImages().then(() => {
-  //   // Force a redraw or re-render once images are loaded
-  //   uidispatch({ type: 'FORCE_CANVAS_REFRESH' });
-  // }).catch(err => {
-  //   console.error("Error preloading images", err);
-  // });
-}, [elements]);
+  }, [activeLayers, elements, zones, selectedElement, isEditing]);
 
 
   useEffect(() => {
@@ -347,12 +338,12 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
           }}
         />
       )}
-      {propMenu && propMenuPosition && !isEditing && (
+      {propMenu && propMenuPosition && (
         <div
           style={{
             position: 'absolute',
-            top: Math.min(propMenuPosition.y, window.innerHeight - 400),
-            left: Math.min(propMenuPosition.x, window.innerWidth - 100),
+            top: Math.min(propMenuPosition.y, window.innerHeight - 200),
+            left: Math.min(propMenuPosition.x, window.innerWidth - 300),
             zIndex: 1000,
           }}
         >
@@ -360,17 +351,33 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
             element={propMenu}
             onUpdate={(updatedData) => {
               log('🔧 PropMenu updated element:', updatedData);
-              updateElement(updatedData);
-              setPropMenu((prev) =>
-                prev && prev.id === updatedData.id
+              setPropMenu((prev) => {
+                const next = prev && prev.id === updatedData.id
                   ? { ...prev, ...updatedData }
-                  : prev
-              );
+                  : prev;
+                lastPropMenuRef.current = next;
+                return next;
+              });
+              useSelectionStore.getState().setConfirming();
             }}
             onClose={() => setPropMenu(null)}
           />
+
         </div>
       )}
+      {isConfirming &&
+        <UpdateModal
+          onEditConfirm={(operation) => {
+            console.log("UpdateModal onEditConfirm in GardenCanvas with args: ", lastPropMenuRef.current, operation)
+            return lastPropMenuRef.current && updateElement(lastPropMenuRef.current, operation)
+          }
+          }
+          onEditAbort={() => {
+            useSelectionStore.getState().clear();
+          }}
+        />
+      }
+
     </div>
   );
 });
