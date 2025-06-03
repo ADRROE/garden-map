@@ -6,8 +6,6 @@ import { useSelectionStore } from '../stores/useSelectionStore';
 import { createFabricElement } from '../utils/FabricHelpers';
 import { constrainMatrix, log, warn } from "@/utils/utils";
 import { useViewportStore } from "@/stores/useViewportStore";
-import { useUIStore } from '@/stores/useUIStore';
-
 
 const NUM_ROWS = 270;
 const NUM_COLS = 270;
@@ -25,6 +23,7 @@ export interface CanvasGridHandle {
   wrapper?: HTMLDivElement | null;
   mainCanvas?: HTMLCanvasElement | null;
   colorCanvas?: HTMLCanvasElement | null;
+  fabricCanvas?: Canvas | null;
   handleEditConfirm?: () => void;
 }
 
@@ -81,11 +80,11 @@ const CanvasGrid = forwardRef<CanvasGridHandle, CanvasGridProps>(
       wrapper: wrapperRef.current,
       colorCanvas: colorCanvasRef.current,
       mainCanvas: mainCanvasRef.current,
+      fabricCanvas: fabricCanvasRef.current,
     }));
 
     // 1. Replace legacy transform tracking with the viewportStore state
     const { matrix: transformMatrix } = useViewportStore();
-
 
     const containerRef = useRef<HTMLDivElement>(null);
 
@@ -241,52 +240,6 @@ const CanvasGrid = forwardRef<CanvasGridHandle, CanvasGridProps>(
       throttledRedraw();
 
     }, [layers, transformMatrix]);
-
-    useEffect(() => {
-      const fabricCanvas = fabricCanvasRef.current;
-      if (!fabricCanvas) return;
-
-      if (cursorImage) {
-        const img = new Image();
-        img.src = cursorImage;
-
-        img.onload = () => {
-          const cursorUrl = `url(${cursorImage}) 16 16, auto`;
-          useUIStore.getState().dispatch({ type: 'SET_CURSOR', cursor: cursorUrl })
-        };
-
-        img.onerror = () => {
-          warn("Failed to load cursor image:", cursorImage);
-          useUIStore.getState().dispatch({ type: 'SET_CURSOR', cursor: "crosshair" })
-
-        };
-
-      } else {
-        useUIStore.getState().dispatch({ type: 'SET_CURSOR', cursor: "default" })
-      }
-    }, [menuItem]);
-
-    useEffect(() => {
-      const unsubscribe = useUIStore.subscribe((state) => {
-        const cursor = state.cursor
-        // 1. Apply to body
-        document.body.style.cursor = cursor;
-
-        // 2. Apply to fabric canvas if initialized
-        const fabricCanvas = fabricCanvasRef.current;
-        if (fabricCanvas) {
-          fabricCanvas.defaultCursor = cursor;
-
-          // Also apply to the DOM element if needed
-          const el = fabricCanvas.getElement?.();
-          if (el) el.style.cursor = cursor;
-        }
-      });
-
-      return () => {
-        unsubscribe();
-      };
-    }, []);
 
     useEffect(() => {
       const canvas = fabricCanvasRef.current;

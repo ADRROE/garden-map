@@ -1,8 +1,9 @@
 import { FabricImage, FabricObject, FabricText, Polygon, Rect } from 'fabric';
 import { GardenElement, GardenZone, MenuElement } from '../types';
 import { darkenColor, log } from './utils';
+import { GardenZoneObject } from '@/components/GardenZoneObject';
 
-export function isGardenElement(el: GardenElement | MenuElement): el is GardenElement {
+export function isGardenElement(el: GardenElement | MenuElement | GardenZoneObject): el is GardenElement {
   return 'x' in el && 'y' in el;
 }
 

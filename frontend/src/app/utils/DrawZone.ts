@@ -45,17 +45,23 @@ function drawRoundedPolygon(ctx: CanvasRenderingContext2D, points: [number, numb
   ctx.closePath();
 }
 
-export default function drawZone(ctx: CanvasRenderingContext2D, zone: GardenZone, cache?: Map<string, Path2D>) {
+export function makeZonePath(zone: GardenZone): Path2D {
+  // This is reused only for hit detection
+  const path = new Path2D();
+  for (const cell of zone.coverage) {
+    path.rect(cell.col * CELL_SIZE, cell.row * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+  }
+  return path;
+}
+
+export function drawZone(ctx: CanvasRenderingContext2D, zone: GardenZone, cache?: Map<string, Path2D>) {
   if (!zone.coverage || zone.coverage.length === 0) return;
 
   const scaled = zone.borderPath.map(([x, y]) => [x * CELL_SIZE, y * CELL_SIZE] as [number, number]);
 
   let path = cache?.get(zone.id);
   if (!path) {
-    path = new Path2D();
-    for (const cell of zone.coverage) {
-      path.rect(cell.col * CELL_SIZE, cell.row * CELL_SIZE, CELL_SIZE, CELL_SIZE);
-    }
+    path = makeZonePath(zone)
     cache?.set(zone.id, path);
   }
 

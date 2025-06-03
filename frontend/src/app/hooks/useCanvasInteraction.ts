@@ -4,11 +4,12 @@ import { GardenElement } from "@/types";
 import { log } from '@/utils/utils'
 import { useEffect, useRef } from "react";
 import { useUIStore } from "@/stores/useUIStore";
+import { GardenZoneObject } from "@/components/GardenZoneObject";
 
 type CanvasInteractionOptions = {
-  onSelect?: (element: GardenElement) => void;
+  onSelect?: (obj: GardenElement | GardenZoneObject) => void;
   onDeselect?: () => void;
-  onHoverChange?: (element: GardenElement | null) => void;
+  onHoverChange?: (obj: GardenElement | GardenZoneObject | null) => void;
 };
 
 export function useCanvasInteraction({
@@ -108,7 +109,7 @@ useEffect(() => {
     }
   }, [selectedItem])
 
-  const onCanvasClick = (worldX: number, worldY: number): GardenElement | null => {
+  const onCanvasClick = (worldX: number, worldY: number): GardenElement | GardenZoneObject | null => {
     const clickedEl = datastate.elements.find(el =>
       worldX >= el.x && worldX <= el.x + el.width &&
       worldY >= el.y && worldY <= el.y + el.height
@@ -124,7 +125,7 @@ useEffect(() => {
     }
   };
 
-  const onCanvasHover = (worldX: number, worldY: number): GardenElement | null => {
+  const onCanvasHover = (worldX: number, worldY: number): GardenElement | GardenZoneObject | null => {
     const hoveredEl = elements.find(el =>
       worldX >= el.x &&
       worldX <= el.x + el.width &&
