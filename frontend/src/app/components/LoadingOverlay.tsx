@@ -9,8 +9,8 @@ const LoadingOverlay = ({ isVisible }: { isVisible: boolean }) => {
       {isVisible && (
         <motion.div
           className="fixed inset-0 z-[9999] flex items-center justify-center bg-white bg-opacity-80 backdrop-blur-md"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 0.2 }}
+          initial={{ opacity: 0}}
+          animate={{ opacity: 0.5 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.3 }}
         >

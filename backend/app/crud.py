@@ -108,12 +108,12 @@ def create_zone_with_cells(db: Session, zone: schemas.GardenZone):
 
 def update_zone(
     db: Session,
-    zone_id: str,
+    id: str,
     updates: schemas.GardenZoneUpdate,
     record: Literal["create", "modify"]
 ):
     timestamp = datetime.now()
-    db_zone = db.query(models.GardenZone).filter(models.GardenZone.id == zone_id).first()
+    db_zone = db.query(models.GardenZone).filter(models.GardenZone.id == id).first()
     if not db_zone:
         return None
 
@@ -137,7 +137,7 @@ def update_zone(
 
         # Handle coverage update (ColoredCells)
         if "coverage" in updates_data:
-            db.query(models.ColoredCell).filter(models.ColoredCell.zone_id == zone.id).delete()
+            db.query(models.ColoredCell).filter(models.ColoredCell.zone_id == db_zone.id).delete()
             new_cells = [
                 models.ColoredCell(
                     id=str(uuid.uuid4()),
@@ -145,7 +145,7 @@ def update_zone(
                     row=cell["row"],
                     color=cell["color"],
                     menu_element_id=cell["menuElementId"],
-                    zone_id=zone.id
+                    zone_id=db_zone.id
                 )
                 for cell in updates_data["coverage"]
             ]
@@ -162,18 +162,18 @@ def update_zone(
             ]
             merged_zones = algorithms.group_cells_into_zones(schema_cells)
             if merged_zones:
-                zone.border_path = merged_zones[0].border_path
+                db_zone.border_path = merged_zones[0].border_path
 
             updates_data.pop("coverage")
 
         # Apply updates
         for key, value in updates_data.items():
-            setattr(zone, key, value)
+            setattr(db_zone, key, value)
 
-        zone.last_modified = timestamp
+        db_zone.last_modified = timestamp
         db.commit()
-        db.refresh(zone)
-        return zone
+        db.refresh(db_zone)
+        return db_zone
 
 
 def get_zone_by_name(db: Session, name: str):

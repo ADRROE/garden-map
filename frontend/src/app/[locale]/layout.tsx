@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 
 interface LocaleLayoutProps {
   children: React.ReactNode;
-  params:  Promise<{locale: string}>;
+  params: Promise<{ locale: string }>;
 }
 
 export default async function LocaleLayout({
@@ -35,13 +35,13 @@ export default async function LocaleLayout({
   return (
     <html lang={locale} className="bg-background text-foreground">
       <body className="font-sans antialiased bg-background text-foreground">
-        <NextIntlClientProvider locale={locale} >
-          <Providers>
-            <LoadingOverlayClient>
-            {children}
-            </LoadingOverlayClient>
-          </Providers>
-        </NextIntlClientProvider>
+        <LoadingOverlayClient />
+          <NextIntlClientProvider locale={locale} >
+            <Providers>
+              {children}
+            </Providers>
+          </NextIntlClientProvider>
+
       </body>
     </html>
   );

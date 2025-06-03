@@ -63,7 +63,7 @@ export default function drawZone(ctx: CanvasRenderingContext2D, zone: GardenZone
 
   // 1. Build the rounded border path
   drawRoundedPolygon(ctx, scaled, RADIUS);
-  ctx.clip();
+
   // 2. Set clip region to this rounded path
   ctx.clip();
 

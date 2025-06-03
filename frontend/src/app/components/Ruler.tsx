@@ -1,4 +1,3 @@
-// components/Ruler.tsx
 import React from "react";
 import "./assets/css/ruler.css";
 import { useViewportStore } from "@/stores/useViewportStore";

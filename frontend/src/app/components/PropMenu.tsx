@@ -74,7 +74,7 @@ const hasChanged =
       />
       {hasChanged &&
         <button
-          className="w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded"
+          className="w-full bg-[#C5D4BC] hover:bg-[#a7b59f] text-white py-2 rounded mb-1"
           onClick={handleSave}
         >
           {t('savechanges')}

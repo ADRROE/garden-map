@@ -3,7 +3,7 @@ import { useGardenStore } from "../stores/useGardenStore";
 import { useSelectionStore } from "../stores/useSelectionStore";
 import { Vec2, GardenElement } from "../types";
 import { toColumnLetter, getCoveredCells } from "../utils/utils";
-import { uuid } from "uuidv4";
+import { v4 as uuidv4 } from 'uuid';
 import { log, error } from "@/utils/utils";
 
 
@@ -40,7 +40,7 @@ export function useGardenElement() {
     const newElement: GardenElement = {
       ...selectedItem,
       menuElementId: selectedItem.id,
-      id: uuid(),
+      id: uuidv4(),
       name,
       x: centeredX,
       y: centeredY,

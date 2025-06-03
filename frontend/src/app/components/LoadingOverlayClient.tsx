@@ -4,14 +4,13 @@
 import { useUIStore } from '@/stores/useUIStore';
 import LoadingOverlay from './LoadingOverlay';
 
-const LoadingOverlayClient = ({ children }: { children: React.ReactNode }) => {
+const LoadingOverlayClient = () => {
   const isLoading = useUIStore((state) => state.isLoading);
 
   return (
-    <>
+    isLoading ?
       <LoadingOverlay isVisible={isLoading} />
-      {children}
-    </>
+      : null
   );
 };
 

@@ -1,3 +1,4 @@
+'use client'
 import { UIAction } from "../services/actions";
 import { LayerName } from "../types";
 import { create } from "zustand";
@@ -30,19 +31,18 @@ export const useUIStore = create<UIState>()(
       pan: { x: 0, y: 0 },
       isMapLocked: true,
       showSideBar: false,
-      isLoading: false,
+      isLoading: true,
       activeLayers: ["background", "zones", "elements"],
       cursor: "default",
 
       setScale: (scale) => get().dispatch({ type: 'SET_SCALE', scale }),
       setPan: (pan) => get().dispatch({ type: 'SET_PAN', pan }),
       setActiveLayers: (activeLayers: LayerName[]) => get().dispatch({ type: 'SET_ACTIVE_LAYERS', activeLayers }),
-      setIsLoading: (value) => set((state) => ({...state, isLoading: value})),
+      setIsLoading: (value) => set((state) => ({ ...state, isLoading: value })),
       toggleMapLock: () =>
         set((state) => ({ isMapLocked: !state.isMapLocked })),
       toggleSideBar: () =>
         set((state) => ({ showSideBar: !state.showSideBar })),
-
 
       dispatch: (action: UIAction) =>
         set((state) => ({

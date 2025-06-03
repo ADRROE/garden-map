@@ -6,10 +6,8 @@ type UpdateModalProps = {
     onEditAbort: () => void;
 }
 
-
 const UpdateModal: React.FC<UpdateModalProps> = ({ onEditConfirm, onEditAbort }) => {
-
-
+    
     return (
         <div className="bg-background text-foreground fixed inset-0 z-50 flex items-center justify-center">
             {/* Backdrop */}
@@ -19,7 +17,7 @@ const UpdateModal: React.FC<UpdateModalProps> = ({ onEditConfirm, onEditAbort })
             />
 
             {/* Modal Content */}
-            <div className="relative z-10 bg-white shadow-xl p-6 w-full max-w-sm mx-4 animate-fade-in border-2">
+            <div className="relative z-10 bg-white shadow-xl p-6 w-full max-w-sm mx-4 animate-fade-in rounded mb-1">
                 <h2 className="text-lg font-sans font-semibold mb-4">Change confirmation</h2>
                 <div className="flex justify-start space-x-2">
                     <button

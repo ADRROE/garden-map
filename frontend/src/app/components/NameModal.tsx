@@ -13,7 +13,7 @@ const NameModal: React.FC<NameModalProps> = ({ onPlacement, onAbort }) => {
     const t = useTranslations('NameModal');
 
     return (
-        <div className="bg-background text-foreground fixed inset-0 z-50 flex items-center justify-center">
+        <div className="bg-background text-foreground fixed inset-0 z-50 flex items-center justify-center rounded mb-1">
             {/* Backdrop */}
             <div
                 className="absolute inset-0 bg-white/60 backdrop-blur-md bg-opacity-50"

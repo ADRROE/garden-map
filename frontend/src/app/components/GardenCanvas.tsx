@@ -16,7 +16,6 @@ import { useColorBuffer } from '@/hooks/useColorBuffer';
 import { useGardenZone } from '@/hooks/useGardenZone';
 import { log, warn, error } from "@/utils/utils";
 import drawZone from '@/utils/DrawZone';
-import { withLoading } from '@/utils/withLoading';
 import { useViewportStore } from '@/stores/useViewportStore';
 import UpdateModal from './UpdateModal';
 
@@ -72,8 +71,9 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
     },
   }));
 
-  const { activeLayers } = useUIStore();
+  const activeLayers = useUIStore((s) => s.activeLayers);
   const uidispatch = useUIStore((s) => s.dispatch);
+  const setLoading = useUIStore((s) => s.setIsLoading)
 
   const isDrawing = useSelectionStore((s) => s.selection.kind === 'drawing');
   const isEditing = useSelectionStore((s) => s.selection.kind === 'editing');
@@ -257,37 +257,55 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
     }));
   }, [activeLayers, elements, zones, selectedElement, isEditing]);
 
-
   useEffect(() => {
     let mounted = true;
 
     const initialLoad = async () => {
       try {
-        const elements = await withLoading(() => fetchElements());
         if (mounted) {
+          const elements = await fetchElements();
           log('🌱 Initial elements loaded:', elements);
           gdispatch({ type: 'SET_ELEMENTS', elements });
-        }
-      } catch (err) {
-        error('🚨 Failed to load elements', err);
-      }
-      try {
-        const zones = await withLoading(() => fetchZones());
-        if (mounted) {
+          const zones = await fetchZones();
           log('🌱 Initial zones loaded:', zones);
           gdispatch({ type: 'SET_ZONES', zones });
         }
       } catch (err) {
-        error('🚨 Failed to load zones', err);
+        error('🚨 Failed to load elements', err);
       }
     };
-
+    requestAnimationFrame(() => {
     initialLoad();
+      setTimeout(() => {
+        setLoading(false);
+      }, 2000);
+    });
 
     return () => {
       mounted = false;
     };
   }, []);
+
+  useEffect(() => {
+    const preloadImages = async () => {
+      const uniqueIcons = [...new Set(elements.map(el => el.icon))];
+
+      (() =>
+        Promise.all(
+          uniqueIcons.map(src => new Promise<void>((resolve) => {
+            const img = new Image();
+            img.src = src;
+            img.onload = () => resolve();
+            imageCacheRef.current.set(src, img);
+          }))
+        )
+      );
+    };
+
+    if (elements.length > 0) {
+      preloadImages();
+    }
+  }, [elements]);
 
   return (
     <div style={{ position: 'relative' }}>

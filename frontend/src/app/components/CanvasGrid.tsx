@@ -30,11 +30,10 @@ export interface CanvasGridHandle {
 
 interface CanvasGridProps {
   layers: CanvasLayer[];
-  selectedElement: GardenElement | null
+  selectedElement: GardenElement | null;
   onWorldClick: (row: number, col: number) => void;
   onWorldMove: (row: number, col: number) => void;
 }
-
 
 const CanvasGrid = forwardRef<CanvasGridHandle, CanvasGridProps>(
   ({ layers, selectedElement, onWorldClick, onWorldMove }, ref) => {
@@ -190,8 +189,6 @@ const CanvasGrid = forwardRef<CanvasGridHandle, CanvasGridProps>(
       const img = new Image();
       img.src = '/grid.png';
 
-      useUIStore.getState().setIsLoading(true);
-
       img.onload = () => {
         // draw static grid
         bgCtx.drawImage(img, 0, 0, WIDTH * renderFactor, HEIGHT * renderFactor);
@@ -215,7 +212,6 @@ const CanvasGrid = forwardRef<CanvasGridHandle, CanvasGridProps>(
         }
 
         throttledRedraw();
-        useUIStore.getState().setIsLoading(false);
 
       };
     }, [layers]);
@@ -243,6 +239,7 @@ const CanvasGrid = forwardRef<CanvasGridHandle, CanvasGridProps>(
 
     useEffect(() => {
       throttledRedraw();
+
     }, [layers, transformMatrix]);
 
     useEffect(() => {
