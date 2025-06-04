@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@hookform/resolvers": "^5.0.1",
     "@tanstack/react-query": "^4.36.1",
     "@tanstack/react-query-devtools": "^5.75.2",
     "buffer": "^6.0.3",
@@ -29,6 +30,7 @@
     "process": "^0.11.10",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "react-hook-form": "^7.57.0",
     "react-window": "^1.8.11",
     "rneui": "^1.0.0-stable.0",
     "routing": "link:@/i18n/routing",
@@ -36,7 +38,7 @@
     "uuid": "^11.1.0",
     "uuidv4": "^6.2.13",
     "webpack": "^5.99.5",
-    "zod": "^3.24.4",
+    "zod": "link:@hookform/resolvers/zod",
     "zustand": "https://pkg.csb.dev/pmndrs/zustand/commit/1e164a5e/zustand"
   },
   "devDependencies": {

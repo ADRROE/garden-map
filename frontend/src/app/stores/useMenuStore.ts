@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
-import { menuItems } from '@/components/assets/menuItems';
+import { menuItems } from '@/lib/menuItems';
 import { MenuElement } from '@/types';
 
 type MenuState = {

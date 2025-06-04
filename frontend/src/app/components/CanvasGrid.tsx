@@ -80,7 +80,7 @@ const CanvasGrid = forwardRef<CanvasGridHandle, CanvasGridProps>(
       wrapper: wrapperRef.current,
       colorCanvas: colorCanvasRef.current,
       mainCanvas: mainCanvasRef.current,
-      fabricCanvas: fabricCanvasRef.current,
+      fabricCanvas: fabricCanvasRef.current
     }));
 
     // 1. Replace legacy transform tracking with the viewportStore state

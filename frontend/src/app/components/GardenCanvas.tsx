@@ -18,8 +18,9 @@ import { log, warn, error } from "@/utils/utils";
 import {drawZone, makeZonePath} from '@/utils/DrawZone';
 import { useViewportStore } from '@/stores/useViewportStore';
 import UpdateModal from './UpdateModal';
-import {GardenZoneObject} from './GardenZoneObject';
+import { fieldConfig } from '../lib/fieldConfig';
 import { isGardenElement } from '@/utils/FabricHelpers';
+import { GardenZoneObject } from './GardenZoneObject';
 
 const CELL_SIZE = 20;
 
@@ -83,6 +84,7 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
   const isConfirming = useSelectionStore((s) => s.selection.kind === 'confirming');
   const selectedItem = useSelectionStore((s) => s.selection.kind ? s.selectedItem : null);
   const selectedElement = useSelectionStore((s) => s.selectedElement);
+  const setSelectedElement = useSelectionStore((s) => s.setSelectedElement)
   const clearSelection = useSelectionStore((s) => s.clear);
 
   const elements = useGardenStore(state => state.present.elements);
@@ -91,7 +93,6 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
   const updateElement = useGardenStore((s) => s.updateElement);
 
   const [naming, setNaming] = useState(false);
-  const [propMenu, setPropMenu] = useState<GardenElement | GardenZoneObject | null>(null);
   const [propMenuPosition, setPropMenuPosition] = useState<{ x: number; y: number } | null>(null);
   const [floatingLabel, setFloatingLabel] = useState<string | null>(null);
   const [floatingLabelPosition, setFloatingLabelPosition] = useState<{ x: number; y: number } | null>(null);
@@ -101,7 +102,6 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
   const zonePathCache = useRef<Map<string, Path2D>>(new Map());;
   const lastPropMenuRef = useRef<GardenElement | null>(null);
 
-
   const matrix = useViewportStore((s) => s.matrix);
 
   const fabricCanvas = innerCanvasGridRef.current?.fabricCanvas;
@@ -110,11 +110,10 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
 
   const { onCanvasClick } = useCanvasInteraction({
     onSelect: (el) => {
-      setPropMenu(el);
+      setSelectedElement(el.id);
       if (isGardenElement(el)) setPropMenuPosition({ x: el.x, y: el.y });
     },
     onDeselect: () => {
-      setPropMenu(null);
       setPropMenuPosition(null);
       uidispatch({ type: 'HIDE_SIDEBAR' })
     }
@@ -223,6 +222,7 @@ const zonePaths = useMemo(() => {
 
 const zoneObjects = useMemo((): GardenZoneObject[] => {
   return zones.map((zone) => ({
+    id: zone.id,
     zone,
     path: makeZonePath(zone),
   }));
@@ -297,7 +297,7 @@ const zoneObjects = useMemo((): GardenZoneObject[] => {
       }
     };
     requestAnimationFrame(() => {
-    initialLoad();
+      initialLoad();
       setTimeout(() => {
         setLoading(false);
       }, 2000);
@@ -308,50 +308,51 @@ const zoneObjects = useMemo((): GardenZoneObject[] => {
     };
   }, []);
 
-      useEffect(() => {
-        if (!fabricCanvas) return;
-  
-        if (cursorImage && !naming) {
-          const img = new Image();
-          img.src = cursorImage;
-  
-          img.onload = () => {
-            const cursorUrl = `url(${cursorImage}) 16 16, auto`;
-            useUIStore.getState().dispatch({ type: 'SET_CURSOR', cursor: cursorUrl })
-          };
-  
-          img.onerror = () => {
-            warn("Failed to load cursor image:", cursorImage);
-            useUIStore.getState().dispatch({ type: 'SET_CURSOR', cursor: "crosshair" })
-  
-          };
-  
-        } else {
-          useUIStore.getState().dispatch({ type: 'SET_CURSOR', cursor: "default" })
-        }
-      }, [menuItem, naming]);
-  
-      useEffect(() => {
-        const unsubscribe = useUIStore.subscribe((state) => {
-          const cursor = state.cursor
-          // 1. Apply to body
-          document.body.style.cursor = cursor;
-  
-          // 2. Apply to fabric canvas if initialized
-          if (fabricCanvas) {
-            fabricCanvas.defaultCursor = cursor;
-  
-            // Also apply to the DOM element if needed
-            const el = fabricCanvas.getElement?.();
-            if (el) el.style.cursor = cursor;
-          }
-        });
-  
-        return () => {
-          unsubscribe();
-        };
-      }, [cursorImage]);
-  
+  useEffect(() => {
+    if (!fabricCanvas) return;
+
+    if (cursorImage && !naming) {
+      console.log("naming cursor=img")
+      const img = new Image();
+      img.src = cursorImage;
+
+      img.onload = () => {
+        const cursorUrl = `url(${cursorImage}) 16 16, auto`;
+        useUIStore.getState().dispatch({ type: 'SET_CURSOR', cursor: cursorUrl })
+      };
+
+      img.onerror = () => {
+        warn("Failed to load cursor image:", cursorImage);
+        useUIStore.getState().dispatch({ type: 'SET_CURSOR', cursor: "crosshair" })
+
+      };
+
+    } else {
+      console.log("!naming cursor=default")
+      useUIStore.getState().dispatch({ type: 'SET_CURSOR', cursor: "default" })
+    }
+  }, [menuItem, naming]);
+
+  useEffect(() => {
+    const unsubscribe = useUIStore.subscribe((state) => {
+      const cursor = state.cursor
+      // 1. Apply to body
+      document.body.style.cursor = cursor;
+
+      // 2. Apply to fabric canvas if initialized
+      if (fabricCanvas) {
+        fabricCanvas.defaultCursor = cursor;
+
+        // Also apply to the DOM element if needed
+        const el = fabricCanvas.getElement?.();
+        if (el) el.style.cursor = cursor;
+      }
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, [cursorImage]);
 
   useEffect(() => {
     const preloadImages = async () => {
@@ -423,7 +424,7 @@ const zoneObjects = useMemo((): GardenZoneObject[] => {
           }}
         />
       )}
-      {propMenu && propMenuPosition && (
+      {propMenuPosition && (
         <div
           style={{
             position: 'absolute',
@@ -433,19 +434,13 @@ const zoneObjects = useMemo((): GardenZoneObject[] => {
           }}
         >
           <PropMenu
-            element={propMenu}
+            element={selectedElement}
             onUpdate={(updatedData) => {
               log('🔧 PropMenu updated element:', updatedData);
-              setPropMenu((prev) => {
-                const next = prev && prev.id === updatedData.id
-                  ? { ...prev, ...updatedData }
-                  : prev;
-                lastPropMenuRef.current = next;
-                return next;
-              });
               useSelectionStore.getState().setConfirming();
             }}
-            onClose={() => setPropMenu(null)}
+            onClose={() => setPropMenuPosition(null)}
+            fieldConfig={fieldConfig}
           />
 
         </div>
