@@ -2,11 +2,33 @@
     "Overlay": {
         "elementchooser": "Element Kiezer"
     },
-    "PropMenu": {
-        "dateplanted": "Datum Aanplanting",
-        "priceEUR": "Prijs (€)",
-        "savechanges": "Wijzigingen opslaan"
-    },
+  "PropMenu": {
+    "rhsId": "RHS ID",
+    "wcvpId": "WCVP ID",
+    "displayName": "Naam",
+    "species": "Soort",
+    "genus": "Geslacht",
+    "price": "Prijs",
+    "ph": "pH",
+    "temp": "Temperatuur",
+    "plantDate": "Datum Aanplanting",
+    "fertDate": "Datum Bemest",
+    "harvestDate": "Datum Geoogst",
+    "waterDate": "Datum Bewaterd",
+    "waterAmount": "Hoeveelheid Bewaterd",
+    "pruneDate": "Datum Gesnoeid",
+    "fertType": "Meststof",
+    "plantForm": "Vorm Aanplanting",
+    "status": "Status",
+    "statusDate": "Datum Status",
+    "width": "Breedte",
+    "height": "Hoogte",
+    "circumference": "Omtrek",
+    "mix": "Verhouding",
+    "moisture": "Vochtigheidsgraad",
+    "luxHr": "lux/u",
+    "saveChanges": "Wijzigingen Opslaan"
+  },
     "NameModal": {
         "name": "Naam",
         "place": "Plaats"

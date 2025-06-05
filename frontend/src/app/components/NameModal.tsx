@@ -1,11 +1,10 @@
 import { useTranslations } from 'next-intl';
-import React, {useState} from 'react'
+import React, { useState } from 'react'
 
 type NameModalProps = {
     onPlacement: (inputName: string) => void;
     onAbort: () => void;
 }
-
 
 const NameModal: React.FC<NameModalProps> = ({ onPlacement, onAbort }) => {
 
@@ -23,19 +22,29 @@ const NameModal: React.FC<NameModalProps> = ({ onPlacement, onAbort }) => {
             {/* Modal Content */}
             <div className="relative z-10 bg-white shadow-xl p-6 w-full max-w-sm mx-4 animate-fade-in border-2">
                 <h2 className="text-lg font-sans font-semibold mb-4">{t('name')}</h2>
-                <input
-                    value={inputName}
-                    onChange={(e) => setInputName(e.target.value)}
-                    className="w-full px-4 py-2 border bg-amber-50 border-black mb-4" />
-                <div className="flex justify-start space-x-2">
-                    <button
-                        onClick={() => onPlacement(inputName)}
-                        className="px-4 py-2 border w-full hover:bg-[#C5D4BC]"
-                    >
-                        {t('place')}
-                    </button>
-                </div>
+
+                <form
+                    onSubmit={(e) => {
+                        e.preventDefault();
+                        onPlacement(inputName);
+                    }}
+                >
+                    <input
+                        value={inputName}
+                        onChange={(e) => setInputName(e.target.value)}
+                        className="w-full px-4 py-2 border bg-white border-black mb-4"
+                    />
+                    <div className="flex justify-start space-x-2">
+                        <button
+                            type="submit"
+                            className="px-4 py-2 border w-full hover:bg-[#C5D4BC]"
+                        >
+                            {t('place')}
+                        </button>
+                    </div>
+                </form>
             </div>
+
         </div>
     )
 }

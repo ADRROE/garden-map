@@ -61,7 +61,7 @@ const PropMenu: React.FC<PropMenuProps> = ({ element, onUpdate, onClose, fieldCo
   };
 
   return (
-    <div className="absolute right-4 top-4 w-64 bg-white shadow-lg p-4 border z-50 rounded mb-1">
+    <div className="absolute right-4 top-4 w-64 bg-white shadow-lg p-4 border z-50 rounded mb-1 max-h-[80vh] overflow-y-auto">
       <div className="flex justify-between mb-4">
         <h2 className="text-lg text-black font-semibold">{element.name}</h2>
         <button onClick={onClose} className="text-gray-900 hover:text-black">✕</button>
@@ -86,12 +86,20 @@ const PropMenu: React.FC<PropMenuProps> = ({ element, onUpdate, onClose, fieldCo
         </div>
       ))}
 
-      <button
-        className="w-full bg-[#C5D4BC] hover:bg-[#a7b59f] text-white py-2 rounded mt-2"
-        onClick={handleSave}
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          handleSave();
+        }}
       >
-        {t("savechanges")}
-      </button>
+        <button
+          className="w-full bg-[#C5D4BC] hover:bg-[#a7b59f] text-white py-2 rounded mt-2"
+          type="submit"
+          onClick={handleSave}
+        >
+          {t("saveChanges")}
+        </button>
+      </form>
     </div>
   );
 };
