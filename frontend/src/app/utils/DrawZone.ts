@@ -83,7 +83,6 @@ export function drawZone(ctx: CanvasRenderingContext2D, zone: GardenZone, cache?
 
   // 4. Stroke the rounded border for visual outline
   drawRoundedPolygon(ctx, scaled, RADIUS);
-  ctx.clip();
   ctx.strokeStyle = darkenColor(zone.color, 0.6);
   ctx.lineWidth = 1;
   ctx.stroke();
