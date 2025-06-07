@@ -1,15 +1,17 @@
 import { useSelectionStore } from "@/stores/useSelectionStore";
 import { useGardenStore } from "../stores/useGardenStore";
-import { GardenElement } from "@/types";
+import { GardenElementObject, GardenZoneObject } from "@/types";
 import { log } from '@/utils/utils'
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useUIStore } from "@/stores/useUIStore";
-import { GardenZoneObject } from "@/components/GardenZoneObject";
+import { useMenuStore } from "@/stores/useMenuStore";
+import { useGardenZoneObjects } from "./useGardenZoneObjects";
+import { useMenuElement } from "./useMenuElement";
 
 type CanvasInteractionOptions = {
-  onSelect?: (obj: GardenElement | GardenZoneObject) => void;
+  onSelect?: (obj: GardenElementObject | GardenZoneObject) => void;
   onDeselect?: () => void;
-  onHoverChange?: (obj: GardenElement | GardenZoneObject | null) => void;
+  onHoverChange?: (obj: GardenElementObject | null) => void;
 };
 
 export function useCanvasInteraction({
@@ -20,50 +22,59 @@ export function useCanvasInteraction({
 
   const isMouseDownRef = useRef(false);
   const isModifierKeyDown = useRef(false);
+  const hoveredElementRef = useRef<GardenElementObject | null>(null);
 
   const datastate = useGardenStore(state => state.present);
   const elements = useGardenStore(state => state.present.elements);
-  const hoveredElementRef = useRef<GardenElement | null>(null);
+  const zoneObjects = useGardenZoneObjects()
 
-  const selectElement = (element: GardenElement) => {
+  const uidispatch = useUIStore(state => state.dispatch)
+
+  const selectElement = (element: GardenElementObject) => {
     useSelectionStore.getState().setEditing(element);
+    useMenuStore.getState().setOpenPropMenu(element.id)
     log("CanvasInteraction now setting Editing with el: ", element);
   };
+  const selectZoneObject = (obj: GardenZoneObject) => {
+    useSelectionStore.getState().setSelectedObjId(obj.id);
+  }
   const isDrawing = useSelectionStore((s) => s.selection.kind === 'drawing');
-  const selectedItem = useSelectionStore(s => s.selectedItem)
+  const selectedItemId = useSelectionStore((s) => s.selection.kind ? s.selectedItemId : null);
+  const selectedItem = useMenuElement(selectedItemId);
   const clearSelection = useSelectionStore((s) => s.clear);
 
   useEffect(() => {
-  const handleContextMenu = (e: MouseEvent) => {
-    if (isDrawing) {
-      e.preventDefault(); // ❌ Stop right-click menu
-    }
-  };
+    const handleContextMenu = (e: MouseEvent) => {
+      if (isDrawing) {
+        e.preventDefault(); // ❌ Stop right-click menu
+      }
+    };
 
-  window.addEventListener('contextmenu', handleContextMenu);
-  return () => {
-    window.removeEventListener('contextmenu', handleContextMenu);
-  };
-}, [isDrawing]);
+    window.addEventListener('contextmenu', handleContextMenu);
+    return () => {
+      window.removeEventListener('contextmenu', handleContextMenu);
+    };
+  }, [isDrawing]);
 
-useEffect(() => {
-  const handleMouseDown = (e: MouseEvent) => {
-    if (e.ctrlKey && isDrawing) {
-      e.preventDefault(); // ❌ Prevent ctrl+click default behavior
-    }
-  };
+  useEffect(() => {
+    const handleMouseDown = (e: MouseEvent) => {
+      if (e.ctrlKey && isDrawing) {
+        e.preventDefault(); // ❌ Prevent ctrl+click default behavior
+      }
+    };
 
-  window.addEventListener('mousedown', handleMouseDown);
-  return () => {
-    window.removeEventListener('mousedown', handleMouseDown);
-  };
-}, [isDrawing]);
+    window.addEventListener('mousedown', handleMouseDown);
+    return () => {
+      window.removeEventListener('mousedown', handleMouseDown);
+    };
+  }, [isDrawing]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         e.preventDefault();
         clearSelection();
+        uidispatch({type: 'SET_CURSOR', cursor: 'default'});
       }
       if (e.key === 'Control') {
         e.preventDefault();
@@ -109,23 +120,32 @@ useEffect(() => {
     }
   }, [selectedItem])
 
-  const onCanvasClick = (worldX: number, worldY: number): GardenElement | GardenZoneObject | null => {
+  const onCanvasClick = (worldX: number, worldY: number, ctx?: CanvasRenderingContext2D): GardenElementObject | GardenZoneObject | null => {
     const clickedEl = datastate.elements.find(el =>
       worldX >= el.x && worldX <= el.x + el.width &&
       worldY >= el.y && worldY <= el.y + el.height
     );
 
+    const zone = zoneObjects.find(zoneObj =>
+      zoneObj.path && ctx?.isPointInPath(zoneObj.path, worldX, worldY)
+    );
     if (clickedEl) {
       selectElement(clickedEl);
       onSelect?.(clickedEl);
       return clickedEl;
-    } else {
+    }
+    if (zone) {
+      selectZoneObject(zone);
+      onSelect?.(zone);
+      return zone;
+    }
+    else {
       onDeselect?.();
       return null;
     }
   };
 
-  const onCanvasHover = (worldX: number, worldY: number): GardenElement | GardenZoneObject | null => {
+  const onCanvasHover = (worldX: number, worldY: number): GardenElementObject | null => {
     const hoveredEl = elements.find(el =>
       worldX >= el.x &&
       worldX <= el.x + el.width &&

@@ -1,8 +1,7 @@
 import React, { forwardRef, useImperativeHandle, useRef, useEffect } from 'react';
 import { LayerManager } from '../utils/LayerManager';
-import { CanvasLayer, ColoredCell, GardenElement } from '../types';
+import { CanvasLayer, ColoredCell, GardenElementObject} from '../types';
 import { Canvas, FabricObject } from 'fabric';
-import { useSelectionStore } from '../stores/useSelectionStore';
 import { createFabricElement } from '../utils/FabricHelpers';
 import { constrainMatrix, log, warn } from "@/utils/utils";
 import { useViewportStore } from "@/stores/useViewportStore";
@@ -15,7 +14,7 @@ const HEIGHT = NUM_ROWS * CELL_SIZE;
 
 
 export interface CanvasGridHandle {
-  getTransformedElement: () => GardenElement | null;
+  getTransformedElementObj: () => GardenElementObject | null ;
   colorCell: (cell: Partial<ColoredCell>) => void;
   uncolorCell: (col: number, row: number) => void;
   clearColoring: () => void;
@@ -29,13 +28,13 @@ export interface CanvasGridHandle {
 
 interface CanvasGridProps {
   layers: CanvasLayer[];
-  selectedElement: GardenElement | null;
+  selectedElementObj: GardenElementObject | null;
   onWorldClick: (row: number, col: number) => void;
   onWorldMove: (row: number, col: number) => void;
 }
 
 const CanvasGrid = forwardRef<CanvasGridHandle, CanvasGridProps>(
-  ({ layers, selectedElement, onWorldClick, onWorldMove }, ref) => {
+  ({ layers, selectedElementObj, onWorldClick, onWorldMove }, ref) => {
     const fabricCanvasRef = useRef<Canvas | null>(null);
     const fabricObjectRef = useRef<FabricObject | null>(null);
     const colorCtxRef = useRef<CanvasRenderingContext2D | null>(null);
@@ -44,14 +43,15 @@ const CanvasGrid = forwardRef<CanvasGridHandle, CanvasGridProps>(
     const colorCanvasRef = useRef<HTMLCanvasElement>(null);
 
     useImperativeHandle(ref, () => ({
-      getTransformedElement: () => {
+      getTransformedElementObj: () => {
+        if (!selectedElementObj) return null;
         const obj = fabricObjectRef.current;
-        if (!obj || !selectedElement) return null;
+        if (!obj) return null;
 
         return {
-          ...selectedElement,
-          x: obj.left ?? selectedElement.x,
-          y: obj.top ?? selectedElement.y,
+          ...selectedElementObj,
+          x: obj.left ?? selectedElementObj.x,
+          y: obj.top ?? selectedElementObj.y,
           width: obj.width! * obj.scaleX!,
           height: obj.height! * obj.scaleY!,
         };
@@ -89,9 +89,6 @@ const CanvasGrid = forwardRef<CanvasGridHandle, CanvasGridProps>(
     const containerRef = useRef<HTMLDivElement>(null);
 
     const lmRef = useRef<LayerManager | null>(null);
-
-    const menuItem = useSelectionStore((s) => s.selection.kind === 'placing' ? s.selection.menuItem : null)
-    const cursorImage = menuItem?.cursor;
 
     const needsRedrawRef = useRef(false);
     const frameRequestedRef = useRef(false);
@@ -165,7 +162,6 @@ const CanvasGrid = forwardRef<CanvasGridHandle, CanvasGridProps>(
         selection: false,
         preserveObjectStacking: true,
       });
-      fabricCanvasRef.current.defaultCursor = `url(${cursorImage}) 16 16, auto`;
 
       return () => {
         fabricCanvasRef.current?.dispose();
@@ -247,10 +243,10 @@ const CanvasGrid = forwardRef<CanvasGridHandle, CanvasGridProps>(
 
       canvas.clear();
 
-      if (selectedElement) {
-        log("selectedElement as seen in canvasGrid:", selectedElement)
+      if (selectedElementObj) {
+        log("selectedObj as seen in canvasGrid:", selectedElementObj)
 
-        createFabricElement(selectedElement, true).then(fabricEl => {
+        createFabricElement(selectedElementObj, true).then(fabricEl => {
           fabricObjectRef.current = fabricEl;
           canvas.add(fabricEl);
           canvas.setActiveObject(fabricEl);
@@ -258,7 +254,7 @@ const CanvasGrid = forwardRef<CanvasGridHandle, CanvasGridProps>(
           canvas.renderAll();
         });
       }
-    }, [selectedElement]);
+    }, [selectedElementObj]);
 
     const handleMouseDown = (e: React.MouseEvent) => {
       const rect = containerRef.current!.getBoundingClientRect();

@@ -3,12 +3,12 @@ import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import isEqual from 'lodash.isequal';
 import {
-  GardenElement,
+  GardenElementObject,
   GardenZone,
   GardenDataState,
   HistoryState,
+  ColoredCell,
 } from '@/types';
-import { GardenDataAction } from '@/services/actions';
 import {
   updateElementAPI,
   deleteElementAPI,
@@ -21,9 +21,9 @@ type GardenActions = {
   undo: () => void;
   redo: () => void;
   dispatch: (action: GardenDataAction) => void;
-  createElement: (element: GardenElement) => void;
+  createElement: (element: GardenElementObject) => void;
   deleteElement: (id: string) => Promise<void>;
-  updateElement: (update: { id: string } & Partial<GardenElement>, record: 'create' | 'modify') => Promise<void>;
+  updateElement: (update: { id: string } & Partial<GardenElementObject>, record: 'create' | 'modify') => Promise<void>;
   updateZone: (updatedZone: GardenZone, record: 'create' | 'modify') => Promise<void>;
 };
 
@@ -34,6 +34,18 @@ const initialPresent: GardenDataState = {
   zones: [],
   coloredCells: {},
 };
+
+export type GardenDataAction =
+    | { type: 'CREATE_ELEMENT'; element: GardenElementObject }
+    | { type: 'UPDATE_ELEMENT'; id: string; updates: Partial<GardenElementObject>; record: 'create' | 'modify' }
+    | { type: 'DELETE_ELEMENT'; id: string }
+    | { type: 'UPDATE_ZONE'; updatedZone: { id: string } & Partial<GardenZone>; record: 'create' | 'modify' }
+    | { type: 'SET_ELEMENTS'; elements: GardenElementObject[] }
+    | { type: 'SET_ZONES'; zones: GardenZone[] }
+    | { type: 'SET_COLORED_CELLS'; coloredCells: Record<string, ColoredCell> }
+    | { type: 'TOGGLE_MAP_LOCK' }
+    | { type: 'UNDO' }
+    | { type: 'REDO' }
 
 const undoableActions = new Set<GardenDataAction['type']>([
   'CREATE_ELEMENT',

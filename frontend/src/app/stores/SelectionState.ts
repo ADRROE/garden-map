@@ -1,4 +1,4 @@
-import type { GardenElement, MenuElement, Vec2 } from '../types';
+import type { GardenElementObject, MenuElement, Vec2 } from '../types';
 
 export type SelectionState =
   | { kind: null }
@@ -7,6 +7,6 @@ export type SelectionState =
       menuItem: MenuElement;
       pendingPosition?: Vec2;
     }
-  | { kind: 'editing'; element: GardenElement }
+  | { kind: 'editing'; obj: GardenElementObject }
   | { kind: 'confirming' }
   | { kind: 'drawing'; color: string };

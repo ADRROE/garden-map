@@ -1,14 +1,13 @@
 import { FabricImage, FabricObject, FabricText, Polygon, Rect } from 'fabric';
-import { GardenElement, GardenZone, MenuElement } from '../types';
+import { GardenElementObject, GardenZone, MenuElement } from '../types';
 import { darkenColor, log } from './utils';
-import { GardenZoneObject } from '@/components/GardenZoneObject';
 
-export function isGardenElement(el: GardenElement | MenuElement | GardenZoneObject): el is GardenElement {
+export function isGardenElement(el: GardenElementObject | MenuElement): el is GardenElementObject {
   return 'x' in el && 'y' in el;
 }
 
 export async function createFabricElement(
-    element: GardenElement | MenuElement,
+    element: GardenElementObject | MenuElement,
     isSelected: boolean,
   ): Promise<FabricImage> {
     log("Creating fabric element...")

@@ -1,17 +1,17 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { ColoredCell, GardenElement, GardenZone } from "@/types";
+import { ColoredCell, GardenElementObject, GardenZone } from "@/types";
 
 const API_BASE_ELEMENTS = process.env.NEXT_PUBLIC_API_URL + "/api/elements/";
 const API_BASE_ZONES = process.env.NEXT_PUBLIC_API_URL + "/api/zones/";
 
-export async function fetchElements(): Promise<GardenElement[]> {
+export async function fetchElements(): Promise<GardenElementObject[]> {
     console.log(API_BASE_ELEMENTS)
     const res = await fetch(API_BASE_ELEMENTS);
     return res.json();
 }
 
-export async function createElementAPI(newElement: GardenElement) {
+export async function createElementAPI(newElement: GardenElementObject) {
     await fetch(API_BASE_ELEMENTS, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -19,7 +19,7 @@ export async function createElementAPI(newElement: GardenElement) {
     });
 }
 
-export async function updateElementAPI(updates: Partial<GardenElement> & { id: string }, operation: 'create' | 'modify') {
+export async function updateElementAPI(updates: Partial<GardenElementObject> & { id: string }, operation: 'create' | 'modify') {
     console.log(`UpdateElementAPI called with updates: ${updates}, operation: ${operation}`);
     await fetch(`${API_BASE_ELEMENTS}${updates.id}`, {
         method: "PUT",

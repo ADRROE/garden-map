@@ -2,17 +2,17 @@
 import fs from "fs";
 import path from "path";
 import { NextApiRequest, NextApiResponse } from "next";
-import { GardenElement } from "../types"; // Adjust this path as needed
+import { GardenElementObject } from "../types"; // Adjust this path as needed
 
 const dataFilePath = path.resolve("data", "elements.json");
 
-function readElements(): GardenElement[] {
+function readElements(): GardenElementObject[] {
   if (!fs.existsSync(dataFilePath)) return [];
   const content = fs.readFileSync(dataFilePath, "utf-8");
   return JSON.parse(content);
 }
 
-function saveElements(elements: GardenElement[]) {
+function saveElements(elements: GardenElementObject[]) {
   fs.writeFileSync(dataFilePath, JSON.stringify(elements, null, 2));
 }
 
@@ -24,13 +24,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(200).json(elements);
 
     case "POST":
-      const newElement: GardenElement = req.body;
+      const newElement: GardenElementObject = req.body;
       elements.push(newElement);
       saveElements(elements);
       return res.status(201).json(newElement);
 
     case "PUT":
-      const updated: GardenElement = req.body;
+      const updated: GardenElementObject = req.body;
       elements = elements.map(el =>
         el.id === updated.id ? { ...el, ...updated } : el
       );

@@ -1,4 +1,3 @@
-import { GardenDataAction } from "./services/actions";
 import { FabricImage } from "fabric";
 
 export interface MenuElement {
@@ -16,7 +15,7 @@ export interface MenuElement {
   children?: MenuElement[];
 }
 
-export interface GardenElement extends MenuElement {
+export interface GardenElementObject extends MenuElement {
   menuElementId?: string;
   id: string;
   name?: string;
@@ -35,7 +34,7 @@ export interface GardenElement extends MenuElement {
 }
 
 export interface GardenDataState {
-  elements: GardenElement[];
+  elements: GardenElementObject[];
   zones: GardenZone[];
   coloredCells: Record<string, ColoredCell>;
 }
@@ -50,6 +49,10 @@ export type HistoryState<T> = {
   future: T[];
 };
 
+export type GardenObject =
+  | {type: 'element', object: GardenElementObject}
+  | {type: 'zone', object: GardenZoneObject}
+
 export interface GardenZone {
   id: string;
   name?: string;
@@ -57,6 +60,14 @@ export interface GardenZone {
   coverage: ColoredCell[];
   borderPath: Point[];
 }
+
+export type GardenZoneObject = {
+  id: string;
+  zone: GardenZone;
+  path: Path2D;
+  isSelected?: boolean;
+  isHovered?: boolean;
+};
 
 export type ColoredCell = {
   col: number;
@@ -66,8 +77,8 @@ export type ColoredCell = {
   zoneId?: string;
 };
 
-export type CreateElementFn = (element: Omit<GardenElement, "name" | "x" | "y" | "width" | "height">, name: string, x: number, y: number, width: number, height: number) => void;
-export type UpdateElementFn = (updatedElement: { id: string } & Partial<GardenElement>, record?: "create" | "update") => void;
+export type CreateElementFn = (element: Omit<GardenElementObject, "name" | "x" | "y" | "width" | "height">, name: string, x: number, y: number, width: number, height: number) => void;
+export type UpdateElementFn = (updatedElement: { id: string } & Partial<GardenElementObject>, record?: "create" | "update") => void;
 export type UpdateZoneFn = (updatedZone: { id: string } & Partial<GardenZone>, record?: "create" | "modify") => void;
 
 export type Vec2 = {
@@ -79,13 +90,13 @@ export type Vec2 = {
 export type Point = [number, number];
 export type LineSegment = [Point, Point];
 
-export type ElementType = GardenElement | MenuElement;
+export type ElementType = GardenElementObject | MenuElement;
 
 export interface GardenElementProps {
-  element: GardenElement;
+  element: GardenElementObject;
   isSelected: boolean;
 
-  onUpdate: (updatedElement: { id: string } & Partial<GardenElement>) => void;
+  onUpdate: (updatedElement: { id: string } & Partial<GardenElementObject>) => void;
   onSelect: () => void;
   onDelete: (id: string) => void;
 }
@@ -110,18 +121,6 @@ export type CanvasLayer = {
   name: string;
   draw: (ctx: CanvasRenderingContext2D) => void;
   deps: unknown[];
-};
-
-export type GardenDataContextType = {
-  datastate: GardenDataState;
-  datadispatch: React.Dispatch<GardenDataAction>;
-  placeElement: (name: string) => void;
-  deleteElement: (id: string) => void;
-  updateElement: (element: GardenElement, record?: 'create' | 'modify') => void;
-  updateZone: (zone: GardenZone, record?: 'create' | 'update') => void;
-  selectElement: (element: ElementType | null) => void;
-  colorCell: (i: number, j: number, color: string, menuElementId?: string) => void;
-  uncolorCell: (i: number, j: number) => void;
 };
 
 export interface GardenFabricImage extends FabricImage {

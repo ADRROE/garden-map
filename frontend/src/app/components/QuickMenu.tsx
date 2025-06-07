@@ -10,6 +10,8 @@ const QuickMenu = () => {
     const isMapLocked = useUIStore(state => state.isMapLocked);
     const { toggleMapLock } = useUIStore();
 
+    const menudispatch = useMenuStore(state => state.dispatch);
+
     const [isOpen, setIsOpen] = useState(false);
     const [activeDropdown, setActiveDropdown] = useState<number | null>(null);
 
@@ -18,9 +20,9 @@ const QuickMenu = () => {
     const handleLockClick = () => {
         toggleMapLock()
     }
-    const handleElementClick = () => uidispatch({ type: 'TOGGLE_SIDEBAR' })
+    const handleElementClick = () => menudispatch({ type: 'TOGGLE_MENU', menu: 'picker' })
     const handleZoneClick = () => {
-        uidispatch({ type: 'SHOW_SIDEBAR'});
+        menudispatch({ type: 'SHOW_MENU', menu: 'picker'});
         useUIStore.getState().dispatch({type: 'SET_MAP_LOCK', value: false})
         useMenuStore.getState().setOpenSection('s3');
     }

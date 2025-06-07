@@ -1,4 +1,4 @@
-import { GardenZone } from "@/types";
+import { GardenZone, GardenZoneObject } from "@/types";
 import { darkenColor } from "./utils";
 
 const CELL_SIZE = 20; // adjust if needed
@@ -54,40 +54,35 @@ export function makeZonePath(zone: GardenZone): Path2D {
   return path;
 }
 
-export function drawZone(ctx: CanvasRenderingContext2D, zone: GardenZone, cache?: Map<string, Path2D>) {
-  if (!zone.coverage || zone.coverage.length === 0) return;
+export function drawZone(ctx: CanvasRenderingContext2D, zoneObj: GardenZoneObject) {
+  const { zone, path } = zoneObj;
+  if (!zone.coverage || zone.coverage.length === 0 || !path) return;
 
   const scaled = zone.borderPath.map(([x, y]) => [x * CELL_SIZE, y * CELL_SIZE] as [number, number]);
 
-  let path = cache?.get(zone.id);
-  if (!path) {
-    path = makeZonePath(zone)
-    cache?.set(zone.id, path);
-  }
-
-  ctx.save(); // Save canvas state
+  ctx.save();
 
   // 1. Build the rounded border path
   drawRoundedPolygon(ctx, scaled, RADIUS);
 
-  // 2. Set clip region to this rounded path
+  // 2. Set clip region
   ctx.clip();
 
-  // 3. Fill the coverage inside the clip
+  // 3. Fill coverage
   ctx.fillStyle = zone.color;
   for (const { col, row } of zone.coverage) {
     ctx.fillRect(col * CELL_SIZE, row * CELL_SIZE, CELL_SIZE, CELL_SIZE);
   }
 
-  ctx.restore(); // Restore to remove clipping
+  ctx.restore();
 
-  // 4. Stroke the rounded border for visual outline
+  // 4. Stroke border
   drawRoundedPolygon(ctx, scaled, RADIUS);
   ctx.strokeStyle = darkenColor(zone.color, 0.6);
   ctx.lineWidth = 1;
   ctx.stroke();
 
-  // 🏷 Draw name at center of zone
+  // 5. Label (name)
   if (zone.name && zone.coverage.length > 0) {
     const minX = Math.min(...zone.coverage.map(c => c.col));
     const maxX = Math.max(...zone.coverage.map(c => c.col));

@@ -2,26 +2,24 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import { SelectionState } from './SelectionState';
-import { MenuElement, GardenElement, Vec2 } from '../types';
+import { MenuElement, GardenElementObject, Vec2, GardenObject } from '../types';
 import { useGardenStore } from './useGardenStore';
 import { useUIStore } from './useUIStore';
-import { useMenuStore } from './useMenuStore';
 
 type SelectionStore = {
   selection: SelectionState;
-  selectedElementId: string | null;
-  selectedElement: GardenElement | null;
+  selectedObjId: string | null;
+  selectedObj: GardenObject | null;
   selectedItemId: string | null;
-  selectedItem: MenuElement | null;
   isMouseDown: boolean;
   isModifierKeyDown: boolean;
   setMouseDown: (down: boolean) => void;
   setModifierKeyDown: (down: boolean) => void;
-  setSelectedElement: (id: string | null) => void;
-  setSelectedItem: (id: string) => void;
+  setSelectedObjId: (id: string | null) => void;
+  setSelectedItemId: (id: string) => void;
   setPlacing: (item: MenuElement) => void;
   setPendingPosition: (pos: Vec2) => void;
-  setEditing: (item: GardenElement) => void;
+  setEditing: (obj: GardenElementObject) => void;
   setConfirming: () => void;
   setDrawing: (color: string) => void;
   clear: () => void;
@@ -30,23 +28,23 @@ type SelectionStore = {
 export const useSelectionStore = create<SelectionStore>()(
   devtools((set) => ({
     selection: { kind: null },
-    selectedElementId: null,
-    selectedElement: null,
+    selectedObjId: null,
+    selectedObj: null,
     selectedItemId: null,
-    selectedItem: null,
     setPlacing: (item) =>
       set({
         selection: { kind: 'placing', menuItem: item },
       }),
 
-    setSelectedElement: (id: string | null) => {
-      const element = useGardenStore.getState().present.elements.find(e => e.id === id);
-      set({ selectedElementId: id, selectedElement: element ?? null });
+    setSelectedObjId: (id: string | null) => {
+      const obj = useGardenStore.getState().present.elements.find(e => e.id === id);
+      if (obj) {
+        set({ selectedObjId: id, selectedObj: { type: 'element', object: obj } });
+      }
     },
 
-    setSelectedItem: (id: string | null) => {
-      const item = useMenuStore.getState().menuItems.find(i => i.id === id);
-      set({ selectedItemId: id, selectedItem: item ?? null });
+    setSelectedItemId: (id: string | null) => {
+      set({ selectedItemId: id });
     },
 
     setPendingPosition: (position: Vec2) =>
@@ -62,17 +60,17 @@ export const useSelectionStore = create<SelectionStore>()(
         return {};
       }),
 
-    setEditing: (element) => {
+    setEditing: (obj) => {
       if (useUIStore.getState().isMapLocked) return;
       set({
-        selection: { kind: 'editing', element },
-        selectedElement: element,
-        selectedElementId: element.id
+        selection: { kind: 'editing', obj },
+        selectedObj: { type: 'element', object: obj },
+        selectedObjId: obj.id
       })
     },
     setConfirming: () => {
       set({
-        selection: { kind: 'confirming'}
+        selection: { kind: 'confirming' }
       })
     },
 
@@ -86,10 +84,10 @@ export const useSelectionStore = create<SelectionStore>()(
     clear: () =>
       set({
         selection: { kind: null },
-        selectedElement: null,
-        selectedItem: null
+        selectedObj: null,
+        selectedItemId: null
       }),
-          isMouseDown: false,
+    isMouseDown: false,
     isModifierKeyDown: false,
 
     setMouseDown: (down) => set({ isMouseDown: down }),

@@ -2,8 +2,8 @@ import { MenuElement } from "@/types";
 import { useSelectionStore } from "@/stores/useSelectionStore";
 import { log } from "@/utils/utils";
 
-export function useMenuActions() {
-    const { setSelectedItem, setDrawing } = useSelectionStore()
+export function useSideBarActions() {
+    const { setSelectedItemId, setDrawing } = useSelectionStore()
 
     const initPlacement = (item: MenuElement) => {
         useSelectionStore.setState({
@@ -13,7 +13,7 @@ export function useMenuActions() {
 
     const handleItemClick = (item: MenuElement) => {
         log("useMenuActions handleItemClick triggered with: ", item)
-        setSelectedItem(item.id)
+        setSelectedItemId(item.id)
         switch (item.metadata?.kind) {
             case 'element':
                 initPlacement(item);

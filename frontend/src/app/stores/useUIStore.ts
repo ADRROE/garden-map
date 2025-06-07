@@ -1,25 +1,16 @@
 'use client'
-import { UIAction } from "../services/actions";
 import { LayerName } from "../types";
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 
-type Vec2 = { x: number; y: number };
-
 type UIState = {
-  scale: number;
-  pan: Vec2;
   isMapLocked: boolean;
-  showSideBar: boolean;
   isLoading: boolean;
   activeLayers: LayerName[];
   cursor: string;
 
-  setScale: (scale: number) => void;
-  setPan: (pan: Vec2) => void;
   setIsLoading: (value: boolean) => void;
   toggleMapLock: () => void;
-  toggleSideBar: () => void;
 
   dispatch: (action: UIAction) => void;
 };
@@ -27,22 +18,15 @@ type UIState = {
 export const useUIStore = create<UIState>()(
   devtools(
     (set, get) => ({
-      scale: 1,
-      pan: { x: 0, y: 0 },
       isMapLocked: true,
-      showSideBar: false,
       isLoading: true,
       activeLayers: ["background", "zones", "elements"],
       cursor: "default",
 
-      setScale: (scale) => get().dispatch({ type: 'SET_SCALE', scale }),
-      setPan: (pan) => get().dispatch({ type: 'SET_PAN', pan }),
       setActiveLayers: (activeLayers: LayerName[]) => get().dispatch({ type: 'SET_ACTIVE_LAYERS', activeLayers }),
       setIsLoading: (value) => set((state) => ({ ...state, isLoading: value })),
       toggleMapLock: () =>
         set((state) => ({ isMapLocked: !state.isMapLocked })),
-      toggleSideBar: () =>
-        set((state) => ({ showSideBar: !state.showSideBar })),
 
       dispatch: (action: UIAction) =>
         set((state) => ({
@@ -53,12 +37,16 @@ export const useUIStore = create<UIState>()(
   )
 );
 
+export type UIAction =
+    | { type: 'TOGGLE_LAYER'; layer: LayerName }
+    | { type: 'SHOW_LAYER'; layer: LayerName }
+    | { type: 'HIDE_LAYER'; layer: LayerName }
+    | { type: 'SET_ACTIVE_LAYERS'; activeLayers: LayerName[] }
+    | { type: 'SET_CURSOR'; cursor: string}
+    | { type: 'SET_MAP_LOCK'; value: boolean }
+
 function baseReducer(state: UIState, action: UIAction): Partial<UIState> {
   switch (action.type) {
-    case 'SET_SCALE':
-      return { scale: action.scale };
-    case 'SET_PAN':
-      return { pan: action.pan };
     case "TOGGLE_LAYER":
       return {
         activeLayers: state.activeLayers.includes(action.layer)
@@ -78,21 +66,6 @@ function baseReducer(state: UIState, action: UIAction): Partial<UIState> {
     case "SET_ACTIVE_LAYERS":
       return {
         activeLayers: [...action.activeLayers],
-      };
-    case "TOGGLE_SIDEBAR":
-      return {
-        ...state,
-        showSideBar: !state.showSideBar
-      };
-    case "SHOW_SIDEBAR":
-      return {
-        ...state,
-        showSideBar: true
-      };
-    case "HIDE_SIDEBAR":
-      return {
-        ...state,
-        showSideBar: false
       };
     case "SET_CURSOR":
       return {

@@ -5,7 +5,7 @@ import React, {
 import CanvasGrid, { CanvasGridHandle } from './CanvasGrid';
 import NameModal from './NameModal';
 import { useGardenStore } from '../stores/useGardenStore';
-import { CanvasLayer, ColoredCell, GardenElement, ElementType, Vec2 } from '../types';
+import { CanvasLayer, ColoredCell, GardenElementObject, Vec2 } from '../types';
 import { useCanvasInteraction } from '../hooks/useCanvasInteraction';
 import PropMenu from './PropMenu';
 import { useSelectionStore } from '../stores/useSelectionStore';
@@ -13,14 +13,16 @@ import { useGardenElement } from '../hooks/useGardenElement';
 import { fetchElements, fetchZones } from '../services/apiService';
 import { useUIStore } from '../stores/useUIStore';
 import { useColorBuffer } from '@/hooks/useColorBuffer';
-import { useGardenZone } from '@/hooks/useGardenZone';
+import { useGardenZone } from '@/hooks/useColoredCells';
 import { log, warn, error } from "@/utils/utils";
-import {drawZone, makeZonePath} from '@/utils/DrawZone';
+import { drawZone } from '@/utils/DrawZone';
 import { useViewportStore } from '@/stores/useViewportStore';
 import UpdateModal from './UpdateModal';
 import { fieldConfig } from '../lib/fieldConfig';
 import { isGardenElement } from '@/utils/FabricHelpers';
-import { GardenZoneObject } from './GardenZoneObject';
+import { useMenuStore } from '@/stores/useMenuStore';
+import { useGardenZoneObjects } from '@/hooks/useGardenZoneObjects';
+import { useMenuElement } from '@/hooks/useMenuElement';
 
 const CELL_SIZE = 20;
 
@@ -30,8 +32,8 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
   const isModifierKeyDown = useSelectionStore(s => s.isModifierKeyDown);
 
   useImperativeHandle(ref, () => ({
-    getTransformedElement: () => {
-      return innerCanvasGridRef.current?.getTransformedElement() ?? null;
+    getTransformedElementObj: () => {
+      return innerCanvasGridRef.current?.getTransformedElementObj() ?? null;
     },
     colorCell: (cell) => {
       log('🎨 Imperative colorCell called with:', cell);
@@ -50,7 +52,7 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
     handleEditConfirm() {
       log("13 - Now, handleEditConfirm is triggered in GardenCanvas.")
       log("colorBuffer.getCells() as seen by GardenCanvas: ", colorBuffer.getCells());
-      log("innerCanvasGridRef.current?.getTransformedElement() as seen by GardenCanvas: ", innerCanvasGridRef.current?.getTransformedElement());
+      log("innerCanvasGridRef.current?.getTransformedElement() as seen by GardenCanvas: ", innerCanvasGridRef.current?.getTransformedElementObj());
 
       // const updatedElement = innerCanvasGridRef.current?.getTransformedElement();
       // if (updatedElement) {
@@ -75,32 +77,35 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
   }));
 
   const activeLayers = useUIStore((s) => s.activeLayers);
-  const uidispatch = useUIStore((s) => s.dispatch);
-  const setLoading = useUIStore((s) => s.setIsLoading)
+  const isMapLocked = useUIStore((s) => s.isMapLocked);
+  const setLoading = useUIStore((s) => s.setIsLoading);
+
+  const menudispatch = useMenuStore((s) => s.dispatch);
+  const menu = useMenuStore();
 
   const isDrawing = useSelectionStore((s) => s.selection.kind === 'drawing');
   const isEditing = useSelectionStore((s) => s.selection.kind === 'editing');
   const isPlacing = useSelectionStore((s) => s.selection.kind === 'placing');
   const isConfirming = useSelectionStore((s) => s.selection.kind === 'confirming');
-  const selectedItem = useSelectionStore((s) => s.selection.kind ? s.selectedItem : null);
-  const selectedElement = useSelectionStore((s) => s.selectedElement);
-  const setSelectedElement = useSelectionStore((s) => s.setSelectedElement)
+  const selectedItemId = useSelectionStore((s) => s.selection.kind ? s.selectedItemId : null);
+  const selectedItem = useMenuElement(selectedItemId);
+  const selectedObj = useSelectionStore((s) => s.selectedObj);
+  const setSelectedObjId = useSelectionStore((s) => s.setSelectedObjId);
+  const selectedElement = selectedObj?.type === 'element' ? selectedObj.object : null;
   const clearSelection = useSelectionStore((s) => s.clear);
 
   const elements = useGardenStore(state => state.present.elements);
-  const zones = useGardenStore(state => state.present.zones);
+  const zoneObjects = useGardenZoneObjects();
   const gdispatch = useGardenStore((s) => s.dispatch);
   const updateElement = useGardenStore((s) => s.updateElement);
 
   const [naming, setNaming] = useState(false);
-  const [propMenuPosition, setPropMenuPosition] = useState<{ x: number; y: number } | null>(null);
   const [floatingLabel, setFloatingLabel] = useState<string | null>(null);
   const [floatingLabelPosition, setFloatingLabelPosition] = useState<{ x: number; y: number } | null>(null);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
   const imageCacheRef = useRef<Map<string, HTMLImageElement>>(new Map());
-  const zonePathCache = useRef<Map<string, Path2D>>(new Map());;
-  const lastPropMenuRef = useRef<GardenElement | null>(null);
+  const lastPropMenuRef = useRef<GardenElementObject | null>(null);
 
   const matrix = useViewportStore((s) => s.matrix);
 
@@ -110,12 +115,10 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
 
   const { onCanvasClick } = useCanvasInteraction({
     onSelect: (el) => {
-      setSelectedElement(el.id);
-      if (isGardenElement(el)) setPropMenuPosition({ x: el.x, y: el.y });
+      setSelectedObjId(el.id);
     },
     onDeselect: () => {
-      setPropMenuPosition(null);
-      uidispatch({ type: 'HIDE_SIDEBAR' })
+      menudispatch({ type: 'HIDE_MENU', menu: 'picker' })
     }
   });
 
@@ -211,23 +214,6 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
     }
   }, [isDrawing, isModifierKeyDown, isMouseDown, selectedItem, colorBuffer, onCanvasHover]);
 
-const zonePaths = useMemo(() => {
-  const map = zonePathCache.current;
-  zones.forEach(zone => {
-    const path = makeZonePath(zone);
-    map.set(zone.id, path);
-  });
-  return map;
-}, [zones]);
-
-const zoneObjects = useMemo((): GardenZoneObject[] => {
-  return zones.map((zone) => ({
-    id: zone.id,
-    zone,
-    path: makeZonePath(zone),
-  }));
-}, [zones]);
-
   const layers = useMemo((): CanvasLayer[] => {
     return activeLayers.map((layer) => ({
       name: layer,
@@ -272,12 +258,13 @@ const zoneObjects = useMemo((): GardenZoneObject[] => {
           });
         }
         if (layer === 'zones') {
-          zones.forEach(zone => drawZone(ctx, zone, zonePaths));
+
+          zoneObjects.forEach(zone => drawZone(ctx, zone));
         }
       },
       deps: [selectedElement],
     }));
-  }, [activeLayers, elements, zones, selectedElement, isEditing]);
+  }, [activeLayers, elements, zoneObjects, selectedElement, isEditing]);
 
   useEffect(() => {
     let mounted = true;
@@ -380,7 +367,7 @@ const zoneObjects = useMemo((): GardenZoneObject[] => {
       <CanvasGrid
         ref={innerCanvasGridRef}
         layers={layers}
-        selectedElement={selectedElement}
+        selectedElementObj={!isMapLocked ? selectedElement : null}
         onWorldClick={handleWorldClick}
         onWorldMove={handleWorldMove}
       />
@@ -424,26 +411,16 @@ const zoneObjects = useMemo((): GardenZoneObject[] => {
           }}
         />
       )}
-      {propMenuPosition && (
-        <div
-          style={{
-            position: 'absolute',
-            top: Math.min(propMenuPosition.y, window.innerHeight - 200),
-            left: Math.min(propMenuPosition.x, window.innerWidth - 300),
-            zIndex: 1000,
+      {menu.activeMenu === 'prop' && selectedObj?.object.id === menu.propMenuElementId && (
+        <PropMenu
+          element={selectedObj?.object ?? null}
+          onUpdate={(updatedData) => {
+            log('🔧 PropMenu updated element:', updatedData);
+            useSelectionStore.getState().setConfirming();
           }}
-        >
-          <PropMenu
-            element={selectedElement}
-            onUpdate={(updatedData) => {
-              log('🔧 PropMenu updated element:', updatedData);
-              useSelectionStore.getState().setConfirming();
-            }}
-            onClose={() => setPropMenuPosition(null)}
-            fieldConfig={fieldConfig}
-          />
-
-        </div>
+          onClose={() => menudispatch({ type: 'HIDE_MENU', menu: 'prop' })}
+          fieldConfig={fieldConfig}
+        />
       )}
       {isConfirming &&
         <UpdateModal

@@ -2,7 +2,7 @@ import { MenuSection, useMenuStore } from "../stores/useMenuStore";
 import { MenuElement } from "../types";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslations } from "next-intl";
-import { useMenuActions } from "@/hooks/useMenuActions";
+import { useSideBarActions } from "@/hooks/useSideBarActions";
 
 type SideBarProps = {
     title: string;
@@ -11,7 +11,7 @@ type SideBarProps = {
 
 export function SideBar({ title, sections }: SideBarProps) {
     const { openSectionId, setOpenSection } = useMenuStore();
-    const { handleItemClick } = useMenuActions();
+    const { handleItemClick } = useSideBarActions();
     const t = useTranslations('Menu');
 
     const toggleSection = (id: string) => {

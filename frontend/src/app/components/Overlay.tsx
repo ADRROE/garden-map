@@ -5,11 +5,10 @@ import { useMenuElements } from "../hooks/useMenuElements";
 import { useSelectionStore } from "../stores/useSelectionStore";
 import { useTranslations } from "next-intl";
 import LanguageSwitcher from "./LanguageSwitcher";
-import { useUIStore } from "@/stores/useUIStore";
 import StatusBar from "./StatusBar";
 import { useTransientFlag } from "@/hooks/useTransientFlag";
 import { capitalizeFirstLetter } from "@/utils/utils";
-import { MenuSection } from "@/stores/useMenuStore";
+import { MenuSection, useMenuStore } from "@/stores/useMenuStore";
 import MatrixDebugger from "./Matrix";
 import { useGardenStore } from "@/stores/useGardenStore";
 import { useState } from "react";
@@ -30,7 +29,7 @@ export default function Overlay({ onEditConfirm, onEditAbort }: { onEditConfirm:
   const selection = useSelectionStore((s) => s.selection);
   const isInteracting = selection.kind === 'drawing' || selection.kind === 'editing';
 
-  const showSideBar = useUIStore((s) => s.showSideBar);
+  const showSideBar = useMenuStore((s) => s.activeMenu === 'picker')
   const showStatusBar = useTransientFlag(selection.kind, 2000); // shown for 2s after any change
 
   const sideBarSections: MenuSection[] = [{

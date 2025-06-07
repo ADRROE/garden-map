@@ -18,29 +18,29 @@ export default function Home() {
   const canvasGridRef = useRef<CanvasGridHandle>(null);
 
   const updateElement = useGardenStore((s) => s.updateElement);
-  
+
   const handleEditConfirm = (operation: 'create' | 'modify') => {
     console.log(operation);
     log("9 - handleEditConfirm triggered in page via Overlay onEditConfirm prop.")
-    const updatedElement = canvasGridRef.current?.getTransformedElement();
+    const updatedElement = canvasGridRef.current?.getTransformedElementObj();
     log("10 - updatedElement as seen by page: ", updatedElement)
     if (updatedElement) {
       log("11 - ✅ Calling updateElement from within page with: ", updatedElement);
       updateElement(updatedElement, operation);
     };
-  if (canvasGridRef.current?.handleEditConfirm) {
-    log("11 - canvasGridRef.current.handleConfirm is not null: ", canvasGridRef.current);
-    log("12 - Calling canvasGridRef.current.handleEditConfirm()");
-    canvasGridRef.current.handleEditConfirm();
-  } else {
-    warn("12 - GardenCanvas ref is not ready or handleEditConfirm is undefined");
-  }
+    if (canvasGridRef.current?.handleEditConfirm) {
+      log("11 - canvasGridRef.current.handleConfirm is not null: ", canvasGridRef.current);
+      log("12 - Calling canvasGridRef.current.handleEditConfirm()");
+      canvasGridRef.current.handleEditConfirm();
+    } else {
+      warn("12 - GardenCanvas ref is not ready or handleEditConfirm is undefined");
+    }
   };
 
   const handleEditAbort = () => {
-        useSelectionStore.getState().clear();
-        canvasGridRef.current?.clearColoring();
-        useUIStore.getState().dispatch({type: 'SET_MAP_LOCK', value: true})
+    useSelectionStore.getState().clear();
+    canvasGridRef.current?.clearColoring();
+    useUIStore.getState().dispatch({ type: 'SET_MAP_LOCK', value: true })
   }
 
   // useEffect(() => {
@@ -58,7 +58,7 @@ export default function Home() {
         position: "relative", // this ensures absolute children work as expected
       }}
     >
-      <Overlay 
+      <Overlay
         onEditConfirm={(operation) => handleEditConfirm(operation)}
         onEditAbort={handleEditAbort} />
 

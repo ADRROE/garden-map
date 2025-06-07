@@ -1,15 +1,18 @@
 import { createElementAPI, fetchElements } from "../services/apiService";
 import { useGardenStore } from "../stores/useGardenStore";
 import { useSelectionStore } from "../stores/useSelectionStore";
-import { Vec2, GardenElement } from "../types";
+import { Vec2, GardenElementObject } from "../types";
 import { toColumnLetter, getCoveredCells } from "../utils/utils";
 import { v4 as uuidv4 } from 'uuid';
 import { log, error } from "@/utils/utils";
+import { useMenuElement } from "./useMenuElement";
 
 
 export function useGardenElement() {
   const { setPendingPosition, clear } = useSelectionStore();
-  const selectedItem = useSelectionStore((s) => s.selection.kind === "placing" ? s.selectedItem : null);
+  const selectedItemId = useSelectionStore((s) => s.selection.kind === "placing" ? s.selectedItemId : null);
+  const selectedItem = useMenuElement(selectedItemId);
+  
   const createElement = useGardenStore((s) => s.createElement);
   const dispatch = useGardenStore((s) => s.dispatch);
 
@@ -37,7 +40,7 @@ export function useGardenElement() {
     const location = `${toColumnLetter(computedPosition[0])}${computedPosition[1]}`;
     const coverage = getCoveredCells(computedPosition[0], computedPosition[1], width / 19.5, height / 19.5);
 
-    const newElement: GardenElement = {
+    const newElement: GardenElementObject = {
       ...selectedItem,
       menuElementId: selectedItem.id,
       id: uuidv4(),
