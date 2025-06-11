@@ -5,8 +5,8 @@ from datetime import datetime
 
 class GardenElementBase(BaseModel):
     id: str
-    menu_element_id: str = Field(alias="menuElementId")
-    name: str
+    menu_element_id: str
+    display_name: str
     icon: str
     x: float
     y: float
@@ -14,29 +14,40 @@ class GardenElementBase(BaseModel):
     height: float
     location: str | None = None
     coverage: List[str] | None = None
-    default_width: float | None = Field(default=None, alias="defaultWidth")
-    default_height: float | None = Field(default=None, alias="defaultHeight")
+    default_width: float | None = None
+    default_height: float | None = None
     cursor: str | None = None
     category: str
-    sub_category: str = Field(default=None, alias="subCategory")
-    wcvp_id: str | None = Field(default=None, alias="wcvpId")
-    rhs_id: str | None = Field(default=None, alias="rhsId")
-    date_planted: datetime | None = Field(default=None, alias="datePlanted")
+    sub_category: str | None = None
+    wcvp_id: str | None = None
+    rhs_id: str | None = None
+    display_species: str | None = None
+    display_genus: str | None = None
+    date_planted: datetime | None = None
+    date_fertilized: datetime | None = None
+    date_harvested: datetime | None = None
+    date_watered: datetime | None = None
+    amount_watered: float | None = None
+    date_pruned: datetime | None = None
+    fertilizer_type: str | None = None
+    plant_form: str | None = None
+    status: str | None = None
+    date_status: datetime | None = None
+    circumference: float | None = None
     price: float | None = None
 
     class Config:
         from_attributes = True
         validate_by_name = True
-        populate_by_name = True  # supports both aliases and real names
         json_encoders = {
             datetime: lambda v: v.isoformat()
         }
 
 class GardenElementHistory(BaseModel):
     id: str
-    garden_element_id: str = Field(alias="gardenElementId")
-    menu_element_id: str = Field(alias="menuElementId")
-    name: str
+    garden_element_id: str
+    menu_element_id: str
+    display_name: str
     icon: str
     x: float
     y: float
@@ -44,14 +55,26 @@ class GardenElementHistory(BaseModel):
     height: float
     location: str | None = None
     coverage: List[str] | None = None
-    default_width: float | None = Field(default=None, alias="defaultWidth")
-    default_height: float | None = Field(default=None, alias="defaultHeight")
+    default_width: float | None = None
+    default_height: float | None = None
     cursor: str | None = None
     category: str
-    sub_category: str = Field(default=None, alias="subCategory")
-    wcvp_id: str | None = Field(default=None, alias="wcvpId")
-    rhs_id: str | None = Field(default=None, alias="rhsId")
-    date_planted: datetime | None = Field(default=None, alias="datePlanted")
+    sub_category: str | None = None
+    wcvp_id: str | None = None
+    rhs_id: str | None = None
+    display_species: str | None = None
+    display_genus: str | None = None
+    date_planted: datetime | None = None
+    date_fertilized: datetime | None = None
+    date_harvested: datetime | None = None
+    date_watered: datetime | None = None
+    amount_watered: float | None = None
+    date_pruned: datetime | None = None
+    fertilizer_type: str | None = None
+    plant_form: str | None = None
+    status: str | None = None
+    date_status: datetime | None = None
+    circumference: float | None = None
     price: float | None = None
     last_modified: datetime
 
@@ -70,39 +93,50 @@ class GardenElement(GardenElementBase):
 
 class GardenElementUpdate(BaseModel):
     id: str
-    menu_element_id: str = Field(alias="menuElementId")
-    name: str | None = None
-    icon: str | None = None
-    x: float | None = None
-    y: float | None = None
-    width: float | None = None
-    height: float | None = None
+    menu_element_id: str
+    display_name: str
+    icon: str
+    x: float
+    y: float
+    width: float
+    height: float
     location: str | None = None
     coverage: List[str] | None = None
-    default_width: float | None = Field(default=None, alias="defaultWidth")
-    default_height: float | None = Field(default=None, alias="defaultHeight")
+    default_width: float | None = None
+    default_height: float | None = None
     cursor: str | None = None
-    category: str | None = None
-    sub_category: str | None = Field(default=None, alias="subCategory")
-    wcvp_id: str | None = Field(default=None, alias="wcvpId")
-    rhs_id: str | None = Field(default=None, alias="rhsId")
-    date_planted: datetime | None = Field(default=None, alias="datePlanted")
+    category: str
+    sub_category: str | None = None
+    wcvp_id: str | None = None
+    rhs_id: str | None = None
+    display_species: str | None = None
+    display_genus: str | None = None
+    date_planted: datetime | None = None
+    date_fertilized: datetime | None = None
+    date_harvested: datetime | None = None
+    date_watered: datetime | None = None
+    amount_watered: float | None = None
+    date_pruned: datetime | None = None
+    fertilizer_type: str | None = None
+    plant_form: str | None = None
+    status: str | None = None
+    date_status: datetime | None = None
+    circumference: float | None = None
     price: float | None = None
     operation: Literal["create", "modify"] | None = None
 
     class Config:
-        validate_by_name = True
         populate_by_name = True
 
 class GardenElementUpdateWrapper(BaseModel):
     updates: GardenElementUpdate
     operation: Literal["create", "modify"]
 
-class ColoredCell(BaseModel):
+class Cell(BaseModel):
     col: float
     row: float
-    color: str
-    menuElementId: str = Field(default=None, alias="menu_element_id")
+    color: str | None = None
+    menuElementId: str = None
 
     class Config:
         from_attributes = True
@@ -110,10 +144,19 @@ class ColoredCell(BaseModel):
 
 class GardenZone(BaseModel):
     id: str
-    name: str | None = None
+    display_name: str | None = None
     color: str
-    coverage: List[ColoredCell]
-    border_path: List[Tuple[int, int]] = Field(default=None, alias="borderPath")
+    coverage: List[Cell]
+    border_path: List[Tuple[int, int]] = None
+    ph: float | None = None
+    temp: float | None = None
+    fert_date: datetime | None = None
+    water_date: datetime | None = None
+    water_amount: float | None = None
+    fert_type: str | None = None
+    soil_mix: str | None = None
+    moisture: float | None = None
+    sunshine: float | None = None
 
     class Config:
         from_attributes = True
@@ -122,10 +165,19 @@ class GardenZone(BaseModel):
 class GardenZoneHistory(BaseModel):
     id: str
     garden_zone_id: str = Field(alias="gardenZoneId")
-    name: str | None = None
+    display_name: str | None = None
     color: str
-    coverage: List[ColoredCell]
-    border_path: List[Tuple[int, int]] = Field(default=None, alias="borderPath")
+    coverage: List[Cell]
+    border_path: List[Tuple[int, int]] = None
+    ph: float | None = None
+    temp: float | None = None
+    fert_date: datetime | None = None
+    water_date: datetime | None = None
+    water_amount: float | None = None
+    fert_type: str | None = None
+    soil_mix: str | None = None
+    moisture: float | None = None
+    sunshine: float | None = None
     last_modified: datetime
 
     class Config:
@@ -133,10 +185,19 @@ class GardenZoneHistory(BaseModel):
         populate_by_name = True
 
 class GardenZoneUpdate(BaseModel):
-    name: str | None = None
-    color: str | None = None
-    coverage: List[ColoredCell] | None = None
-    border_path: List[Tuple[int, int]] | None = Field(default=None, alias="borderPath")
+    display_name: str | None = None
+    color: str
+    coverage: List[Cell]
+    border_path: List[Tuple[int, int]] = None
+    ph: float | None = None
+    temp: float | None = None
+    fert_date: datetime | None = None
+    water_date: datetime | None = None
+    water_amount: float | None = None
+    fert_type: str | None = None
+    soil_mix: str | None = None
+    moisture: float | None = None
+    sunshine: float | None = None
     operation: Literal["create", "modify"] | None = None
 
     class Config:
@@ -148,10 +209,19 @@ class GardenZoneUpdateWrapper(BaseModel):
     operation: Literal["create", "modify"]
 
 class CreateZonePayload(BaseModel):
-    name: str
-    cells: list[ColoredCell]
-    color: str | None = None
-    border_path: List[Tuple[int, int]] | None = Field(default=None, alias="borderPath")
+    display_name: str | None = None
+    color: str
+    coverage: List[Cell]
+    border_path: List[Tuple[int, int]] = None
+    ph: float | None = None
+    temp: float | None = None
+    fert_date: datetime | None = None
+    water_date: datetime | None = None
+    water_amount: float | None = None
+    fert_type: str | None = None
+    soil_mix: str | None = None
+    moisture: float | None = None
+    sunshine: float | None = None
 
     class Config:
         from_attributes = True

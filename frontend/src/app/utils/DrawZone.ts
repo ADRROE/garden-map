@@ -54,48 +54,57 @@ export function makeZonePath(zone: GardenZone): Path2D {
   return path;
 }
 
-export function drawZone(ctx: CanvasRenderingContext2D, zoneObj: GardenZoneObject) {
-  const { zone, path } = zoneObj;
-  if (!zone.coverage || zone.coverage.length === 0 || !path) return;
+let dashOffset = 0;
+export function updateZoneAnimationFrame() {
+  dashOffset = (dashOffset + 1) % 100; // Loop the offset
+}
 
-  const scaled = zone.borderPath.map(([x, y]) => [x * CELL_SIZE, y * CELL_SIZE] as [number, number]);
+CanvasRenderingContext2D.prototype.drawZone = function (
+  zoneObj: GardenZoneObject,
+  isSelected: boolean = false
+) {
+  const { path } = zoneObj;
+  if (!zoneObj.coverage || zoneObj.coverage.length === 0 || !path) return;
 
-  ctx.save();
+  const scaled = zoneObj.borderPath.map(([x, y]) => [x * CELL_SIZE, y * CELL_SIZE] as [number, number]);
 
-  // 1. Build the rounded border path
-  drawRoundedPolygon(ctx, scaled, RADIUS);
+  this.save();
+  drawRoundedPolygon(this, scaled, RADIUS);
+  this.clip();
 
-  // 2. Set clip region
-  ctx.clip();
-
-  // 3. Fill coverage
-  ctx.fillStyle = zone.color;
-  for (const { col, row } of zone.coverage) {
-    ctx.fillRect(col * CELL_SIZE, row * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+  this.fillStyle = zoneObj.color;
+  for (const { col, row } of zoneObj.coverage) {
+    this.fillRect(col * CELL_SIZE, row * CELL_SIZE, CELL_SIZE, CELL_SIZE);
   }
 
-  ctx.restore();
+  this.restore();
+  drawRoundedPolygon(this, scaled, RADIUS);
 
-  // 4. Stroke border
-  drawRoundedPolygon(ctx, scaled, RADIUS);
-  ctx.strokeStyle = darkenColor(zone.color, 0.6);
-  ctx.lineWidth = 1;
-  ctx.stroke();
+  if (isSelected) {
+    this.strokeStyle = 'yellow';
+    this.lineWidth = 2;
+    this.setLineDash([6, 4]); // Dash pattern
+    this.lineDashOffset = -dashOffset; // Animate!
+  } else {
+    this.setLineDash([]);
+    this.strokeStyle = darkenColor(zoneObj.color, 0.6);
+    this.lineWidth = 1;
+  }
 
-  // 5. Label (name)
-  if (zone.name && zone.coverage.length > 0) {
-    const minX = Math.min(...zone.coverage.map(c => c.col));
-    const maxX = Math.max(...zone.coverage.map(c => c.col));
-    const minY = Math.min(...zone.coverage.map(c => c.row));
-    const maxY = Math.max(...zone.coverage.map(c => c.row));
+  this.stroke();
 
+  if (zoneObj.displayName && zoneObj.coverage.length > 0) {
+    const minX = Math.min(...zoneObj.coverage.map(c => c.col));
+    const maxX = Math.max(...zoneObj.coverage.map(c => c.col));
+    const minY = Math.min(...zoneObj.coverage.map(c => c.row));
+    const maxY = Math.max(...zoneObj.coverage.map(c => c.row));
     const centerX = ((minX + maxX + 1) / 2) * CELL_SIZE;
     const centerY = ((minY + maxY + 1) / 2) * CELL_SIZE;
 
-    ctx.font = 'bold 14px sans-serif';
-    ctx.fillStyle = darkenColor(zone.color, 0.6);
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(zone.name, centerX, centerY);
+    this.font = 'bold 14px sans-serif';
+    this.fillStyle = darkenColor(zoneObj.color, 0.6);
+    this.textAlign = 'center';
+    this.textBaseline = 'middle';
+    this.fillText(zoneObj.displayName, centerX, centerY);
   }
-}
+};

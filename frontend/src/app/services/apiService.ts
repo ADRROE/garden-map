@@ -1,30 +1,41 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { ColoredCell, GardenElementObject, GardenZone } from "@/types";
+import { Cell, GardenElementObject, GardenZone } from "@/types";
+import { toColumnLetter } from "@/utils/utils";
+import camelcaseKeys from 'camelcase-keys';
+import snakecaseKeys from 'snakecase-keys';
 
 const API_BASE_ELEMENTS = process.env.NEXT_PUBLIC_API_URL + "/api/elements/";
 const API_BASE_ZONES = process.env.NEXT_PUBLIC_API_URL + "/api/zones/";
 
 export async function fetchElements(): Promise<GardenElementObject[]> {
-    console.log(API_BASE_ELEMENTS)
     const res = await fetch(API_BASE_ELEMENTS);
-    return res.json();
+    const responseData = camelcaseKeys(await res.json(), { deep: true });
+    return responseData;
 }
 
 export async function createElementAPI(newElement: GardenElementObject) {
+    const newElementForBackend = snakecaseKeys({
+        ...newElement,
+        coverage: newElement.coverage ? serializeCells(newElement.coverage) : null
+    })
     await fetch(API_BASE_ELEMENTS, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newElement),
+        body: JSON.stringify(newElementForBackend),
     });
 }
 
 export async function updateElementAPI(updates: Partial<GardenElementObject> & { id: string }, operation: 'create' | 'modify') {
-    console.log(`UpdateElementAPI called with updates: ${updates}, operation: ${operation}`);
+    const updatesForBackend = snakecaseKeys({
+        ...updates,
+        coverage: updates.coverage ? serializeCells(updates.coverage) : null
+    })
+
     await fetch(`${API_BASE_ELEMENTS}${updates.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({updates, operation})
+        body: JSON.stringify({updatesForBackend, operation})
     });
 }
 
@@ -32,16 +43,20 @@ export async function deleteElementAPI(id: string) {
     await fetch(`${API_BASE_ELEMENTS}${id}`, { method: "DELETE" });
 }
 
-function deserializeCell(cell: any): ColoredCell {
+function deserializeCell(cell: any): Cell {
     return {
         ...cell,
         menuElementId: cell.menu_element_id,
     };
 }
 
+function serializeCells(cells: Cell[]): string[] {
+  return cells.map(cell => `${toColumnLetter(cell.col)}${cell.row}`);
+}
+
 export async function fetchZones(): Promise<GardenZone[]> {
     const res = await fetch(API_BASE_ZONES);
-    const zonesFromBackend = await res.json();
+    const zonesFromBackend = camelcaseKeys(await res.json());
 
     const zones: GardenZone[] = zonesFromBackend.map((zone: GardenZone) => ({
         ...zone,
@@ -51,20 +66,20 @@ export async function fetchZones(): Promise<GardenZone[]> {
     return zones;
 }
 
-export async function createZoneAPI(cells: ColoredCell[], name: string) {
-    await fetch(`${API_BASE_ZONES}`, {
+export async function createZoneAPI(cells: Cell[], name: string) {
+    await fetch(`${API_BASE_ZONES}`, snakecaseKeys({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({cells, name})
-    });
+    }));
 }
 
 export async function updateZoneAPI( updatedZone: { id: string } & Partial<GardenZone>, operation: 'create' | 'modify') {
-    await fetch(`${API_BASE_ZONES}${updatedZone.id}`, {
+    await fetch(`${API_BASE_ZONES}${updatedZone.id}`, snakecaseKeys({
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({updatedZone, operation})
-    });
+    }));
 }
 
 export async function deleteZoneAPI(id: string) {

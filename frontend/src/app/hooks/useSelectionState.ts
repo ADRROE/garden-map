@@ -1,4 +1,3 @@
-// hooks/useOverlayState.ts
 import { useSelectionStore } from '@/stores/useSelectionStore';
 
 export const useSelectionState = () => {

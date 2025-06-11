@@ -10,22 +10,25 @@ import { useSelectionStore } from "@/stores/useSelectionStore";
 import { useColorBuffer } from "@/hooks/useColorBuffer";
 import { log, warn } from "@/utils/utils";
 import { useUIStore } from "@/stores/useUIStore";
+import { useCursorSync } from "@/hooks/useCursorSync";
 
 export default function Home() {
 
   const colorBuffer = useColorBuffer()
 
   const canvasGridRef = useRef<CanvasGridHandle>(null);
+    const fabricCanvas = canvasGridRef.current?.fabricCanvas;
+    useCursorSync(fabricCanvas);
 
   const updateElement = useGardenStore((s) => s.updateElement);
 
   const handleEditConfirm = (operation: 'create' | 'modify') => {
-    console.log(operation);
     log("9 - handleEditConfirm triggered in page via Overlay onEditConfirm prop.")
     const updatedElement = canvasGridRef.current?.getTransformedElementObj();
     log("10 - updatedElement as seen by page: ", updatedElement)
     if (updatedElement) {
       log("11 - ✅ Calling updateElement from within page with: ", updatedElement);
+      if (updatedElement)
       updateElement(updatedElement, operation);
     };
     if (canvasGridRef.current?.handleEditConfirm) {

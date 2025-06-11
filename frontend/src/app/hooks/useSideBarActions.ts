@@ -6,9 +6,7 @@ export function useSideBarActions() {
     const { setSelectedItemId, setDrawing } = useSelectionStore()
 
     const initPlacement = (item: MenuElement) => {
-        useSelectionStore.setState({
-            selection: { kind: 'placing', menuItem: item },
-        });
+        useSelectionStore.getState().setPlacing(item);
     };
 
     const handleItemClick = (item: MenuElement) => {

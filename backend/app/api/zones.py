@@ -38,7 +38,7 @@ def calculate_zones(
     saved_zones = []
 
     for zone in grouped_zones:
-        zone.name = payload.name
+        zone.display_name = payload.display_name
         saved_zone = crud.create_zone_with_cells(db, zone)
         saved_zones.append(saved_zone)
 

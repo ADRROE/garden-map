@@ -48,7 +48,6 @@ img.on('mousedown', () => {
   }
 
 const CELL_SIZE = 20;
-const RADIUS = 6;
 
 export function createFabricZone(
   zone: GardenZone
@@ -89,7 +88,7 @@ export function createFabricZone(
   }
 
   // 3. Optionally, add zone label
-  if (zone.name && zone.coverage.length > 0) {
+  if (zone.displayName && zone.coverage.length > 0) {
     const minX = Math.min(...zone.coverage.map(c => c.col));
     const maxX = Math.max(...zone.coverage.map(c => c.col));
     const minY = Math.min(...zone.coverage.map(c => c.row));
@@ -98,7 +97,7 @@ export function createFabricZone(
     const centerX = ((minX + maxX + 1) / 2) * CELL_SIZE;
     const centerY = ((minY + maxY + 1) / 2) * CELL_SIZE;
 
-    const text = new FabricText(zone.name, {
+    const text = new FabricText(zone.displayName, {
       left: centerX,
       top: centerY,
       fontSize: 14,

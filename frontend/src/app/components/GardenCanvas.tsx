@@ -5,7 +5,7 @@ import React, {
 import CanvasGrid, { CanvasGridHandle } from './CanvasGrid';
 import NameModal from './NameModal';
 import { useGardenStore } from '../stores/useGardenStore';
-import { CanvasLayer, ColoredCell, GardenElementObject, Vec2 } from '../types';
+import { CanvasLayer, Cell, GardenElementObject, GardenZoneObject, Vec2 } from '../types';
 import { useCanvasInteraction } from '../hooks/useCanvasInteraction';
 import PropMenu from './PropMenu';
 import { useSelectionStore } from '../stores/useSelectionStore';
@@ -13,9 +13,8 @@ import { useGardenElement } from '../hooks/useGardenElement';
 import { fetchElements, fetchZones } from '../services/apiService';
 import { useUIStore } from '../stores/useUIStore';
 import { useColorBuffer } from '@/hooks/useColorBuffer';
-import { useGardenZone } from '@/hooks/useColoredCells';
+import { useGardenZone } from '@/hooks/useCells';
 import { log, warn, error } from "@/utils/utils";
-import { drawZone } from '@/utils/DrawZone';
 import { useViewportStore } from '@/stores/useViewportStore';
 import UpdateModal from './UpdateModal';
 import { fieldConfig } from '../lib/fieldConfig';
@@ -23,6 +22,7 @@ import { isGardenElement } from '@/utils/FabricHelpers';
 import { useMenuStore } from '@/stores/useMenuStore';
 import { useGardenZoneObjects } from '@/hooks/useGardenZoneObjects';
 import { useMenuElement } from '@/hooks/useMenuElement';
+import { useCursorSync } from '@/hooks/useCursorSync';
 
 const CELL_SIZE = 20;
 
@@ -67,7 +67,7 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
 
       if (Object.keys(coloredCells).length > 0) {
         log("15 - coloredCells are not null and now dispatched by GardenCanvas.")
-        gdispatch({ type: 'SET_COLORED_CELLS', coloredCells });
+        gdispatch({ type: 'SET_COLORED_CELLS', cells: coloredCells });
         log("16 - Opening NameModal...")
         setNaming(true);
       } else {
@@ -91,34 +91,36 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
   const selectedItem = useMenuElement(selectedItemId);
   const selectedObj = useSelectionStore((s) => s.selectedObj);
   const setSelectedObjId = useSelectionStore((s) => s.setSelectedObjId);
-  const selectedElement = selectedObj?.type === 'element' ? selectedObj.object : null;
   const clearSelection = useSelectionStore((s) => s.clear);
 
   const elements = useGardenStore(state => state.present.elements);
+  const selectedElement = elements.find(el => el.id === selectedObj?.id)
   const zoneObjects = useGardenZoneObjects();
+  const selectedZone = zoneObjects.find(z => z.id === selectedObj?.id) || null
   const gdispatch = useGardenStore((s) => s.dispatch);
   const updateElement = useGardenStore((s) => s.updateElement);
 
   const [naming, setNaming] = useState(false);
+  const [propMenu, setPropMenu] = useState<GardenElementObject | GardenZoneObject | null>(null);
   const [floatingLabel, setFloatingLabel] = useState<string | null>(null);
   const [floatingLabelPosition, setFloatingLabelPosition] = useState<{ x: number; y: number } | null>(null);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
   const imageCacheRef = useRef<Map<string, HTMLImageElement>>(new Map());
-  const lastPropMenuRef = useRef<GardenElementObject | null>(null);
+  const lastPropMenuRef = useRef<GardenElementObject | GardenZoneObject | null>(null);
 
   const matrix = useViewportStore((s) => s.matrix);
 
   const fabricCanvas = innerCanvasGridRef.current?.fabricCanvas;
-  const menuItem = useSelectionStore((s) => s.selection.kind === 'placing' ? s.selection.menuItem : null);
-  const cursorImage = menuItem?.cursor;
+  useCursorSync(fabricCanvas, naming);
 
   const { onCanvasClick } = useCanvasInteraction({
-    onSelect: (el) => {
-      setSelectedObjId(el.id);
+    onSelect: (obj) => {
+      setPropMenu(obj);
+      setSelectedObjId(obj.id);
     },
     onDeselect: () => {
-      menudispatch({ type: 'HIDE_MENU', menu: 'picker' })
+      menudispatch({ type: 'HIDE_MENU', menu: 'picker' });
     }
   });
 
@@ -127,7 +129,7 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
   const { onCanvasHover } = useCanvasInteraction({
     onHoverChange: (el) => {
       if (el && isGardenElement(el)) {
-        setFloatingLabel(el.name || el.id);
+        setFloatingLabel(el.displayName || el.id);
         setFloatingLabelPosition({ x: el.x, y: el.y });
       } else {
         setFloatingLabel(null);
@@ -150,7 +152,7 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
         log('6 - 🖌️ Coloring cell at', col, row);
         log("7 - innerCanvasGridRef.current.colorCell is now called. ");
         innerCanvasGridRef.current.colorCell(cell);
-        const fullCell: ColoredCell = {
+        const fullCell: Cell = {
           col: col,
           row: row,
           color: cell.color ?? "",
@@ -169,13 +171,16 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
       }
     }
     log("6 - Now triggering onCanvasClick with x and y: ", x, y)
-    const target = onCanvasClick(x, y);
+    const ctx = innerCanvasGridRef.current?.colorCtx
+    const target = onCanvasClick(x, y, ctx);
     if (target) log("7 - onCanvasClick yielded non-null target: ", target)
     if (!target && isPlacing) {
       const position: Vec2 = { x: col * CELL_SIZE, y: row * CELL_SIZE };
       log("7 - onCanvasClick yielded null target so calling place hook with position: ", position);
       placeElementAt(position);
-      if (selectedItem) setNaming(true);
+      if (selectedItem) {
+        setNaming(true)
+      };
     }
   }, [isDrawing, isModifierKeyDown, isPlacing, selectedItem, colorBuffer, onCanvasClick, placeElementAt, setNaming]);
 
@@ -194,7 +199,7 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
         log('6 - 🖌️ Coloring cell at', col, row);
         log("7 - innerCanvasGridRef.current.colorCell is now called. ");
         innerCanvasGridRef.current.colorCell(cell);
-        const fullCell: ColoredCell = {
+        const fullCell: Cell = {
           col: col,
           row: row,
           color: cell.color ?? "",
@@ -219,7 +224,7 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
       name: layer,
       draw: (ctx) => {
         if (layer === 'elements') {
-          const cache = selectedElement ? null : imageCacheRef.current;
+          const cache = selectedObj ? null : imageCacheRef.current;
 
           elements.forEach(el => {
             const iconSrc = el.icon;
@@ -244,12 +249,7 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
               }
             }
 
-            if (isEditing) {
-              ctx.strokeStyle = 'rgba(0, 128, 0, 0.5)';
-              ctx.strokeRect(el.x, el.y, el.width, el.height);
-            }
-
-            if (el.id === selectedElement?.id) {
+            if (el.id === selectedObj?.id) {
               ctx.globalAlpha = 0.3;
               ctx.strokeStyle = 'blue';
               ctx.lineWidth = 2;
@@ -258,13 +258,16 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
           });
         }
         if (layer === 'zones') {
-
-          zoneObjects.forEach(zone => drawZone(ctx, zone));
+          zoneObjects.forEach(zone => {
+            const isSelected = zone.id === selectedObj?.id;
+            ctx.drawZone(zone, isSelected);
+          });
         }
+
       },
-      deps: [selectedElement],
+      deps: [selectedObj],
     }));
-  }, [activeLayers, elements, zoneObjects, selectedElement, isEditing]);
+  }, [activeLayers, elements, zoneObjects, selectedObj, isEditing]);
 
   useEffect(() => {
     let mounted = true;
@@ -296,56 +299,8 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
   }, []);
 
   useEffect(() => {
-    if (!fabricCanvas) return;
-
-    if (cursorImage && !naming) {
-      console.log("naming cursor=img")
-      const img = new Image();
-      img.src = cursorImage;
-
-      img.onload = () => {
-        const cursorUrl = `url(${cursorImage}) 16 16, auto`;
-        useUIStore.getState().dispatch({ type: 'SET_CURSOR', cursor: cursorUrl })
-      };
-
-      img.onerror = () => {
-        warn("Failed to load cursor image:", cursorImage);
-        useUIStore.getState().dispatch({ type: 'SET_CURSOR', cursor: "crosshair" })
-
-      };
-
-    } else {
-      console.log("!naming cursor=default")
-      useUIStore.getState().dispatch({ type: 'SET_CURSOR', cursor: "default" })
-    }
-  }, [menuItem, naming]);
-
-  useEffect(() => {
-    const unsubscribe = useUIStore.subscribe((state) => {
-      const cursor = state.cursor
-      // 1. Apply to body
-      document.body.style.cursor = cursor;
-
-      // 2. Apply to fabric canvas if initialized
-      if (fabricCanvas) {
-        fabricCanvas.defaultCursor = cursor;
-
-        // Also apply to the DOM element if needed
-        const el = fabricCanvas.getElement?.();
-        if (el) el.style.cursor = cursor;
-      }
-    });
-
-    return () => {
-      unsubscribe();
-    };
-  }, [cursorImage]);
-
-  useEffect(() => {
     const preloadImages = async () => {
       const uniqueIcons = [...new Set(elements.map(el => el.icon))];
-
-      (() =>
         Promise.all(
           uniqueIcons.map(src => new Promise<void>((resolve) => {
             const img = new Image();
@@ -354,7 +309,6 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
             imageCacheRef.current.set(src, img);
           }))
         )
-      );
     };
 
     if (elements.length > 0) {
@@ -367,7 +321,8 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
       <CanvasGrid
         ref={innerCanvasGridRef}
         layers={layers}
-        selectedElementObj={!isMapLocked ? selectedElement : null}
+        selectedElement={!isMapLocked && selectedElement ? selectedElement : null}
+        selectedZone={!isMapLocked && selectedZone ? selectedZone : null}
         onWorldClick={handleWorldClick}
         onWorldMove={handleWorldMove}
       />
@@ -411,21 +366,32 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
           }}
         />
       )}
-      {menu.activeMenu === 'prop' && selectedObj?.object.id === menu.propMenuElementId && (
-        <PropMenu
-          element={selectedObj?.object ?? null}
-          onUpdate={(updatedData) => {
-            log('🔧 PropMenu updated element:', updatedData);
-            useSelectionStore.getState().setConfirming();
-          }}
-          onClose={() => menudispatch({ type: 'HIDE_MENU', menu: 'prop' })}
-          fieldConfig={fieldConfig}
-        />
-      )}
+      {menu.activeMenu === 'prop' &&
+        propMenu &&
+        selectedObj?.id === menu.propMenuObjectId && (
+          <PropMenu
+            data={propMenu}
+            onUpdate={(updatedData) => {
+              log("🔧 PropMenu updated element:", updatedData);
+              setPropMenu((prev) => {
+                const next =
+                  prev && prev.id === selectedObj?.id
+                    ? { ...prev, ...updatedData }
+                    : prev;
+                lastPropMenuRef.current = next;
+                return next;
+              });
+              useSelectionStore.getState().setConfirming();
+            }}
+            onClose={() => menudispatch({ type: "HIDE_MENU", menu: "prop" })}
+            fieldConfig={fieldConfig}
+          />
+        )}
       {isConfirming &&
         <UpdateModal
           onEditConfirm={(operation) => {
-            console.log("UpdateModal onEditConfirm in GardenCanvas with args: ", lastPropMenuRef.current, operation)
+            useSelectionStore.getState().clear()
+            console.log("lastpropmenuref: ", lastPropMenuRef.current)
             return lastPropMenuRef.current && updateElement(lastPropMenuRef.current, operation)
           }
           }

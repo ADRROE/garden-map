@@ -2,7 +2,7 @@ import { useSelectionStore } from "@/stores/useSelectionStore";
 import { useGardenStore } from "../stores/useGardenStore";
 import { GardenElementObject, GardenZoneObject } from "@/types";
 import { log } from '@/utils/utils'
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { useUIStore } from "@/stores/useUIStore";
 import { useMenuStore } from "@/stores/useMenuStore";
 import { useGardenZoneObjects } from "./useGardenZoneObjects";
@@ -26,17 +26,19 @@ export function useCanvasInteraction({
 
   const datastate = useGardenStore(state => state.present);
   const elements = useGardenStore(state => state.present.elements);
-  const zoneObjects = useGardenZoneObjects()
 
   const uidispatch = useUIStore(state => state.dispatch)
+
+  const zoneObjects = useGardenZoneObjects()
 
   const selectElement = (element: GardenElementObject) => {
     useSelectionStore.getState().setEditing(element);
     useMenuStore.getState().setOpenPropMenu(element.id)
     log("CanvasInteraction now setting Editing with el: ", element);
   };
-  const selectZoneObject = (obj: GardenZoneObject) => {
-    useSelectionStore.getState().setSelectedObjId(obj.id);
+  const selectZoneObject = (zone: GardenZoneObject) => {
+    useSelectionStore.getState().setEditing(zone);
+    useMenuStore.getState().setOpenPropMenu(zone.id)
   }
   const isDrawing = useSelectionStore((s) => s.selection.kind === 'drawing');
   const selectedItemId = useSelectionStore((s) => s.selection.kind ? s.selectedItemId : null);
@@ -74,7 +76,7 @@ export function useCanvasInteraction({
       if (e.key === 'Escape') {
         e.preventDefault();
         clearSelection();
-        uidispatch({type: 'SET_CURSOR', cursor: 'default'});
+        uidispatch({ type: 'SET_CURSOR', cursor: 'default' });
       }
       if (e.key === 'Control') {
         e.preventDefault();
@@ -114,9 +116,6 @@ export function useCanvasInteraction({
   useEffect(() => {
     if (selectedItem?.color) {
       useSelectionStore.getState().setDrawing(selectedItem.color);
-      useUIStore.getState().dispatch({ type: 'SET_CURSOR', cursor: "crosshair" })
-    } else {
-      useUIStore.getState().dispatch({ type: 'SET_CURSOR', cursor: "default" })
     }
   }, [selectedItem])
 
@@ -125,10 +124,10 @@ export function useCanvasInteraction({
       worldX >= el.x && worldX <= el.x + el.width &&
       worldY >= el.y && worldY <= el.y + el.height
     );
+    const zone = zoneObjects.find(zoneObj => {
+      return zoneObj.path && ctx?.isPointInPath(zoneObj.path, worldX, worldY);
 
-    const zone = zoneObjects.find(zoneObj =>
-      zoneObj.path && ctx?.isPointInPath(zoneObj.path, worldX, worldY)
-    );
+    });
     if (clickedEl) {
       selectElement(clickedEl);
       onSelect?.(clickedEl);

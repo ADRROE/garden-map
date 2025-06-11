@@ -80,7 +80,7 @@ def get_zones(db: Session):
 def create_zone_with_cells(db: Session, zone: schemas.GardenZone):
     # Convert Pydantic cells to SQLAlchemy models
     db_cells = [
-        models.ColoredCell(
+        models.Cell(
             id=str(uuid.uuid4()),
             col=cell.col,
             row=cell.row,
@@ -93,7 +93,7 @@ def create_zone_with_cells(db: Session, zone: schemas.GardenZone):
     # Now associate these with a new GardenZone
     db_zone = models.GardenZone(
         id=zone.id,
-        name=zone.name,
+        display_name=zone.display_name,
         color=zone.color,
         coverage=db_cells,
         border_path=zone.border_path
@@ -135,11 +135,11 @@ def update_zone(
 
     elif record == "modify":
 
-        # Handle coverage update (ColoredCells)
+        # Handle coverage update (Cells)
         if "coverage" in updates_data:
-            db.query(models.ColoredCell).filter(models.ColoredCell.zone_id == db_zone.id).delete()
+            db.query(models.Cell).filter(models.Cell.zone_id == db_zone.id).delete()
             new_cells = [
-                models.ColoredCell(
+                models.Cell(
                     id=str(uuid.uuid4()),
                     col=cell["col"],
                     row=cell["row"],
@@ -152,7 +152,7 @@ def update_zone(
             db.add_all(new_cells)
 
             schema_cells = [
-                schemas.ColoredCell(
+                schemas.Cell(
                     col=cell.col,
                     row=cell.row,
                     color=cell.color,
@@ -177,9 +177,9 @@ def update_zone(
 
 
 def get_zone_by_name(db: Session, name: str):
-    return db.query(models.GardenZone).filter(models.GardenZone.name == name).first()
+    return db.query(models.GardenZone).filter(models.GardenZone.display_name == name).first()
 
-def deduplicate_cells(cells: list[schemas.ColoredCell]) -> list[schemas.ColoredCell]:
+def deduplicate_cells(cells: list[schemas.Cell]) -> list[schemas.Cell]:
     unique = {}
     for cell in cells:
         key = (int(cell.col), int(cell.row))
@@ -188,11 +188,11 @@ def deduplicate_cells(cells: list[schemas.ColoredCell]) -> list[schemas.ColoredC
 
 def merge_cells_into_existing_zone(db: Session, existing_zone: models.GardenZone, new_zone: schemas.GardenZone):
     # 1. Delete existing colored cells
-    db.query(models.ColoredCell).filter(models.ColoredCell.zone_id == existing_zone.id).delete()
+    db.query(models.Cell).filter(models.Cell.zone_id == existing_zone.id).delete()
 
     # 2. Merge and deduplicate cells
     all_cells = [
-        schemas.ColoredCell(
+        schemas.Cell(
             col=cell.col,
             row=cell.row,
             color=cell.color,
@@ -200,7 +200,7 @@ def merge_cells_into_existing_zone(db: Session, existing_zone: models.GardenZone
         )
         for cell in existing_zone.coverage
     ] + [
-        schemas.ColoredCell(
+        schemas.Cell(
             col=cell.col,
             row=cell.row,
             color=cell.color,
@@ -213,7 +213,7 @@ def merge_cells_into_existing_zone(db: Session, existing_zone: models.GardenZone
 
     # 3. Insert new colored cells
     new_db_cells = [
-        models.ColoredCell(
+        models.Cell(
             id=str(uuid.uuid4()),
             col=cell.col,
             row=cell.row,

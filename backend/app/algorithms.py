@@ -1,7 +1,7 @@
 from typing import List, Dict, Tuple, Set
 from collections import deque
 import uuid
-from app.schemas import ColoredCell, GardenZone
+from app.schemas import Cell, GardenZone
 
 def sort_border_segments(
     border_set: Set[Tuple[Tuple[int, int], Tuple[int, int]]]
@@ -42,16 +42,16 @@ def sort_border_segments(
 
     return ordered_points
 
-def group_cells_into_zones(cells: List[ColoredCell]) -> List[GardenZone]:
+def group_cells_into_zones(cells: List[Cell]) -> List[GardenZone]:
     # Index the cells by their (col, row) coordinates
-    cell_map: Dict[Tuple[int, int], ColoredCell] = {
+    cell_map: Dict[Tuple[int, int], Cell] = {
         (int(cell.col), int(cell.row)): cell for cell in cells
     }
 
     visited: Set[Tuple[int, int]] = set()
     zones: List[GardenZone] = []
 
-    def bfs(start_pos: Tuple[int, int]) -> Tuple[List[ColoredCell], Set[Tuple[Tuple[int, int], Tuple[int, int]]]]:
+    def bfs(start_pos: Tuple[int, int]) -> Tuple[List[Cell], Set[Tuple[Tuple[int, int], Tuple[int, int]]]]:
         queue = deque([start_pos])
         group = []
         borderPath = set()
@@ -97,7 +97,7 @@ def group_cells_into_zones(cells: List[ColoredCell]) -> List[GardenZone]:
             group, borderPath = bfs(pos)
             zone = GardenZone(
                 id=str(uuid.uuid4()),
-                name=None,
+                display_name=None,
                 color=group[0].color,
                 coverage=group,
                 borderPath=sort_border_segments(borderPath)

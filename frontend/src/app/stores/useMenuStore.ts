@@ -1,6 +1,5 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
-import { menuItems } from '@/lib/menuItems';
 import { MenuElement, Vec2 } from '@/types';
 
 export type Menu = 'picker' | 'prop'
@@ -8,7 +7,7 @@ export type Menu = 'picker' | 'prop'
 export type MenuState = {
   activeMenu: string | null;
   menuItems: MenuElement[];
-  propMenuElementId?: string | null;
+  propMenuObjectId?: string | null;
   openSectionId?: string | null;
   openSection?: MenuSection | null;
   isLoading: boolean;
@@ -33,14 +32,14 @@ export type MenuAction =
 export const useMenuStore = create<MenuState>()(devtools((set) => ({
   activeMenu: null,
   menuItems: [],
-  propMenuElementId: null,
+  propMenuObjectId: null,
   openSectionId: null,
   openSection: null,
   isLoading: false,
   position: null,
 
   setOpenSection: (id) => set({ openSectionId: id }),
-  setOpenPropMenu: (id) => set({ propMenuElementId: id, activeMenu: 'prop'}),
+  setOpenPropMenu: (id) => set({ propMenuObjectId: id, activeMenu: 'prop'}),
   toggleIsLoading: () => set((s) => ({ isLoading: !s.isLoading })),
 
   dispatch: (action: MenuAction) =>

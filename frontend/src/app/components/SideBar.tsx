@@ -26,7 +26,8 @@ export function SideBar({ title, sections }: SideBarProps) {
                     <li key={section.id}>
                         <button
                             onClick={() => toggleSection(section.id)}
-                            className="w-full text-left font-medium text-gray-700 hover:text-black"
+                            className="w-full text-left font-medium text-gray-700 hover:text-black hover:font-bold"
+                            style={{ cursor: "pointer" }}
                         >
                             {t(section.title)}
                         </button>
@@ -57,6 +58,7 @@ export function SideBar({ title, sections }: SideBarProps) {
                                                                 <button
                                                                     onClick={() => handleItemClick(item)}
                                                                     className={`block w-full text-left py-1 px-2 rounded hover:bg-gray-100`}
+                                                                    style={{ cursor: "pointer" }}
                                                                 >
 
                                                                 </button>

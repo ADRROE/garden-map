@@ -1,6 +1,6 @@
-const DEBUG = true; // Toggle this to false in production
+import { Cell } from "@/types";
 
-// matrixUtils.ts
+const DEBUG = true; // Toggle this to false in production
 
 export const screenToWorld = (
   x: number,
@@ -83,14 +83,15 @@ export const getCoveredCells = (
   rowStart: number,
   widthInCells: number,
   heightInCells: number
-): string[] => {
-  const cells: string[] = [];
+): Cell[] => {
+  const cells: Cell[] = [];
   for (let dx = 0; dx < widthInCells; dx++) {
     for (let dy = 0; dy < heightInCells; dy++) {
-      const col = colStart + dx;
-      const row = rowStart + dy;
-      cells.push(`${toColumnLetter(col)}${row}`);
-    }
+      cells.push({
+        col: colStart + dx,
+        row: rowStart + dy,
+      });
+        }
   }
   return cells;
 };

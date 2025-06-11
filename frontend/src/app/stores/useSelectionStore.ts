@@ -2,14 +2,14 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import { SelectionState } from './SelectionState';
-import { MenuElement, GardenElementObject, Vec2, GardenObject } from '../types';
+import { MenuElement, GardenElementObject, Vec2, GardenZoneObject } from '../types';
 import { useGardenStore } from './useGardenStore';
 import { useUIStore } from './useUIStore';
 
 type SelectionStore = {
   selection: SelectionState;
   selectedObjId: string | null;
-  selectedObj: GardenObject | null;
+  selectedObj: GardenElementObject | GardenZoneObject | null;
   selectedItemId: string | null;
   isMouseDown: boolean;
   isModifierKeyDown: boolean;
@@ -19,7 +19,7 @@ type SelectionStore = {
   setSelectedItemId: (id: string) => void;
   setPlacing: (item: MenuElement) => void;
   setPendingPosition: (pos: Vec2) => void;
-  setEditing: (obj: GardenElementObject) => void;
+  setEditing: (obj: GardenElementObject | GardenZoneObject) => void;
   setConfirming: () => void;
   setDrawing: (color: string) => void;
   clear: () => void;
@@ -37,9 +37,13 @@ export const useSelectionStore = create<SelectionStore>()(
       }),
 
     setSelectedObjId: (id: string | null) => {
-      const obj = useGardenStore.getState().present.elements.find(e => e.id === id);
-      if (obj) {
-        set({ selectedObjId: id, selectedObj: { type: 'element', object: obj } });
+      const elObj = useGardenStore.getState().present.elements.find(e => e.id === id);
+      if (elObj) {
+        set({ selectedObjId: id, selectedObj: elObj });
+      }
+      const zoneObj = useGardenStore.getState().present.zoneObjects.find(z => z.id === id);
+      if (zoneObj) {
+        set({ selectedObjId: id, selectedObj: zoneObj });
       }
     },
 
@@ -64,7 +68,7 @@ export const useSelectionStore = create<SelectionStore>()(
       if (useUIStore.getState().isMapLocked) return;
       set({
         selection: { kind: 'editing', obj },
-        selectedObj: { type: 'element', object: obj },
+        selectedObj: obj,
         selectedObjId: obj.id
       })
     },

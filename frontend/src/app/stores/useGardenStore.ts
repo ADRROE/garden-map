@@ -7,7 +7,8 @@ import {
   GardenZone,
   GardenDataState,
   HistoryState,
-  ColoredCell,
+  Cell,
+  GardenZoneObject,
 } from '@/types';
 import {
   updateElementAPI,
@@ -32,7 +33,8 @@ type GardenStore = HistoryState<GardenDataState> & GardenActions;
 const initialPresent: GardenDataState = {
   elements: [],
   zones: [],
-  coloredCells: {},
+  zoneObjects: [],
+  cells: {},
 };
 
 export type GardenDataAction =
@@ -42,7 +44,8 @@ export type GardenDataAction =
     | { type: 'UPDATE_ZONE'; updatedZone: { id: string } & Partial<GardenZone>; record: 'create' | 'modify' }
     | { type: 'SET_ELEMENTS'; elements: GardenElementObject[] }
     | { type: 'SET_ZONES'; zones: GardenZone[] }
-    | { type: 'SET_COLORED_CELLS'; coloredCells: Record<string, ColoredCell> }
+    | { type: 'SET_ZONE_OBJECTS'; zoneObjects: GardenZoneObject[] }
+    | { type: 'SET_COLORED_CELLS'; cells: Record<string, Cell> }
     | { type: 'TOGGLE_MAP_LOCK' }
     | { type: 'UNDO' }
     | { type: 'REDO' }
@@ -54,6 +57,7 @@ const undoableActions = new Set<GardenDataAction['type']>([
   'UPDATE_ZONE',
   'SET_ELEMENTS',
   'SET_ZONES',
+  'SET_ZONE_OBJECTS',
   'SET_COLORED_CELLS',
 ]);
 
@@ -109,7 +113,7 @@ export const useGardenStore = create<GardenStore>()(
     },
 
     updateElement: async (update, record) => {
-      console.log(`updateElement called with updates: ${update}, operation: ${record}`);
+      console.log("TRIGGERED UPDATE WITH: ", update);
       get().dispatch({ type: 'UPDATE_ELEMENT', id: update.id, updates: update, record: record });
       try {
         await updateElementAPI(update, record);
@@ -174,16 +178,19 @@ function baseReducer(state: GardenDataState, action: GardenDataAction): GardenDa
 
     case 'SET_ZONES':
       return { ...state, zones: action.zones };
+    
+        case 'SET_ZONE_OBJECTS':
+      return { ...state, zoneObjects: action.zoneObjects };
 
     case 'SET_ELEMENTS':
       return { ...state, elements: action.elements };
     
     case "SET_COLORED_CELLS":
-        log("16 - Reducer received coloredCells:", action.coloredCells);
+        log("16 - Reducer received coloredCells:", action.cells);
 
-      return { ...state, coloredCells: {
-          ...state.coloredCells,
-          ...action.coloredCells,
+      return { ...state, cells: {
+          ...state.cells,
+          ...action.cells,
         }};
 
     default:

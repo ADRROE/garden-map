@@ -1,9 +1,9 @@
 import React, { forwardRef, useImperativeHandle, useRef, useEffect } from 'react';
 import { LayerManager } from '../utils/LayerManager';
-import { CanvasLayer, ColoredCell, GardenElementObject} from '../types';
+import { CanvasLayer, Cell, GardenElementObject, GardenZoneObject} from '../types';
 import { Canvas, FabricObject } from 'fabric';
 import { createFabricElement } from '../utils/FabricHelpers';
-import { constrainMatrix, log, warn } from "@/utils/utils";
+import { constrainMatrix, log } from "@/utils/utils";
 import { useViewportStore } from "@/stores/useViewportStore";
 
 const NUM_ROWS = 270;
@@ -15,7 +15,7 @@ const HEIGHT = NUM_ROWS * CELL_SIZE;
 
 export interface CanvasGridHandle {
   getTransformedElementObj: () => GardenElementObject | null ;
-  colorCell: (cell: Partial<ColoredCell>) => void;
+  colorCell: (cell: Partial<Cell>) => void;
   uncolorCell: (col: number, row: number) => void;
   clearColoring: () => void;
   getBounds: () => DOMRect | undefined;
@@ -23,18 +23,20 @@ export interface CanvasGridHandle {
   mainCanvas?: HTMLCanvasElement | null;
   colorCanvas?: HTMLCanvasElement | null;
   fabricCanvas?: Canvas | null;
+  colorCtx?: CanvasRenderingContext2D | undefined;
   handleEditConfirm?: () => void;
 }
 
 interface CanvasGridProps {
   layers: CanvasLayer[];
-  selectedElementObj: GardenElementObject | null;
+  selectedElement: GardenElementObject | null;
+  selectedZone: GardenZoneObject | null;
   onWorldClick: (row: number, col: number) => void;
   onWorldMove: (row: number, col: number) => void;
 }
 
 const CanvasGrid = forwardRef<CanvasGridHandle, CanvasGridProps>(
-  ({ layers, selectedElementObj, onWorldClick, onWorldMove }, ref) => {
+  ({ layers, selectedElement, onWorldClick, onWorldMove }, ref) => {
     const fabricCanvasRef = useRef<Canvas | null>(null);
     const fabricObjectRef = useRef<FabricObject | null>(null);
     const colorCtxRef = useRef<CanvasRenderingContext2D | null>(null);
@@ -44,19 +46,19 @@ const CanvasGrid = forwardRef<CanvasGridHandle, CanvasGridProps>(
 
     useImperativeHandle(ref, () => ({
       getTransformedElementObj: () => {
-        if (!selectedElementObj) return null;
+        if (!selectedElement) return null;
         const obj = fabricObjectRef.current;
         if (!obj) return null;
 
         return {
-          ...selectedElementObj,
-          x: obj.left ?? selectedElementObj.x,
-          y: obj.top ?? selectedElementObj.y,
+          ...selectedElement,
+          x: obj.left ?? selectedElement.x,
+          y: obj.top ?? selectedElement.y,
           width: obj.width! * obj.scaleX!,
           height: obj.height! * obj.scaleY!,
         };
       },
-      colorCell: (cell: Partial<ColoredCell>) => {
+      colorCell: (cell: Partial<Cell>) => {
         const ctx = colorCtxRef.current;
         if (!ctx) return;
         if (cell.color && cell.col && cell.row) {
@@ -80,7 +82,8 @@ const CanvasGrid = forwardRef<CanvasGridHandle, CanvasGridProps>(
       wrapper: wrapperRef.current,
       colorCanvas: colorCanvasRef.current,
       mainCanvas: mainCanvasRef.current,
-      fabricCanvas: fabricCanvasRef.current
+      fabricCanvas: fabricCanvasRef.current,
+      colorCtx: colorCtxRef.current || undefined
     }));
 
     // 1. Replace legacy transform tracking with the viewportStore state
@@ -243,10 +246,10 @@ const CanvasGrid = forwardRef<CanvasGridHandle, CanvasGridProps>(
 
       canvas.clear();
 
-      if (selectedElementObj) {
-        log("selectedObj as seen in canvasGrid:", selectedElementObj)
+      if (selectedElement) {
+        log("selectedObj as seen in canvasGrid:", selectedElement)
 
-        createFabricElement(selectedElementObj, true).then(fabricEl => {
+        createFabricElement(selectedElement, true).then(fabricEl => {
           fabricObjectRef.current = fabricEl;
           canvas.add(fabricEl);
           canvas.setActiveObject(fabricEl);
@@ -254,7 +257,7 @@ const CanvasGrid = forwardRef<CanvasGridHandle, CanvasGridProps>(
           canvas.renderAll();
         });
       }
-    }, [selectedElementObj]);
+    }, [selectedElement]);
 
     const handleMouseDown = (e: React.MouseEvent) => {
       const rect = containerRef.current!.getBoundingClientRect();

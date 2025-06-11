@@ -44,7 +44,7 @@ export function useGardenElement() {
       ...selectedItem,
       menuElementId: selectedItem.id,
       id: uuidv4(),
-      name,
+      displayName: name,
       x: centeredX,
       y: centeredY,
       location,
@@ -52,6 +52,8 @@ export function useGardenElement() {
       height,
       coverage,
     };
+
+    console.log("creating newelement with element: ", newElement)
 
     createElement(newElement);
 
