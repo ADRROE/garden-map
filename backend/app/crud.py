@@ -85,7 +85,7 @@ def create_zone_with_cells(db: Session, zone: schemas.GardenZone):
             col=cell.col,
             row=cell.row,
             color=cell.color,
-            menu_element_id=cell.menuElementId,
+            menu_element_id=cell.menu_element_id,
         )
         for cell in zone.coverage
     ]
@@ -144,7 +144,7 @@ def update_zone(
                     col=cell["col"],
                     row=cell["row"],
                     color=cell["color"],
-                    menu_element_id=cell["menuElementId"],
+                    menu_element_id=cell["menu_element_id"],
                     zone_id=db_zone.id
                 )
                 for cell in updates_data["coverage"]
@@ -156,7 +156,7 @@ def update_zone(
                     col=cell.col,
                     row=cell.row,
                     color=cell.color,
-                    menuElementId=cell.menu_element_id
+                    menu_element_id=cell.menu_element_id
                 )
                 for cell in new_cells
             ]
@@ -196,7 +196,7 @@ def merge_cells_into_existing_zone(db: Session, existing_zone: models.GardenZone
             col=cell.col,
             row=cell.row,
             color=cell.color,
-            menuElementId=cell.menu_element_id
+            menu_element_id=cell.menu_element_id
         )
         for cell in existing_zone.coverage
     ] + [
@@ -204,7 +204,7 @@ def merge_cells_into_existing_zone(db: Session, existing_zone: models.GardenZone
             col=cell.col,
             row=cell.row,
             color=cell.color,
-            menuElementId=cell.menuElementId
+            menu_element_id=cell.menu_element_id
         )
         for cell in new_zone.coverage
     ]
@@ -218,7 +218,7 @@ def merge_cells_into_existing_zone(db: Session, existing_zone: models.GardenZone
             col=cell.col,
             row=cell.row,
             color=cell.color,
-            menu_element_id=cell.menuElementId,
+            menu_element_id=cell.menu_element_id,
             zone_id=existing_zone.id
         )
         for cell in all_cells

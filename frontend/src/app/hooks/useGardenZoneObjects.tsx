@@ -9,7 +9,7 @@ export function useGardenZoneObjects(): GardenZoneObject[] {
   const enrichedZones = useMemo(() => {
     return zones.map(zone => ({
       id: zone.id,
-      name: zone.displayName,
+      displayName: zone.displayName,
       color: zone.color,
       coverage: zone.coverage,
       borderPath: zone.borderPath,

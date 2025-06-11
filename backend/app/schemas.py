@@ -136,7 +136,7 @@ class Cell(BaseModel):
     col: float
     row: float
     color: str
-    menuElementId: str = None
+    menu_element_id: str = None
 
     class Config:
         from_attributes = True
@@ -211,8 +211,8 @@ class GardenZoneUpdateWrapper(BaseModel):
 class CreateZonePayload(BaseModel):
     display_name: str | None = None
     color: str | None = None
-    coverage: List[Cell]
-    border_path: List[Tuple[int, int]] = None
+    cells: List[Cell]
+    border_path: List[Tuple[int, int]] | None = None
     ph: float | None = None
     temp: float | None = None
     fert_date: datetime | None = None

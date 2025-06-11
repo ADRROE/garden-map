@@ -54,7 +54,7 @@ def group_cells_into_zones(cells: List[Cell]) -> List[GardenZone]:
     def bfs(start_pos: Tuple[int, int]) -> Tuple[List[Cell], Set[Tuple[Tuple[int, int], Tuple[int, int]]]]:
         queue = deque([start_pos])
         group = []
-        borderPath = set()
+        border_path = set()
         visited.add(start_pos)
         base_cell = cell_map[start_pos]
 
@@ -78,29 +78,29 @@ def group_cells_into_zones(cells: List[Cell]) -> List[GardenZone]:
                 border_line = directions[(dx, dy)](x, y)
 
                 if neighbor_pos not in cell_map:
-                    borderPath.add(border_line)
+                    border_path.add(border_line)
                 else:
                     neighbor_cell = cell_map[neighbor_pos]
                     if (
                         neighbor_cell.color != base_cell.color or
-                        neighbor_cell.menuElementId != base_cell.menuElementId
+                        neighbor_cell.menu_element_id != base_cell.menu_element_id
                     ):
-                        borderPath.add(border_line)
+                        border_path.add(border_line)
                     elif neighbor_pos not in visited:
                         visited.add(neighbor_pos)
                         queue.append(neighbor_pos)
 
-        return group, borderPath
+        return group, border_path
     
     for pos in cell_map:
         if pos not in visited:
-            group, borderPath = bfs(pos)
+            group, border_path = bfs(pos)
             zone = GardenZone(
                 id=str(uuid.uuid4()),
                 display_name=None,
                 color=group[0].color,
                 coverage=group,
-                borderPath=sort_border_segments(borderPath)
+                border_path=sort_border_segments(border_path)
             )
             zones.append(zone)
 

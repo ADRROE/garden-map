@@ -93,6 +93,8 @@ CanvasRenderingContext2D.prototype.drawZone = function (
 
   this.stroke();
 
+  console.log("zoneObj: ", zoneObj)
+
   if (zoneObj.displayName && zoneObj.coverage.length > 0) {
     const minX = Math.min(...zoneObj.coverage.map(c => c.col));
     const maxX = Math.max(...zoneObj.coverage.map(c => c.col));

@@ -66,8 +66,8 @@ export async function fetchZones(): Promise<GardenZone[]> {
     return zones;
 }
 
-export async function createZoneAPI(cells: Cell[], name: string) {
-  const payload = snakecaseKeys({ cells, name }, { deep: true });
+export async function createZoneAPI(cells: Cell[], display_name: string) {
+  const payload = snakecaseKeys({ cells, display_name }, { deep: true });
 
   await fetch(`${API_BASE_ZONES}`, {
     method: "POST",
