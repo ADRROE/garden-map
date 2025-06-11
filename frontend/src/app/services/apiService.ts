@@ -18,7 +18,7 @@ export async function createElementAPI(newElement: GardenElementObject) {
     const newElementForBackend = snakecaseKeys({
         ...newElement,
         coverage: newElement.coverage ? serializeCells(newElement.coverage) : null
-    })
+    }, { deep: true })
     await fetch(API_BASE_ELEMENTS, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -30,7 +30,7 @@ export async function updateElementAPI(updates: Partial<GardenElementObject> & {
     const updatesForBackend = snakecaseKeys({
         ...updates,
         coverage: updates.coverage ? serializeCells(updates.coverage) : null
-    })
+    }, { deep: true })
 
     await fetch(`${API_BASE_ELEMENTS}${updates.id}`, {
         method: "PUT",
@@ -56,7 +56,7 @@ function serializeCells(cells: Cell[]): string[] {
 
 export async function fetchZones(): Promise<GardenZone[]> {
     const res = await fetch(API_BASE_ZONES);
-    const zonesFromBackend = camelcaseKeys(await res.json());
+    const zonesFromBackend = camelcaseKeys(await res.json(), { deep: true });
 
     const zones: GardenZone[] = zonesFromBackend.map((zone: GardenZone) => ({
         ...zone,
@@ -67,19 +67,26 @@ export async function fetchZones(): Promise<GardenZone[]> {
 }
 
 export async function createZoneAPI(cells: Cell[], name: string) {
-    await fetch(`${API_BASE_ZONES}`, snakecaseKeys({
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({cells, name})
-    }));
+  const payload = snakecaseKeys({ cells, name }, { deep: true });
+
+  await fetch(`${API_BASE_ZONES}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
 }
 
-export async function updateZoneAPI( updatedZone: { id: string } & Partial<GardenZone>, operation: 'create' | 'modify') {
-    await fetch(`${API_BASE_ZONES}${updatedZone.id}`, snakecaseKeys({
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({updatedZone, operation})
-    }));
+export async function updateZoneAPI(
+  updatedZone: { id: string } & Partial<GardenZone>,
+  operation: 'create' | 'modify'
+) {
+  const payload = snakecaseKeys({ updatedZone, operation }, { deep: true });
+
+  await fetch(`${API_BASE_ZONES}${updatedZone.id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
 }
 
 export async function deleteZoneAPI(id: string) {

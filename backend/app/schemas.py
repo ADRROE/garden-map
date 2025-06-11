@@ -135,7 +135,7 @@ class GardenElementUpdateWrapper(BaseModel):
 class Cell(BaseModel):
     col: float
     row: float
-    color: str | None = None
+    color: str
     menuElementId: str = None
 
     class Config:
@@ -210,7 +210,7 @@ class GardenZoneUpdateWrapper(BaseModel):
 
 class CreateZonePayload(BaseModel):
     display_name: str | None = None
-    color: str
+    color: str | None = None
     coverage: List[Cell]
     border_path: List[Tuple[int, int]] = None
     ph: float | None = None
