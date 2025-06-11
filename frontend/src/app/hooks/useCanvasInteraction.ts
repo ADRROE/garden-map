@@ -121,8 +121,8 @@ export function useCanvasInteraction({
 
   const onCanvasClick = (worldX: number, worldY: number, ctx?: CanvasRenderingContext2D): GardenElementObject | GardenZoneObject | null => {
     const clickedEl = datastate.elements.find(el =>
-      worldX >= el.x && worldX <= el.x + el.width &&
-      worldY >= el.y && worldY <= el.y + el.height
+      worldX >= el.x && worldX <= el.x + el.iconWidth &&
+      worldY >= el.y && worldY <= el.y + el.iconHeight
     );
     const zone = zoneObjects.find(zoneObj => {
       return zoneObj.path && ctx?.isPointInPath(zoneObj.path, worldX, worldY);
@@ -147,9 +147,9 @@ export function useCanvasInteraction({
   const onCanvasHover = (worldX: number, worldY: number): GardenElementObject | null => {
     const hoveredEl = elements.find(el =>
       worldX >= el.x &&
-      worldX <= el.x + el.width &&
+      worldX <= el.x + el.iconWidth &&
       worldY >= el.y &&
-      worldY <= el.y + el.height
+      worldY <= el.y + el.iconHeight
     ) || null;
 
     // Only trigger callback if value changed

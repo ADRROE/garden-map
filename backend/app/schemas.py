@@ -10,12 +10,10 @@ class GardenElementBase(BaseModel):
     icon: str
     x: float
     y: float
-    width: float
-    height: float
+    icon_width: float
+    icon_height: float
     location: str | None = None
     coverage: List[str] | None = None
-    default_width: float | None = None
-    default_height: float | None = None
     cursor: str | None = None
     category: str
     sub_category: str | None = None
@@ -33,7 +31,9 @@ class GardenElementBase(BaseModel):
     plant_form: str | None = None
     status: str | None = None
     date_status: datetime | None = None
-    circumference: float | None = None
+    width: int | None = None
+    height: int | None = None
+    circumference: int | None = None
     price: float | None = None
 
     class Config:
@@ -51,12 +51,10 @@ class GardenElementHistory(BaseModel):
     icon: str
     x: float
     y: float
-    width: float
-    height: float
+    icon_width: float
+    icon_height: float
     location: str | None = None
     coverage: List[str] | None = None
-    default_width: float | None = None
-    default_height: float | None = None
     cursor: str | None = None
     category: str
     sub_category: str | None = None
@@ -74,7 +72,9 @@ class GardenElementHistory(BaseModel):
     plant_form: str | None = None
     status: str | None = None
     date_status: datetime | None = None
-    circumference: float | None = None
+    width: int | None = None
+    height: int | None = None
+    circumference: int | None = None
     price: float | None = None
     last_modified: datetime
 
@@ -98,12 +98,10 @@ class GardenElementUpdate(BaseModel):
     icon: str
     x: float
     y: float
-    width: float
-    height: float
+    icon_width: float
+    icon_height: float
     location: str | None = None
     coverage: List[str] | None = None
-    default_width: float | None = None
-    default_height: float | None = None
     cursor: str | None = None
     category: str
     sub_category: str | None = None
@@ -121,7 +119,9 @@ class GardenElementUpdate(BaseModel):
     plant_form: str | None = None
     status: str | None = None
     date_status: datetime | None = None
-    circumference: float | None = None
+    width: int | None = None
+    height: int | None = None
+    circumference: int | None = None
     price: float | None = None
     operation: Literal["create", "modify"] | None = None
 

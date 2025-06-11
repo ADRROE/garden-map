@@ -238,14 +238,14 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
               img.onload = () => {
                 if (img) {
                   cache?.set(iconSrc, img);
-                  ctx.drawImage(img!, el.x, el.y, el.width, el.height);
+                  ctx.drawImage(img!, el.x, el.y, el.iconWidth, el.iconHeight);
                 }
               };
 
               cache?.set(iconSrc, img);
             } else {
               if (img.complete) {
-                ctx.drawImage(img, el.x, el.y, el.width, el.height);
+                ctx.drawImage(img, el.x, el.y, el.iconWidth, el.iconHeight);
               }
             }
 
@@ -253,7 +253,7 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
               ctx.globalAlpha = 0.3;
               ctx.strokeStyle = 'blue';
               ctx.lineWidth = 2;
-              ctx.strokeRect(el.x, el.y, el.width, el.height);
+              ctx.strokeRect(el.x, el.y, el.iconWidth, el.iconHeight);
             }
           });
         }
@@ -391,7 +391,6 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
         <UpdateModal
           onEditConfirm={(operation) => {
             useSelectionStore.getState().clear()
-            console.log("lastpropmenuref: ", lastPropMenuRef.current)
             return lastPropMenuRef.current && updateElement(lastPropMenuRef.current, operation)
           }
           }

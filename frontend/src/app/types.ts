@@ -25,8 +25,8 @@ export interface GardenElementObject extends MenuElement {
   y: number;
   location?: string;
   rotation?: number;
-  width: number;
-  height: number;
+  iconWidth: number;
+  iconHeight: number;
   coverage?: Cell[];
   wcvpId?: string;
   rhsId?: string;
@@ -40,6 +40,8 @@ export interface GardenElementObject extends MenuElement {
   plantForm?: string;
   status?: string;
   dateStatus?: Date;
+  width?: number;
+  height?: number;
   circumference?: number;
   price?: number;
   layer?: LayerName;

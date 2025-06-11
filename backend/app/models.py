@@ -1,6 +1,6 @@
 from uuid import uuid4
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy import String, Float, DateTime, ForeignKey, JSON, func
+from sqlalchemy import String, Integer, Float, DateTime, ForeignKey, JSON, func
 from app.database import Base
 from typing import List, Tuple
 
@@ -14,12 +14,10 @@ class GardenElement(Base):
     icon: Mapped[str] = mapped_column(String(255))
     x: Mapped[float] = mapped_column(Float)
     y: Mapped[float] = mapped_column(Float)
-    width: Mapped[float] = mapped_column(Float)
-    height: Mapped[float] = mapped_column(Float)
+    icon_width: Mapped[float] = mapped_column(Float)
+    icon_height: Mapped[float] = mapped_column(Float)
     location: Mapped[str | None] = mapped_column(String(255), nullable=True)
     coverage: Mapped[dict | None] = mapped_column(JSON, nullable=True)
-    default_width: Mapped[float | None] = mapped_column(Float, nullable=True)
-    default_height: Mapped[float | None] = mapped_column(Float, nullable=True)
     cursor: Mapped[str | None] = mapped_column(String(255), nullable=True)
     category: Mapped[str] = mapped_column(String(255))
     sub_category: Mapped[str] = mapped_column(String(255))
@@ -37,7 +35,9 @@ class GardenElement(Base):
     plant_form: Mapped[str | None] = mapped_column(String(255), nullable=True)
     status: Mapped[str | None] = mapped_column(String(255), nullable=True)
     date_status: Mapped[DateTime | None] = mapped_column(DateTime, nullable=True)
-    circumference: Mapped[float | None] = mapped_column(Float, nullable=True)
+    width: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    height: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    circumference: Mapped[int | None] = mapped_column(Float, nullable=True)
     price: Mapped[float | None] = mapped_column(Float, nullable=True)
     last_modified: Mapped[DateTime] = mapped_column(DateTime, default=func.now(), onupdate=func.now())
 
@@ -51,12 +51,10 @@ class GardenElementHistory(Base):
     icon: Mapped[str] = mapped_column(String(255))
     x: Mapped[float] = mapped_column(Float)
     y: Mapped[float] = mapped_column(Float)
-    width: Mapped[float] = mapped_column(Float)
-    height: Mapped[float] = mapped_column(Float)
+    icon_width: Mapped[float] = mapped_column(Float)
+    icon_height: Mapped[float] = mapped_column(Float)
     location: Mapped[str | None] = mapped_column(String(255), nullable=True)
     coverage: Mapped[dict | None] = mapped_column(JSON, nullable=True)
-    default_width: Mapped[float | None] = mapped_column(Float, nullable=True)
-    default_height: Mapped[float | None] = mapped_column(Float, nullable=True)
     cursor: Mapped[str | None] = mapped_column(String(255), nullable=True)
     category: Mapped[str] = mapped_column(String(255))
     sub_category: Mapped[str] = mapped_column(String(255))
@@ -74,6 +72,8 @@ class GardenElementHistory(Base):
     plant_form: Mapped[str | None] = mapped_column(String(255), nullable=True)
     status: Mapped[str | None] = mapped_column(String(255), nullable=True)
     date_status: Mapped[DateTime | None] = mapped_column(DateTime, nullable=True)
+    width: Mapped[float | None] = mapped_column(Integer, nullable=True)
+    height: Mapped[float | None] = mapped_column(Integer, nullable=True)
     circumference: Mapped[float | None] = mapped_column(Float, nullable=True)
     price: Mapped[float | None] = mapped_column(Float, nullable=True)
     last_modified: Mapped[DateTime] = mapped_column(DateTime, default=func.now())

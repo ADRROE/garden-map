@@ -35,7 +35,7 @@ export async function updateElementAPI(updates: Partial<GardenElementObject> & {
     await fetch(`${API_BASE_ELEMENTS}${updates.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({updatesForBackend, operation})
+        body: JSON.stringify({updates: updatesForBackend, operation})
     });
 }
 

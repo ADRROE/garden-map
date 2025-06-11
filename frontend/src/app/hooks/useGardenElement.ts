@@ -34,12 +34,11 @@ export function useGardenElement() {
     const { x, y } = currentPendingPosition;
     const width = selectedItem.defaultWidth ?? 40;
     const height = selectedItem.defaultHeight ?? 40;
-    const centeredX = Math.floor(x - width/ 20 / 2) + 1;
-    const centeredY = Math.floor(y - height/20 / 2) + 1;
-    const computedPosition = [centeredX, centeredY];
+    const centeredX = x - width / 2;
+    const centeredY = y - height / 2;
+    const computedPosition = [Math.floor(centeredX / 20) + 1, Math.floor(centeredY / 20) + 1];
     const location = `${toColumnLetter(computedPosition[0])}${computedPosition[1]}`;
-    const coverage = getCoveredCells(computedPosition[0], computedPosition[1], width / 19.5, height / 19.5);
-
+    const coverage = getCoveredCells(computedPosition[0], computedPosition[1], width / 20, height / 20);
     const newElement: GardenElementObject = {
       ...selectedItem,
       menuElementId: selectedItem.id,
@@ -48,12 +47,10 @@ export function useGardenElement() {
       x: centeredX,
       y: centeredY,
       location,
-      width,
-      height,
+      iconWidth: width,
+      iconHeight: height,
       coverage,
     };
-
-    console.log("creating newelement with element: ", newElement)
 
     createElement(newElement);
 

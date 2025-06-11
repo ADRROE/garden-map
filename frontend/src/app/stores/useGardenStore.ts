@@ -113,7 +113,6 @@ export const useGardenStore = create<GardenStore>()(
     },
 
     updateElement: async (update, record) => {
-      console.log("TRIGGERED UPDATE WITH: ", update);
       get().dispatch({ type: 'UPDATE_ELEMENT', id: update.id, updates: update, record: record });
       try {
         await updateElementAPI(update, record);

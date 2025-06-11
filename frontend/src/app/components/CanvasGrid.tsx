@@ -1,9 +1,9 @@
 import React, { forwardRef, useImperativeHandle, useRef, useEffect } from 'react';
 import { LayerManager } from '../utils/LayerManager';
-import { CanvasLayer, Cell, GardenElementObject, GardenZoneObject} from '../types';
+import { CanvasLayer, Cell, GardenElementObject, GardenZoneObject } from '../types';
 import { Canvas, FabricObject } from 'fabric';
 import { createFabricElement } from '../utils/FabricHelpers';
-import { constrainMatrix, log } from "@/utils/utils";
+import { constrainMatrix, getCoveredCells, log, toColumnLetter } from "@/utils/utils";
 import { useViewportStore } from "@/stores/useViewportStore";
 
 const NUM_ROWS = 270;
@@ -14,7 +14,7 @@ const HEIGHT = NUM_ROWS * CELL_SIZE;
 
 
 export interface CanvasGridHandle {
-  getTransformedElementObj: () => GardenElementObject | null ;
+  getTransformedElementObj: () => GardenElementObject | null;
   colorCell: (cell: Partial<Cell>) => void;
   uncolorCell: (col: number, row: number) => void;
   clearColoring: () => void;
@@ -50,12 +50,24 @@ const CanvasGrid = forwardRef<CanvasGridHandle, CanvasGridProps>(
         const obj = fabricObjectRef.current;
         if (!obj) return null;
 
+        const x = obj.left ?? selectedElement.x
+        const y = obj.top ?? selectedElement.y
+
+        const width = obj.width! * obj.scaleX!
+        const height = obj.height! * obj.scaleY!
+
+        const computedPosition = [Math.floor(x / 20) + 1, Math.floor(y / 20) + 1];
+        const location = `${toColumnLetter(computedPosition[0])}${computedPosition[1]}`;
+        const coverage = getCoveredCells(computedPosition[0], computedPosition[1], width / 20, height / 20);
+
         return {
           ...selectedElement,
-          x: obj.left ?? selectedElement.x,
-          y: obj.top ?? selectedElement.y,
-          width: obj.width! * obj.scaleX!,
-          height: obj.height! * obj.scaleY!,
+          x: x,
+          y: y,
+          iconWidth: obj.width! * obj.scaleX!,
+          iconHeight: obj.height! * obj.scaleY!,
+          location: location,
+          coverage: coverage
         };
       },
       colorCell: (cell: Partial<Cell>) => {
@@ -359,7 +371,7 @@ const CanvasGrid = forwardRef<CanvasGridHandle, CanvasGridProps>(
           // ✅ Store + visual transform
           setMatrix(constrained);
           wrapperRef.current!.style.transformOrigin = '0 0';
-                    wrapperRef.current!.style.transform = constrained.toString();
+          wrapperRef.current!.style.transform = constrained.toString();
 
 
           throttledRedraw();
