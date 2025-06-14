@@ -1,8 +1,8 @@
-import { MenuElement } from "@/types";
+import { PaletteItem } from "@/types";
 import { useMemo } from "react";
-import { useMenuElements } from "./useMenuElements";
+import { useMenuElements } from "./usePaletteItems";
 
-export function useMenuElement(id: string | null): MenuElement | null {
+export function useMenuElement(id: string | null): PaletteItem | null {
     const { data: menuElements = [] } = useMenuElements();
     return useMemo(() => {
         if (!id) return null;

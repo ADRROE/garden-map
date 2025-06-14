@@ -1,13 +1,13 @@
 import { FabricImage } from 'fabric';
-import { GardenElementObject, MenuElement } from '../types';
+import { GardenItem, PaletteItem } from '../types';
 import { log } from './utils';
 
-export function isGardenElement(el: GardenElementObject | MenuElement): el is GardenElementObject {
+export function isGardenElement(el: GardenItem | PaletteItem): el is GardenItem {
   return 'x' in el && 'y' in el;
 }
 
 export async function createFabricElement(
-  element: GardenElementObject | MenuElement,
+  element: GardenItem | PaletteItem,
   isSelected: boolean,
 ): Promise<FabricImage> {
   log("Creating fabric element...")
@@ -20,8 +20,8 @@ export async function createFabricElement(
   });
 
   img.set({
-    left: element.x,
-    top: element.y,
+    left: element.position.x,
+    top: element.position.y,
     scaleX: element.iconWidth / img.width!,
     scaleY: element.iconHeight / img.height!,
     selectable: true,

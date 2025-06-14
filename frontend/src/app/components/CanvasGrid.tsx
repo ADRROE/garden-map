@@ -1,6 +1,6 @@
 import React, { forwardRef, useImperativeHandle, useRef, useEffect } from 'react';
 import { LayerManager } from '../utils/LayerManager';
-import { CanvasLayer, Cell, GardenElementObject, GardenZoneObject } from '../types';
+import { CanvasLayer, Cell, GardenItem, InteractiveZone } from '../types';
 import { Canvas, FabricObject } from 'fabric';
 import { createFabricElement } from '../utils/FabricHelpers';
 import { constrainMatrix, getCoveredCells, log, toColumnLetter } from "@/utils/utils";
@@ -14,7 +14,7 @@ const HEIGHT = NUM_ROWS * CELL_SIZE;
 
 
 export interface CanvasGridHandle {
-  getTransformedElementObj: () => GardenElementObject | null;
+  getTransformedElementObj: () => GardenItem | null;
   colorCell: (cell: Partial<Cell>) => void;
   uncolorCell: (col: number, row: number) => void;
   clearColoring: () => void;
@@ -29,8 +29,8 @@ export interface CanvasGridHandle {
 
 interface CanvasGridProps {
   layers: CanvasLayer[];
-  selectedElement: GardenElementObject | null;
-  selectedZone: GardenZoneObject | null;
+  selectedElement: GardenItem | null;
+  selectedZone: InteractiveZone | null;
   onWorldClick: (row: number, col: number) => void;
   onWorldMove: (row: number, col: number) => void;
 }
@@ -50,8 +50,8 @@ const CanvasGrid = forwardRef<CanvasGridHandle, CanvasGridProps>(
         const obj = fabricObjectRef.current;
         if (!obj) return null;
 
-        const x = obj.left ?? selectedElement.x
-        const y = obj.top ?? selectedElement.y
+        const x = obj.left ?? selectedElement.position.x
+        const y = obj.top ?? selectedElement.position.y
 
         const width = obj.width! * obj.scaleX!
         const height = obj.height! * obj.scaleY!

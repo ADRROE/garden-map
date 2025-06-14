@@ -1,10 +1,10 @@
 import { SelectionState } from '@/stores/SelectionState';
-import { MenuElement } from '@/types';
+import { PaletteItem } from '@/types';
 
 export function resolveCursor(
   selectionState: SelectionState | null,
   naming?: boolean,
-  menuItem?: MenuElement | null
+  menuItem?: PaletteItem | null
 ): string {
   if (!selectionState || selectionState.kind === null) {
     return 'default';

@@ -2,14 +2,14 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import { SelectionState } from './SelectionState';
-import { MenuElement, GardenElementObject, Vec2, GardenZoneObject } from '../types';
+import { PaletteItem, GardenItem, Vec2, InteractiveZone } from '../types';
 import { useGardenStore } from './useGardenStore';
 import { useUIStore } from './useUIStore';
 
 type SelectionStore = {
   selection: SelectionState;
   selectedObjId: string | null;
-  selectedObj: GardenElementObject | GardenZoneObject | null;
+  selectedObj: GardenItem | InteractiveZone | null;
   selectedItemId: string | null;
   isMouseDown: boolean;
   isModifierKeyDown: boolean;
@@ -17,9 +17,9 @@ type SelectionStore = {
   setModifierKeyDown: (down: boolean) => void;
   setSelectedObjId: (id: string | null) => void;
   setSelectedItemId: (id: string) => void;
-  setPlacing: (item: MenuElement) => void;
+  setPlacing: (item: PaletteItem) => void;
   setPendingPosition: (pos: Vec2) => void;
-  setEditing: (obj: GardenElementObject | GardenZoneObject) => void;
+  setEditing: (obj: GardenItem | InteractiveZone) => void;
   setConfirming: () => void;
   setDrawing: (color: string) => void;
   clear: () => void;
@@ -41,7 +41,7 @@ export const useSelectionStore = create<SelectionStore>()(
       if (elObj) {
         set({ selectedObjId: id, selectedObj: elObj });
       }
-      const zoneObj = useGardenStore.getState().present.zoneObjects.find(z => z.id === id);
+      const zoneObj = useGardenStore.getState().present.interactiveZones.find(z => z.id === id);
       if (zoneObj) {
         set({ selectedObjId: id, selectedObj: zoneObj });
       }

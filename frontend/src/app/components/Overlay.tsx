@@ -1,7 +1,7 @@
 
 import QuickMenu from "./QuickMenu";
 import { SideBar } from "./SideBar";
-import { useMenuElements } from "../hooks/useMenuElements";
+import { useMenuElements } from "../hooks/usePaletteItems";
 import { useSelectionStore } from "../stores/useSelectionStore";
 import { useTranslations } from "next-intl";
 import LanguageSwitcher from "./LanguageSwitcher";

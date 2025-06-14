@@ -7,7 +7,7 @@ import uuid
 def get_elements(db: Session):
     return db.query(models.GardenElement).all()
 
-def create_element(db: Session, element: schemas.GardenElementCreate):
+def create_element(db: Session, element: schemas.GardenItemCreate):
     db_element = models.GardenElement(**element.dict())
     db.add(db_element)
     db.commit()
@@ -17,7 +17,7 @@ def create_element(db: Session, element: schemas.GardenElementCreate):
 def update_element(
     db: Session, 
     id: str, 
-    updates: schemas.GardenElementUpdate, 
+    updates: schemas.GardenItemUpdate, 
     record: Literal["create", "modify"]
 ):
     timestamp = datetime.now()
@@ -85,7 +85,7 @@ def create_zone_with_cells(db: Session, zone: schemas.GardenZone):
             col=cell.col,
             row=cell.row,
             color=cell.color,
-            menu_element_id=cell.menu_element_id,
+            menu_element_id=cell.palette_item_id,
         )
         for cell in zone.coverage
     ]
@@ -204,7 +204,7 @@ def merge_cells_into_existing_zone(db: Session, existing_zone: models.GardenZone
             col=cell.col,
             row=cell.row,
             color=cell.color,
-            menu_element_id=cell.menu_element_id
+            menu_element_id=cell.palette_item_id
         )
         for cell in new_zone.coverage
     ]
@@ -218,7 +218,7 @@ def merge_cells_into_existing_zone(db: Session, existing_zone: models.GardenZone
             col=cell.col,
             row=cell.row,
             color=cell.color,
-            menu_element_id=cell.menu_element_id,
+            menu_element_id=cell.palette_item_id,
             zone_id=existing_zone.id
         )
         for cell in all_cells

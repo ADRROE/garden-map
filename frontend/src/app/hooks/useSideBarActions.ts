@@ -1,15 +1,15 @@
-import { MenuElement } from "@/types";
+import { PaletteItem } from "@/types";
 import { useSelectionStore } from "@/stores/useSelectionStore";
 import { log } from "@/utils/utils";
 
 export function useSideBarActions() {
     const { setSelectedItemId, setDrawing } = useSelectionStore()
 
-    const initPlacement = (item: MenuElement) => {
+    const initPlacement = (item: PaletteItem) => {
         useSelectionStore.getState().setPlacing(item);
     };
 
-    const handleItemClick = (item: MenuElement) => {
+    const handleItemClick = (item: PaletteItem) => {
         log("useMenuActions handleItemClick triggered with: ", item)
         setSelectedItemId(item.id)
         switch (item.metadata?.kind) {

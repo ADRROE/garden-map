@@ -1,4 +1,4 @@
-import { GardenZone, GardenZoneObject } from "@/types";
+import { GardenZone, InteractiveZone } from "@/types";
 import { darkenColor } from "./utils";
 
 const CELL_SIZE = 20; // adjust if needed
@@ -54,13 +54,8 @@ export function makeZonePath(zone: GardenZone): Path2D {
   return path;
 }
 
-let dashOffset = 0;
-export function updateZoneAnimationFrame() {
-  dashOffset = (dashOffset + 1) % 100; // Loop the offset
-}
-
 CanvasRenderingContext2D.prototype.drawZone = function (
-  zoneObj: GardenZoneObject,
+  zoneObj: InteractiveZone,
   isSelected: boolean = false
 ) {
   const { path } = zoneObj;
@@ -84,7 +79,6 @@ CanvasRenderingContext2D.prototype.drawZone = function (
     this.strokeStyle = 'yellow';
     this.lineWidth = 2;
     this.setLineDash([6, 4]); // Dash pattern
-    this.lineDashOffset = -dashOffset; // Animate!
   } else {
     this.setLineDash([]);
     this.strokeStyle = darkenColor(zoneObj.color, 0.6);

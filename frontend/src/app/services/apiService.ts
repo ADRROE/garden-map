@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { Cell, GardenElementObject, GardenZone } from "@/types";
+import { Cell, GardenItem, GardenZone } from "@/types";
 import { toColumnLetter } from "@/utils/utils";
 import camelcaseKeys from 'camelcase-keys';
 import snakecaseKeys from 'snakecase-keys';
@@ -8,13 +8,13 @@ import snakecaseKeys from 'snakecase-keys';
 const API_BASE_ELEMENTS = process.env.NEXT_PUBLIC_API_URL + "/api/elements/";
 const API_BASE_ZONES = process.env.NEXT_PUBLIC_API_URL + "/api/zones/";
 
-export async function fetchElements(): Promise<GardenElementObject[]> {
+export async function fetchElements(): Promise<GardenItem[]> {
     const res = await fetch(API_BASE_ELEMENTS);
     const responseData = camelcaseKeys(await res.json(), { deep: true });
     return responseData;
 }
 
-export async function createElementAPI(newElement: GardenElementObject) {
+export async function createElementAPI(newElement: GardenItem) {
     const newElementForBackend = snakecaseKeys({
         ...newElement,
         coverage: newElement.coverage ? serializeCells(newElement.coverage) : null
@@ -26,7 +26,7 @@ export async function createElementAPI(newElement: GardenElementObject) {
     });
 }
 
-export async function updateElementAPI(updates: Partial<GardenElementObject> & { id: string }, operation: 'create' | 'modify') {
+export async function updateElementAPI(updates: Partial<GardenItem> & { id: string }, operation: 'create' | 'modify') {
     const updatesForBackend = snakecaseKeys({
         ...updates,
         coverage: updates.coverage ? serializeCells(updates.coverage) : null
@@ -46,7 +46,7 @@ export async function deleteElementAPI(id: string) {
 function deserializeCell(cell: any): Cell {
     return {
         ...cell,
-        menuElementId: cell.menu_element_id,
+        paletteId: cell.menu_element_id,
     };
 }
 

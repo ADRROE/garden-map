@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useUIStore } from "@/stores/useUIStore";
 import { useSelectionStore } from "@/stores/useSelectionStore";
-import { useMenuElement } from "@/hooks/useMenuElement";
+import { useMenuElement } from "@/hooks/usePaletteItem";
 import { Canvas } from "fabric";
 import { useSelectionState } from "./useSelectionState";
 import { resolveCursor } from "@/lib/cursorMappings";

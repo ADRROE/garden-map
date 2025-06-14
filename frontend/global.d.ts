@@ -1,7 +1,7 @@
-import type { GardenZoneObject } from "@/types";
+import type { InteractiveZone } from "@/types";
 
 declare global {
   interface CanvasRenderingContext2D {
-    drawZone: (zoneObj: GardenZoneObject, isSelected: boolean) => void;
+    drawZone: (zoneObj: InteractiveZone, isSelected: boolean) => void;
   }
 }

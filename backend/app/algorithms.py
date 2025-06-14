@@ -83,7 +83,7 @@ def group_cells_into_zones(cells: List[Cell]) -> List[GardenZone]:
                     neighbor_cell = cell_map[neighbor_pos]
                     if (
                         neighbor_cell.color != base_cell.color or
-                        neighbor_cell.menu_element_id != base_cell.menu_element_id
+                        neighbor_cell.palette_item_id != base_cell.palette_item_id
                     ):
                         border_path.add(border_line)
                     elif neighbor_pos not in visited:

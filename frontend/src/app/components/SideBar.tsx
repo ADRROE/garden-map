@@ -1,5 +1,5 @@
 import { MenuSection, useMenuStore } from "../stores/useMenuStore";
-import { MenuElement } from "../types";
+import { PaletteItem } from "../types";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslations } from "next-intl";
 import { useSideBarActions } from "@/hooks/useSideBarActions";
@@ -53,7 +53,7 @@ export function SideBar({ title, sections }: SideBarProps) {
                                                 {/* Recursive nested items */}
                                                 {item.children && (
                                                     <ul className="ml-4 mt-1 border-l border-gray-100 pl-2">
-                                                        {item.children.map((child: MenuElement) => (
+                                                        {item.children.map((child: PaletteItem) => (
                                                             <li key={child.id}>
                                                                 <button
                                                                     onClick={() => handleItemClick(item)}

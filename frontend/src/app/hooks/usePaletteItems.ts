@@ -1,10 +1,10 @@
 // src/hooks/useMenuItems.ts
 import { useQuery } from '@tanstack/react-query';
 import { fetchMenuElements } from '../services/menuService';
-import { MenuElement } from '../types';
+import { PaletteItem } from '../types';
 
 export function useMenuElements() {
-  return useQuery<MenuElement[]>(
+  return useQuery<PaletteItem[]>(
     ['menuElements'],
     () => fetchMenuElements(),
     {

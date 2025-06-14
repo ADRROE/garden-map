@@ -1,56 +1,100 @@
 import { FabricImage } from "fabric";
 
-export interface MenuElement {
+export type MapEntity =
+  | { type: 'element', object: GardenItem }
+  | { type: 'zoneObj', object: InteractiveZone }
+export interface PaletteItem {
   id: string;
   label: string;
   icon: string;
   color?: string,
-  defaultWidth?: number;
-  defaultHeight?: number;
+  iconWidth: number;
+  iconHeight: number;
   cursor?: string;
   category: string;
   subCategory?: string;
   metadata?: Record<string, string>;
   onClick?: () => void;
-  children?: MenuElement[];
+  children?: PaletteItem[];
 }
-
-export interface GardenElementObject extends MenuElement {
-  menuElementId?: string;
+export interface GardenItem extends PaletteItem {
   id: string;
+  paletteId?: string;
+  position: Vec2;
+  dimensions: {
+    width: number,
+    height: number,
+  }
+  layer?: LayerName;
+
   displayName?: string;
   species?: string;
   genus?: string;
-  x: number;
-  y: number;
-  location?: string;
-  rotation?: number;
-  iconWidth: number;
-  iconHeight: number;
-  coverage?: Cell[];
   wcvpId?: string;
   rhsId?: string;
-  datePlanted?: Date;
-  dateFertilized?: Date;
-  dateHarvested?: Date;
-  dateWatered?: Date;
-  amountWatered?: number;
-  datePruned?: Date;
+  dates?: {
+    planted?: Date;
+    fertilized?: Date;
+    harvested?: Date;
+    pruned?: Date;
+    watered?: Date;
+  }
   fertilizerType?: string;
   plantForm?: string;
-  status?: string;
-  dateStatus?: Date;
-  width?: number;
-  height?: number;
   circumference?: number;
   price?: number;
-  layer?: LayerName;
+  location?: string;
+  rotation?: number;
+  status?: string;
+  coverage?: Cell[];
+  kind?: MapEntity
 }
 
+export interface InteractiveImage extends FabricImage {
+  id: string;
+  customType: 'element';
+}
+export interface GardenZone {
+  id: string;
+  displayName?: string;
+  color: string;
+  coverage: Cell[];
+  borderPath: Point[];
+  metrics?: {
+    ph?: number;
+    temp?: number;
+    moisture?: number;
+    sunshine?: number;
+    soilMix?: string;
+  };
+  watered?: {
+    lastDate?: Date;
+    amount?: number;
+  };
+  fertilization?: {
+    lastDate?: Date;
+    type?: string;
+  };
+}
+export interface InteractiveZone extends GardenZone {
+  path: Path2D | null;
+  isSelected?: boolean;
+  isHovered?: boolean;
+  kind?: MapEntity
+};
+
+export type Cell = {
+  col: number;
+  row: number;
+  color?: string;
+  paletteId?: string;
+  zoneId?: string;
+};
+
 export interface GardenDataState {
-  elements: GardenElementObject[];
+  elements: GardenItem[];
   zones: GardenZone[];
-  zoneObjects: GardenZoneObject[];
+  interactiveZones: InteractiveZone[];
   cells: Record<string, Cell>;
 }
 
@@ -64,45 +108,6 @@ export type HistoryState<T> = {
   future: T[];
 };
 
-export type GardenObject =
-  | { type: 'element', object: GardenElementObject }
-  | { type: 'zoneObj', object: GardenZoneObject }
-
-export interface GardenZone {
-  id: string;
-  displayName?: string;
-  color: string;
-  coverage: Cell[];
-  borderPath: Point[];
-  ph?: number;
-  temp?: number;
-  fertDate?: Date;
-  waterDate?: Date;
-  waterAmount?: number;
-  fertType?: string;
-  soilMix?: string;
-  moisture?: number;
-  sunshine?: number;
-}
-
-export interface GardenZoneObject extends GardenZone {
-  path: Path2D | null;
-  isSelected?: boolean;
-  isHovered?: boolean;
-};
-
-export type Cell = {
-  col: number;
-  row: number;
-  color?: string;
-  menuElementId?: string;
-  zoneId?: string;
-};
-
-export type CreateElementFn = (element: Omit<GardenElementObject, "name" | "x" | "y" | "width" | "height">, displayName: string, x: number, y: number, width: number, height: number) => void;
-export type UpdateElementFn = (updatedElement: { id: string } & Partial<GardenElementObject>, record?: "create" | "update") => void;
-export type UpdateZoneFn = (updatedZone: { id: string } & Partial<GardenZone>, record?: "create" | "modify") => void;
-
 export type Vec2 = {
   x: number;
   y: number;
@@ -111,7 +116,7 @@ export type Vec2 = {
 export type Point = [number, number];
 export type LineSegment = [Point, Point];
 
-export type ElementType = GardenElementObject | MenuElement;
+export type ItemType = GardenItem | PaletteItem;
 
 export type LayerName = 'background' | 'elements' | 'zones';
 
@@ -120,8 +125,3 @@ export type CanvasLayer = {
   draw: (ctx: CanvasRenderingContext2D) => void;
   deps: unknown[];
 };
-
-export interface GardenFabricImage extends FabricImage {
-  id: string;
-  customType: 'element';
-}

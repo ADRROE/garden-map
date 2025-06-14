@@ -1,17 +1,17 @@
 import { useSelectionStore } from "@/stores/useSelectionStore";
 import { useGardenStore } from "../stores/useGardenStore";
-import { GardenElementObject, GardenZoneObject } from "@/types";
+import { GardenItem, InteractiveZone } from "@/types";
 import { log } from '@/utils/utils'
 import { useEffect, useRef } from "react";
 import { useUIStore } from "@/stores/useUIStore";
 import { useMenuStore } from "@/stores/useMenuStore";
-import { useGardenZoneObjects } from "./useGardenZoneObjects";
-import { useMenuElement } from "./useMenuElement";
+import { useInteractiveZones } from "./useInteractiveZones";
+import { useMenuElement } from "./usePaletteItem";
 
 type CanvasInteractionOptions = {
-  onSelect?: (obj: GardenElementObject | GardenZoneObject) => void;
+  onSelect?: (obj: GardenItem | InteractiveZone) => void;
   onDeselect?: () => void;
-  onHoverChange?: (obj: GardenElementObject | null) => void;
+  onHoverChange?: (obj: GardenItem | null) => void;
 };
 
 export function useCanvasInteraction({
@@ -22,21 +22,21 @@ export function useCanvasInteraction({
 
   const isMouseDownRef = useRef(false);
   const isModifierKeyDown = useRef(false);
-  const hoveredElementRef = useRef<GardenElementObject | null>(null);
+  const hoveredElementRef = useRef<GardenItem | null>(null);
 
   const datastate = useGardenStore(state => state.present);
   const elements = useGardenStore(state => state.present.elements);
 
   const uidispatch = useUIStore(state => state.dispatch)
 
-  const zoneObjects = useGardenZoneObjects()
+  const zoneObjects = useInteractiveZones()
 
-  const selectElement = (element: GardenElementObject) => {
+  const selectElement = (element: GardenItem) => {
     useSelectionStore.getState().setEditing(element);
     useMenuStore.getState().setOpenPropMenu(element.id)
     log("CanvasInteraction now setting Editing with el: ", element);
   };
-  const selectZoneObject = (zone: GardenZoneObject) => {
+  const selectZoneObject = (zone: InteractiveZone) => {
     useSelectionStore.getState().setEditing(zone);
     useMenuStore.getState().setOpenPropMenu(zone.id)
   }
@@ -119,10 +119,12 @@ export function useCanvasInteraction({
     }
   }, [selectedItem])
 
-  const onCanvasClick = (worldX: number, worldY: number, ctx?: CanvasRenderingContext2D): GardenElementObject | GardenZoneObject | null => {
+  const onCanvasClick = (worldX: number, worldY: number, ctx?: CanvasRenderingContext2D): GardenItem | InteractiveZone | null => {
     const clickedEl = datastate.elements.find(el =>
-      worldX >= el.x && worldX <= el.x + el.iconWidth &&
-      worldY >= el.y && worldY <= el.y + el.iconHeight
+      worldX >= el.position.x &&
+      worldX <= el.position.x + el.dimensions.width &&
+      worldY >= el.position.y &&
+      worldY <= el.position.y + el.dimensions.height
     );
     const zone = zoneObjects.find(zoneObj => {
       return zoneObj.path && ctx?.isPointInPath(zoneObj.path, worldX, worldY);
@@ -144,12 +146,12 @@ export function useCanvasInteraction({
     }
   };
 
-  const onCanvasHover = (worldX: number, worldY: number): GardenElementObject | null => {
+  const onCanvasHover = (worldX: number, worldY: number): GardenItem | null => {
     const hoveredEl = elements.find(el =>
-      worldX >= el.x &&
-      worldX <= el.x + el.iconWidth &&
-      worldY >= el.y &&
-      worldY <= el.y + el.iconHeight
+      worldX >= el.position.x &&
+      worldX <= el.position.x + el.dimensions.width &&
+      worldY >= el.position.y &&
+      worldY <= el.position.y + el.dimensions.height
     ) || null;
 
     // Only trigger callback if value changed

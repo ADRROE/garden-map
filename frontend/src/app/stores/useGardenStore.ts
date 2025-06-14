@@ -3,12 +3,12 @@ import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import isEqual from 'lodash.isequal';
 import {
-  GardenElementObject,
+  GardenItem,
   GardenZone,
   GardenDataState,
   HistoryState,
   Cell,
-  GardenZoneObject,
+  InteractiveZone,
 } from '@/types';
 import {
   updateElementAPI,
@@ -22,9 +22,9 @@ type GardenActions = {
   undo: () => void;
   redo: () => void;
   dispatch: (action: GardenDataAction) => void;
-  createElement: (element: GardenElementObject) => void;
+  createElement: (element: GardenItem) => void;
   deleteElement: (id: string) => Promise<void>;
-  updateElement: (update: { id: string } & Partial<GardenElementObject>, record: 'create' | 'modify') => Promise<void>;
+  updateElement: (update: { id: string } & Partial<GardenItem>, record: 'create' | 'modify') => Promise<void>;
   updateZone: (updatedZone: GardenZone, record: 'create' | 'modify') => Promise<void>;
 };
 
@@ -33,18 +33,18 @@ type GardenStore = HistoryState<GardenDataState> & GardenActions;
 const initialPresent: GardenDataState = {
   elements: [],
   zones: [],
-  zoneObjects: [],
+  interactiveZones: [],
   cells: {},
 };
 
 export type GardenDataAction =
-    | { type: 'CREATE_ELEMENT'; element: GardenElementObject }
-    | { type: 'UPDATE_ELEMENT'; id: string; updates: Partial<GardenElementObject>; record: 'create' | 'modify' }
+    | { type: 'CREATE_ELEMENT'; element: GardenItem }
+    | { type: 'UPDATE_ELEMENT'; id: string; updates: Partial<GardenItem>; record: 'create' | 'modify' }
     | { type: 'DELETE_ELEMENT'; id: string }
     | { type: 'UPDATE_ZONE'; updatedZone: { id: string } & Partial<GardenZone>; record: 'create' | 'modify' }
-    | { type: 'SET_ELEMENTS'; elements: GardenElementObject[] }
+    | { type: 'SET_ELEMENTS'; elements: GardenItem[] }
     | { type: 'SET_ZONES'; zones: GardenZone[] }
-    | { type: 'SET_ZONE_OBJECTS'; zoneObjects: GardenZoneObject[] }
+    | { type: 'SET_ZONE_OBJECTS'; zoneObjects: InteractiveZone[] }
     | { type: 'SET_COLORED_CELLS'; cells: Record<string, Cell> }
     | { type: 'TOGGLE_MAP_LOCK' }
     | { type: 'UNDO' }
@@ -133,6 +133,7 @@ export const useGardenStore = create<GardenStore>()(
     updateZone: async (updatedZone, record) => {
       get().dispatch({ type: 'UPDATE_ZONE', updatedZone, record });
       try {
+        console.log("updateZoneAPI called with: ", updatedZone, record);
         await updateZoneAPI(updatedZone, record);
         const zones = await fetchZones();
         get().dispatch({ type: 'SET_ZONES', zones });
@@ -179,7 +180,7 @@ function baseReducer(state: GardenDataState, action: GardenDataAction): GardenDa
       return { ...state, zones: action.zones };
     
         case 'SET_ZONE_OBJECTS':
-      return { ...state, zoneObjects: action.zoneObjects };
+      return { ...state, interactiveZones: action.zoneObjects };
 
     case 'SET_ELEMENTS':
       return { ...state, elements: action.elements };

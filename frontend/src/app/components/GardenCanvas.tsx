@@ -5,11 +5,11 @@ import React, {
 import CanvasGrid, { CanvasGridHandle } from './CanvasGrid';
 import NameModal from './NameModal';
 import { useGardenStore } from '../stores/useGardenStore';
-import { CanvasLayer, Cell, GardenElementObject, GardenZoneObject, Vec2 } from '../types';
+import { CanvasLayer, Cell, GardenItem, InteractiveZone, Vec2 } from '../types';
 import { useCanvasInteraction } from '../hooks/useCanvasInteraction';
 import PropMenu from './PropMenu';
 import { useSelectionStore } from '../stores/useSelectionStore';
-import { useGardenElement } from '../hooks/useGardenElement';
+import { useGardenElement } from '../hooks/useGardenItem';
 import { fetchElements, fetchZones } from '../services/apiService';
 import { useUIStore } from '../stores/useUIStore';
 import { useColorBuffer } from '@/hooks/useColorBuffer';
@@ -18,10 +18,9 @@ import { log, warn, error } from "@/utils/utils";
 import { useViewportStore } from '@/stores/useViewportStore';
 import UpdateModal from './UpdateModal';
 import { fieldConfig } from '../lib/fieldConfig';
-import { isGardenElement } from '@/utils/FabricHelpers';
 import { useMenuStore } from '@/stores/useMenuStore';
-import { useGardenZoneObjects } from '@/hooks/useGardenZoneObjects';
-import { useMenuElement } from '@/hooks/useMenuElement';
+import { useInteractiveZones } from '@/hooks/useInteractiveZones';
+import { useMenuElement } from '@/hooks/usePaletteItem';
 import { useCursorSync } from '@/hooks/useCursorSync';
 
 const CELL_SIZE = 20;
@@ -82,6 +81,7 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
 
   const menudispatch = useMenuStore((s) => s.dispatch);
   const menu = useMenuStore();
+  const menuItems = useMenuStore((s) => s.menuItems);
 
   const isDrawing = useSelectionStore((s) => s.selection.kind === 'drawing');
   const isEditing = useSelectionStore((s) => s.selection.kind === 'editing');
@@ -95,19 +95,19 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
 
   const elements = useGardenStore(state => state.present.elements);
   const selectedElement = elements.find(el => el.id === selectedObj?.id)
-  const zoneObjects = useGardenZoneObjects();
+  const zoneObjects = useInteractiveZones();
   const selectedZone = zoneObjects.find(z => z.id === selectedObj?.id) || null
   const gdispatch = useGardenStore((s) => s.dispatch);
   const updateElement = useGardenStore((s) => s.updateElement);
 
   const [naming, setNaming] = useState(false);
-  const [propMenu, setPropMenu] = useState<GardenElementObject | GardenZoneObject | null>(null);
+  const [propMenu, setPropMenu] = useState<GardenItem | InteractiveZone | null>(null);
   const [floatingLabel, setFloatingLabel] = useState<string | null>(null);
   const [floatingLabelPosition, setFloatingLabelPosition] = useState<{ x: number; y: number } | null>(null);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
   const imageCacheRef = useRef<Map<string, HTMLImageElement>>(new Map());
-  const lastPropMenuRef = useRef<GardenElementObject | GardenZoneObject | null>(null);
+  const lastPropMenuRef = useRef<GardenItem | InteractiveZone | null>(null);
 
   const matrix = useViewportStore((s) => s.matrix);
 
@@ -128,9 +128,9 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
   const { confirmPlacement: confirmZoneCreation } = useGardenZone();
   const { onCanvasHover } = useCanvasInteraction({
     onHoverChange: (el) => {
-      if (el && isGardenElement(el)) {
+      if (el && el.kind?.type === 'element') {
         setFloatingLabel(el.displayName || el.id);
-        setFloatingLabelPosition({ x: el.x, y: el.y });
+        setFloatingLabelPosition({ x: el.position.x, y: el.position.y });
       } else {
         setFloatingLabel(null);
         setFloatingLabelPosition(null); // 🧼 make sure to clear it!
@@ -156,7 +156,7 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
           col: col,
           row: row,
           color: cell.color ?? "",
-          menuElementId: selectedItem!.id
+          paletteId: selectedItem!.id
         };
         log('8 - 🧠 Adding fullCell to color buffer:', fullCell);
         colorBuffer.addCell(fullCell);
@@ -203,7 +203,7 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
           col: col,
           row: row,
           color: cell.color ?? "",
-          menuElementId: selectedItem!.id
+          paletteId: selectedItem!.id
         };
         log('8 - 🧠 Adding fullCell to color buffer:', fullCell);
         colorBuffer.addCell(fullCell);
@@ -227,7 +227,9 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
           const cache = selectedObj ? null : imageCacheRef.current;
 
           elements.forEach(el => {
-            const iconSrc = el.icon;
+            const paletteItem = menuItems.find(i => i.id === el.paletteId);
+            if (!paletteItem) return
+            const iconSrc = paletteItem.icon
 
             let img = cache?.get(iconSrc);
 
@@ -238,14 +240,14 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
               img.onload = () => {
                 if (img) {
                   cache?.set(iconSrc, img);
-                  ctx.drawImage(img!, el.x, el.y, el.iconWidth, el.iconHeight);
+                  ctx.drawImage(img!, el.position.x, el.position.y, el.dimensions.width, el.dimensions.height);
                 }
               };
 
               cache?.set(iconSrc, img);
             } else {
               if (img.complete) {
-                ctx.drawImage(img, el.x, el.y, el.iconWidth, el.iconHeight);
+                ctx.drawImage(img, el.position.x, el.position.y, el.dimensions.width, el.dimensions.height);
               }
             }
 
@@ -253,7 +255,7 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
               ctx.globalAlpha = 0.3;
               ctx.strokeStyle = 'blue';
               ctx.lineWidth = 2;
-              ctx.strokeRect(el.x, el.y, el.iconWidth, el.iconHeight);
+              ctx.strokeRect(el.position.x, el.position.y, el.dimensions.width, el.dimensions.height);
             }
           });
         }
@@ -300,7 +302,7 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
 
   useEffect(() => {
     const preloadImages = async () => {
-      const uniqueIcons = [...new Set(elements.map(el => el.icon))];
+      const uniqueIcons = [...new Set(menuItems.map(el => el.icon))];
         Promise.all(
           uniqueIcons.map(src => new Promise<void>((resolve) => {
             const img = new Image();

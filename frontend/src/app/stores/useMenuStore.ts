@@ -1,12 +1,12 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
-import { MenuElement, Vec2 } from '@/types';
+import { PaletteItem, Vec2 } from '@/types';
 
 export type Menu = 'picker' | 'prop'
 
 export type MenuState = {
   activeMenu: string | null;
-  menuItems: MenuElement[];
+  menuItems: PaletteItem[];
   propMenuObjectId?: string | null;
   openSectionId?: string | null;
   openSection?: MenuSection | null;
@@ -21,7 +21,7 @@ export type MenuState = {
 export type MenuSection = {
   id: string;
   title: string;
-  items: MenuElement[];
+  items: PaletteItem[];
 };
 
 export type MenuAction =
