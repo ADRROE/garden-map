@@ -1,81 +1,86 @@
 import { FabricImage } from "fabric";
 
 export type MapEntity =
-  | { type: 'element', object: GardenItem }
-  | { type: 'zoneObj', object: InteractiveZone }
+  | { type: 'item', object: GardenItem }
+  | { type: 'zone', object: InteractiveZone }
+
+export type GardenAction = 
+  | { type: 'plant', subject: GardenItem, form: 'root' | 'seed' | 'seedling' | 'sapling' }
+  | { type: 'transplant', subject: GardenItem }
+  | { type: 'prune', subject: GardenItem, degree: 'hard' | 'medium' | 'light' }
+  | { type: 'amend', subject: GardenItem | GardenZone, product: string }
+  | { type: 'water', subject: GardenItem | GardenZone }
+  | { type: 'harvest', subject: GardenItem }
+
 export interface PaletteItem {
   id: string;
   label: string;
   icon: string;
   color?: string,
-  iconWidth: number;
-  iconHeight: number;
+  width: number;
+  height: number;
   cursor?: string;
   category: string;
   subCategory?: string;
-  metadata?: Record<string, string>;
-  onClick?: () => void;
   children?: PaletteItem[];
+  onClick?: () => void;
 }
-export interface GardenItem extends PaletteItem {
-  id: string;
-  paletteId?: string;
-  position: Vec2;
-  dimensions: {
-    width: number,
-    height: number,
-  }
-  layer?: LayerName;
 
-  displayName?: string;
+export interface GardenItem extends PaletteItem {
+  id: string; 
+
+    paletteItemId?: string;
+    displayName?: string;
+    position: Vec2;
+    location: string;
+    rotation?: number;
+    coverage?: Cell[];
+    layer?: LayerName;
+    kind?: MapEntity
+
   species?: string;
   genus?: string;
   wcvpId?: string;
   rhsId?: string;
-  dates?: {
-    planted?: Date;
-    fertilized?: Date;
-    harvested?: Date;
-    pruned?: Date;
-    watered?: Date;
+  metrics?: {
+    circumference?: number;
+    price?: number;
+  tWatered?: Date;
+  dtWatered?: number;
+  qWatered?: number;
+  tAmended?: Date;
+  qAmended?: string;
   }
-  fertilizerType?: string;
-  plantForm?: string;
-  circumference?: number;
-  price?: number;
-  location?: string;
-  rotation?: number;
-  status?: string;
-  coverage?: Cell[];
-  kind?: MapEntity
 }
 
 export interface InteractiveImage extends FabricImage {
   id: string;
   customType: 'element';
 }
+
 export interface GardenZone {
   id: string;
-  displayName?: string;
-  color: string;
-  coverage: Cell[];
-  borderPath: Point[];
+  metadata: {
+    displayName?: string;
+    color: string;
+    coverage: Cell[];
+    borderPath: Point[];
+  };
   metrics?: {
     ph?: number;
     temp?: number;
     moisture?: number;
     sunshine?: number;
-    soilMix?: string;
+    compaction?: number;
   };
-  watered?: {
-    lastDate?: Date;
-    amount?: number;
-  };
-  fertilization?: {
-    lastDate?: Date;
-    type?: string;
-  };
+  soilMix?: string;
+  tWatered?: Date;
+  dtWatered?: number;
+  qWatered?: number;
+  tAmended?: Date;
+  qAmended?: string;
 }
+
 export interface InteractiveZone extends GardenZone {
   path: Path2D | null;
   isSelected?: boolean;

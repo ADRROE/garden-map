@@ -4,17 +4,17 @@ from typing import Literal
 from app import models, schemas, algorithms
 import uuid
 
-def get_elements(db: Session):
-    return db.query(models.GardenElement).all()
+def get_items(db: Session):
+    return db.query(models.GardenItem).all()
 
-def create_element(db: Session, element: schemas.GardenItemCreate):
-    db_element = models.GardenElement(**element.dict())
-    db.add(db_element)
+def create_item(db: Session, item: schemas.GardenItemCreate):
+    db_item = models.GardenItem(**item.dict())
+    db.add(db_item)
     db.commit()
-    db.refresh(db_element)
-    return db_element
+    db.refresh(db_item)
+    return db_item
 
-def update_element(
+def update_item(
     db: Session, 
     id: str, 
     updates: schemas.GardenItemUpdate, 
@@ -23,15 +23,15 @@ def update_element(
     timestamp = datetime.now()
     updates_data = updates.dict(exclude_unset=True)
 
-    # Always update the main element
-    db_element = db.query(models.GardenElement).filter(models.GardenElement.id == id).first()
-    if not db_element:
+    # Always update the main item
+    db_item = db.query(models.GardenItem).filter(models.GardenItem.id == id).first()
+    if not db_item:
         return None
 
     for key, value in updates_data.items():
-        setattr(db_element, key, value)
+        setattr(db_item, key, value)
 
-    db_element.last_modified = timestamp
+    db_item.last_modified = timestamp
 
     # Add to history if requested
     if record == "create":
@@ -39,39 +39,39 @@ def update_element(
         # Prepare history data — exclude the primary key!
         history_data = updates_data.copy()
         history_data.pop("id", None)  # 🚨 remove existing id
-        history_data["garden_element_id"] = id
+        history_data["garden_item_id"] = id
         history_data["last_modified"] = timestamp
 
-        db_history = models.GardenElementHistory(**history_data)
+        db_history = models.GardenItemHistory(**history_data)
         db.add(db_history)
 
         db.commit()
-        db.refresh(db_element)
-        return db_element
+        db.refresh(db_item)
+        return db_item
 
     elif record == "modify":
-        db_element = db.query(models.GardenElement).filter(models.GardenElement.id == id).first()
-        if not db_element:
+        db_item = db.query(models.GardenItem).filter(models.GardenItem.id == id).first()
+        if not db_item:
             return None
 
         updates_data = updates.dict(exclude_unset=True)
 
         # Apply changes
         for key, value in updates_data.items():
-            setattr(db_element, key, value)
+            setattr(db_item, key, value)
 
-        db_element.last_modified = timestamp
+        db_item.last_modified = timestamp
 
         db.commit()
-        db.refresh(db_element)
-        return db_element
+        db.refresh(db_item)
+        return db_item
 
-def delete_element(db: Session, id: str):
-    db_element = db.query(models.GardenElement).filter(models.GardenElement.id == id).first()
-    if db_element:
-        db.delete(db_element)
+def delete_item(db: Session, id: str):
+    db_item = db.query(models.GardenItem).filter(models.GardenItem.id == id).first()
+    if db_item:
+        db.delete(db_item)
         db.commit()
-        return db_element
+        return db_item
     return None
 
 def get_zones(db: Session):
@@ -85,7 +85,7 @@ def create_zone_with_cells(db: Session, zone: schemas.GardenZone):
             col=cell.col,
             row=cell.row,
             color=cell.color,
-            menu_element_id=cell.palette_item_id,
+            palette_item_id=cell.palette_item_id,
         )
         for cell in zone.coverage
     ]
@@ -144,7 +144,7 @@ def update_zone(
                     col=cell["col"],
                     row=cell["row"],
                     color=cell["color"],
-                    menu_element_id=cell["menu_element_id"],
+                    palette_item_id=cell["palette_item_id"],
                     zone_id=db_zone.id
                 )
                 for cell in updates_data["coverage"]
@@ -156,7 +156,7 @@ def update_zone(
                     col=cell.col,
                     row=cell.row,
                     color=cell.color,
-                    menu_element_id=cell.menu_element_id
+                    palette_item_id=cell.palette_item_id
                 )
                 for cell in new_cells
             ]
@@ -196,7 +196,7 @@ def merge_cells_into_existing_zone(db: Session, existing_zone: models.GardenZone
             col=cell.col,
             row=cell.row,
             color=cell.color,
-            menu_element_id=cell.menu_element_id
+            palette_item_id=cell.palette_item_id
         )
         for cell in existing_zone.coverage
     ] + [
@@ -204,7 +204,7 @@ def merge_cells_into_existing_zone(db: Session, existing_zone: models.GardenZone
             col=cell.col,
             row=cell.row,
             color=cell.color,
-            menu_element_id=cell.palette_item_id
+            palette_item_id=cell.palette_item_id
         )
         for cell in new_zone.coverage
     ]
@@ -218,7 +218,7 @@ def merge_cells_into_existing_zone(db: Session, existing_zone: models.GardenZone
             col=cell.col,
             row=cell.row,
             color=cell.color,
-            menu_element_id=cell.palette_item_id,
+            palette_item_id=cell.palette_item_id,
             zone_id=existing_zone.id
         )
         for cell in all_cells
@@ -237,9 +237,9 @@ def merge_cells_into_existing_zone(db: Session, existing_zone: models.GardenZone
     return existing_zone
 
 def delete_zone(db: Session, id: str):
-    db_element = db.query(models.GardenZone).filter(models.GardenZone.id == id).first()
-    if db_element:
-        db.delete(db_element)
+    db_item = db.query(models.GardenZone).filter(models.GardenZone.id == id).first()
+    if db_item:
+        db.delete(db_item)
         db.commit()
-        return db_element
+        return db_item
     return None

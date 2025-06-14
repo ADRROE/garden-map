@@ -27,7 +27,7 @@ def get_zone_history(id: str, db: Session = Depends(get_db)):
 
 @router.post("/", response_model=list[schemas.GardenZone])
 def calculate_zones(
-    payload: schemas.CreateZonePayload,
+    payload: schemas.GardenZoneCreate,
     db: Session = Depends(get_db)
 ):
     print("RECEIVED CELLS:", payload.cells)

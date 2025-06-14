@@ -6,14 +6,6 @@ class Vec2(BaseModel):
     x: float
     y: float
     
-class GardenDates(BaseModel):
-    planted: datetime | None = None
-    fertilized: datetime | None = None
-    harvested: datetime | None = None
-    pruned: datetime | None = None
-    watered: datetime | None = None
-    status_changed: datetime | None = None
-
 class Cell(BaseModel):
     col: int
     row: int
@@ -26,65 +18,59 @@ class Cell(BaseModel):
 
 class GardenItemBase(BaseModel):
     id: str
-    icon: str
-    icon_width: int
-    icon_height: int
-    category: str
+    palette_item_id: str
+    display_name: str | None = None
     position: Vec2
-    width: int | None = None
-    height: int | None = None
-    dates: GardenDates | None = None
-    location: str | None = None
-    cursor: str | None = None
+    location: str
+    width: int
+    height: int
+    rotation: float | None = None
     coverage: list[Cell] | None = None
+    category: str
     sub_category: str | None = None
     wcvp_id: str | None = None
     rhs_id: str | None = None
-    display_name: str | None = None
-    display_species: str | None = None
-    display_genus: str | None = None
-    fertilizer_type: str | None = None
-    plant_form: str | None = None
+    species: str | None = None
+    genus: str | None = None
     circumference: int | None = None
     price: float | None = None
-    status: str | None = None
-    layer: str | None = None
-    rotation: float | None = None
-
+    t_watered: datetime | None = None
+    dt_watered: int | None = None
+    q_watered: float | None = None
+    t_amended: datetime | None = None
+    q_amended: datetime | None = None
+    
     class Config:
         from_attributes = True
         validate_assignment = True
         json_encoders = {
             datetime: lambda v: v.isoformat(),
         }
+
 class GardenItemHistory(BaseModel):
     id: str
     garden_item_id: str
     palette_item_id: str
-    icon: str
-    icon_width: int
-    icon_height: int
-    category: str
+    display_name: str | None = None
     position: Vec2
-    width: int | None = None
-    height: int | None = None
-    dates: GardenDates | None = None
-    location: str | None = None
-    cursor: str | None = None
+    location: str
+    width: int
+    height: int
+    rotation: float | None = None
     coverage: list[Cell] | None = None
+    category: str
     sub_category: str | None = None
     wcvp_id: str | None = None
     rhs_id: str | None = None
-    display_name: str | None = None
-    display_species: str | None = None
-    display_genus: str | None = None
-    fertilizer_type: str | None = None
-    plant_form: str | None = None
+    species: str | None = None
+    genus: str | None = None
     circumference: int | None = None
     price: float | None = None
-    status: str | None = None
-    layer: str | None = None
-    rotation: float | None = None
+    t_watered: datetime | None = None
+    dt_watered: int | None = None
+    q_watered: float | None = None
+    t_amended: datetime | None = None
+    q_amended: datetime | None = None
     last_modified: datetime
 
     class Config:
@@ -102,32 +88,25 @@ class GardenItem(GardenItemBase):
 
 class GardenItemUpdate(BaseModel):
     id: str
-    palette_item_id: str | None = None
+    palette_item_id: str
     display_name: str | None = None
-    icon: str | None = None
-    icon_width: int | None = None
-    icon_height: int | None = None
-    category: str | None = None
     position: Vec2 | None = None
+    location: str
     width: int | None = None
     height: int | None = None
-    dates: GardenDates | None = None
-    location: str | None = None
-    cursor: str | None = None
+    rotation: float | None = None
     coverage: list[Cell] | None = None
-    sub_category: str | None = None
     wcvp_id: str | None = None
     rhs_id: str | None = None
-    display_name: str | None = None
-    display_species: str | None = None
-    display_genus: str | None = None
-    fertilizer_type: str | None = None
-    plant_form: str | None = None
-    circumference: int | None = None
+    species: str | None = None
+    genus: str | None = None
+    circumference: int | None = None     
+    t_watered: datetime | None = None
+    dt_watered: int | None = None
+    q_watered: float | None = None
+    t_amended: datetime | None = None
+    q_amended: datetime | None = None
     price: float | None = None
-    status: str | None = None
-    layer: str | None = None
-    rotation: float | None = None
     operation: Literal["create", "modify"] | None = None
 
     class Config:
@@ -137,7 +116,7 @@ class GardenItemUpdateWrapper(BaseModel):
     updates: GardenItemUpdate
     operation: Literal["create", "modify"]
 
-class GardenZone(BaseModel):
+class GardenZoneBase(BaseModel):
     id: str
     display_name: str | None = None
     color: str
@@ -145,13 +124,15 @@ class GardenZone(BaseModel):
     border_path: List[Tuple[int, int]] = None
     ph: float | None = None
     temp: float | None = None
-    fert_date: datetime | None = None
-    water_date: datetime | None = None
-    water_amount: float | None = None
-    fert_type: str | None = None
-    soil_mix: str | None = None
     moisture: float | None = None
     sunshine: float | None = None
+    compaction: float | None = None
+    soil_mix: str | None = None
+    t_watered: datetime | None = None
+    dt_watered: int | None = None
+    q_watered: float | None = None
+    t_amended: datetime | None = None
+    q_amended: datetime | None = None
 
     class Config:
         from_attributes = True
@@ -159,20 +140,22 @@ class GardenZone(BaseModel):
 
 class GardenZoneHistory(BaseModel):
     id: str
-    garden_zone_id: str = Field(alias="gardenZoneId")
+    zone_id: str
     display_name: str | None = None
     color: str
     coverage: List[Cell]
     border_path: List[Tuple[int, int]] = None
     ph: float | None = None
     temp: float | None = None
-    fert_date: datetime | None = None
-    water_date: datetime | None = None
-    water_amount: float | None = None
-    fert_type: str | None = None
-    soil_mix: str | None = None
     moisture: float | None = None
     sunshine: float | None = None
+    compaction: float | None = None
+    soil_mix: str | None = None
+    t_watered: datetime | None = None
+    dt_watered: int | None = None
+    q_watered: float | None = None
+    t_amended: datetime | None = None
+    q_amended: datetime | None = None
     last_modified: datetime
 
     class Config:
@@ -180,19 +163,22 @@ class GardenZoneHistory(BaseModel):
         populate_by_name = True
 
 class GardenZoneUpdate(BaseModel):
+    id: str
     display_name: str | None = None
     color: str | None = None
     coverage: List[Cell] | None = None
     border_path: List[Tuple[int, int]] | None = None
     ph: float | None = None
     temp: float | None = None
-    fert_date: datetime | None = None
-    water_date: datetime | None = None
-    water_amount: float | None = None
-    fert_type: str | None = None
-    soil_mix: str | None = None
     moisture: float | None = None
     sunshine: float | None = None
+    compaction: float | None = None
+    soil_mix: str | None = None
+    t_watered: datetime | None = None
+    dt_watered: int | None = None
+    q_watered: float | None = None
+    t_amended: datetime | None = None
+    q_amended: datetime | None = None
     operation: Literal["create", "modify"] | None = None
 
     class Config:
@@ -203,21 +189,8 @@ class GardenZoneUpdateWrapper(BaseModel):
     updates: GardenZoneUpdate
     operation: Literal["create", "modify"]
 
-class CreateZonePayload(BaseModel):
-    display_name: str | None = None
-    color: str | None = None
-    cells: List[Cell]
-    border_path: List[Tuple[int, int]] | None = None
-    ph: float | None = None
-    temp: float | None = None
-    fert_date: datetime | None = None
-    water_date: datetime | None = None
-    water_amount: float | None = None
-    fert_type: str | None = None
-    soil_mix: str | None = None
-    moisture: float | None = None
-    sunshine: float | None = None
-
-    class Config:
-        from_attributes = True
-        populate_by_name = True
+class GardenZoneCreate(GardenZoneBase):
+    pass
+    
+class GardenZone(GardenZoneBase):
+    pass

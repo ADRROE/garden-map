@@ -128,7 +128,7 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
   const { confirmPlacement: confirmZoneCreation } = useGardenZone();
   const { onCanvasHover } = useCanvasInteraction({
     onHoverChange: (el) => {
-      if (el && el.kind?.type === 'element') {
+      if (el && el.kind?.type === 'item') {
         setFloatingLabel(el.displayName || el.id);
         setFloatingLabelPosition({ x: el.position.x, y: el.position.y });
       } else {
@@ -144,7 +144,7 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
     log("3 - Converted and stored to col: ", col)
     const row = Math.floor(y / CELL_SIZE);
     log("4 - Converted and stored to row: ", row)
-    const cell = { col: col, row: row, color: selectedItem?.metadata?.brushColor };
+    const cell = { col: col, row: row, color: selectedItem?.color };
     log("5 - Defined 'cell': ", cell);
 
     if (isDrawing && innerCanvasGridRef.current) {
@@ -192,7 +192,7 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
 
     const col = Math.floor(x / CELL_SIZE);
     const row = Math.floor(y / CELL_SIZE);
-    const cell = { col: col, row: row, color: selectedItem?.metadata?.brushColor };
+    const cell = { col: col, row: row, color: selectedItem?.color };
 
     if (isDrawing && innerCanvasGridRef.current) {
       if (!isModifierKeyDown) {
@@ -227,7 +227,7 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
           const cache = selectedObj ? null : imageCacheRef.current;
 
           elements.forEach(el => {
-            const paletteItem = menuItems.find(i => i.id === el.paletteId);
+            const paletteItem = menuItems.find(i => i.id === el.paletteItemId);
             if (!paletteItem) return
             const iconSrc = paletteItem.icon
 
@@ -240,14 +240,14 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
               img.onload = () => {
                 if (img) {
                   cache?.set(iconSrc, img);
-                  ctx.drawImage(img!, el.position.x, el.position.y, el.dimensions.width, el.dimensions.height);
+                  ctx.drawImage(img!, el.position.x, el.position.y, el.width, el.height);
                 }
               };
 
               cache?.set(iconSrc, img);
             } else {
               if (img.complete) {
-                ctx.drawImage(img, el.position.x, el.position.y, el.dimensions.width, el.dimensions.height);
+                ctx.drawImage(img, el.position.x, el.position.y, el.width, el.height);
               }
             }
 
@@ -255,7 +255,7 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
               ctx.globalAlpha = 0.3;
               ctx.strokeStyle = 'blue';
               ctx.lineWidth = 2;
-              ctx.strokeRect(el.position.x, el.position.y, el.dimensions.width, el.dimensions.height);
+              ctx.strokeRect(el.position.x, el.position.y, el.width, el.height);
             }
           });
         }

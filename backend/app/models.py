@@ -5,114 +5,82 @@ from app.database import Base
 from typing import List, Tuple
 
 
-class GardenElement(Base):
-    __tablename__ = "t_garden_elements"
+class GardenItem(Base):
+    __tablename__ = "T_garden_items"
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, index=True)
-    menu_element_id: Mapped[str] = mapped_column(String(3))
+    palette_item_id: Mapped[str] = mapped_column(String(3))
     display_name: Mapped[str] = mapped_column(String(255))
-    icon: Mapped[str] = mapped_column(String(255))
     x: Mapped[float] = mapped_column(Float)
     y: Mapped[float] = mapped_column(Float)
-    icon_width: Mapped[float] = mapped_column(Float)
-    icon_height: Mapped[float] = mapped_column(Float)
     location: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    width: Mapped[float] = mapped_column(Float)
+    height: Mapped[float] = mapped_column(Float)
+    rotation: Mapped[float] = mapped_column(Float, nullable=True)
     coverage: Mapped[dict | None] = mapped_column(JSON, nullable=True)
-    cursor: Mapped[str | None] = mapped_column(String(255), nullable=True)
     category: Mapped[str] = mapped_column(String(255))
     sub_category: Mapped[str] = mapped_column(String(255))
     wcvp_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
     rhs_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
-    display_species: Mapped[str | None] = mapped_column(String(255), nullable=True)
-    display_genus: Mapped[str | None] = mapped_column(String(255), nullable=True)
-    date_planted: Mapped[DateTime | None] = mapped_column(DateTime, nullable=True)
-    date_fertilized: Mapped[DateTime | None] = mapped_column(DateTime, nullable=True)
-    date_harvested: Mapped[DateTime | None] = mapped_column(DateTime, nullable=True)
-    date_watered: Mapped[DateTime | None] = mapped_column(DateTime, nullable=True)
-    amount_watered: Mapped[float | None] = mapped_column(Float, nullable=True)
-    date_pruned: Mapped[DateTime | None] = mapped_column(DateTime, nullable=True)
-    fertilizer_type: Mapped[str | None] = mapped_column(String(255), nullable=True)
-    plant_form: Mapped[str | None] = mapped_column(String(255), nullable=True)
-    status: Mapped[str | None] = mapped_column(String(255), nullable=True)
-    date_status: Mapped[DateTime | None] = mapped_column(DateTime, nullable=True)
-    width: Mapped[int | None] = mapped_column(Integer, nullable=True)
-    height: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    species: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    genus: Mapped[str | None] = mapped_column(String(255), nullable=True)
     circumference: Mapped[int | None] = mapped_column(Float, nullable=True)
     price: Mapped[float | None] = mapped_column(Float, nullable=True)
+    t_watered: Mapped[DateTime | None] = mapped_column(DateTime, nullable=True)
+    dt_watered: Mapped[float] = mapped_column(Float, nullable=True)
+    q_watered: Mapped[float | None] = mapped_column(Float, nullable=True)
+    t_amended: Mapped[DateTime | None] = mapped_column(DateTime, nullable=True)
+    q_amended: Mapped[float | None] = mapped_column(Float, nullable=True)
     last_modified: Mapped[DateTime] = mapped_column(DateTime, default=func.now(), onupdate=func.now())
 
-class GardenElementHistory(Base):
-    __tablename__ = "t_garden_elements_history"
+class GardenItemHistory(Base):
+    __tablename__ = "T_garden_items_history"
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid4()))
-    garden_element_id: Mapped[str] = mapped_column(String(36), index=True)
-    menu_element_id: Mapped[str] = mapped_column(String(3))
+    garden_item_id: Mapped[str] = mapped_column(String(36), index=True)
+    palette_item_id: Mapped[str] = mapped_column(String(3))
     display_name: Mapped[str] = mapped_column(String(255))
-    icon: Mapped[str] = mapped_column(String(255))
     x: Mapped[float] = mapped_column(Float)
     y: Mapped[float] = mapped_column(Float)
-    icon_width: Mapped[float] = mapped_column(Float)
-    icon_height: Mapped[float] = mapped_column(Float)
     location: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    width: Mapped[float] = mapped_column(Float)
+    height: Mapped[float] = mapped_column(Float)
+    rotation: Mapped[float] = mapped_column(Float, nullable=True)
     coverage: Mapped[dict | None] = mapped_column(JSON, nullable=True)
-    cursor: Mapped[str | None] = mapped_column(String(255), nullable=True)
     category: Mapped[str] = mapped_column(String(255))
     sub_category: Mapped[str] = mapped_column(String(255))
     wcvp_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
     rhs_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
-    display_species: Mapped[str | None] = mapped_column(String(255), nullable=True)
-    display_genus: Mapped[str | None] = mapped_column(String(255), nullable=True)
-    date_planted: Mapped[DateTime | None] = mapped_column(DateTime, nullable=True)
-    date_fertilized: Mapped[DateTime | None] = mapped_column(DateTime, nullable=True)
-    date_harvested: Mapped[DateTime | None] = mapped_column(DateTime, nullable=True)
-    date_watered: Mapped[DateTime | None] = mapped_column(DateTime, nullable=True)
-    amount_watered: Mapped[float | None] = mapped_column(Float, nullable=True)
-    date_pruned: Mapped[DateTime | None] = mapped_column(DateTime, nullable=True)
-    fertilizer_type: Mapped[str | None] = mapped_column(String(255), nullable=True)
-    plant_form: Mapped[str | None] = mapped_column(String(255), nullable=True)
-    status: Mapped[str | None] = mapped_column(String(255), nullable=True)
-    date_status: Mapped[DateTime | None] = mapped_column(DateTime, nullable=True)
-    width: Mapped[float | None] = mapped_column(Integer, nullable=True)
-    height: Mapped[float | None] = mapped_column(Integer, nullable=True)
-    circumference: Mapped[float | None] = mapped_column(Float, nullable=True)
+    species: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    genus: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    circumference: Mapped[int | None] = mapped_column(Float, nullable=True)
     price: Mapped[float | None] = mapped_column(Float, nullable=True)
+    t_watered: Mapped[DateTime | None] = mapped_column(DateTime, nullable=True)
+    dt_watered: Mapped[float] = mapped_column(Float, nullable=True)
+    q_watered: Mapped[float | None] = mapped_column(Float, nullable=True)
+    t_amended: Mapped[DateTime | None] = mapped_column(DateTime, nullable=True)
+    q_amended: Mapped[float | None] = mapped_column(Float, nullable=True)
     last_modified: Mapped[DateTime] = mapped_column(DateTime, default=func.now())
 
-class GardenZoneHistory(Base):
-    __tablename__ = "t_garden_zones_history"
-
-    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid4()))
-    zone_id: Mapped[str] = mapped_column(String(36), index=True)
-    display_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
-    color: Mapped[str] = mapped_column(String(255), nullable=False)
-    border_path: Mapped[List[Tuple[int, int]]] = mapped_column(JSON, nullable=False)
-    ph: Mapped[float | None] = mapped_column(Float, nullable=True)
-    temp: Mapped[float | None] = mapped_column(Float, nullable=True)
-    fert_date: Mapped[DateTime | None] = mapped_column(DateTime, nullable=True)
-    water_date: Mapped[DateTime | None] = mapped_column(DateTime, nullable=True)
-    water_amount: Mapped[float | None] = mapped_column(Float, nullable=True)
-    fert_type: Mapped[str | None] = mapped_column(String(255), nullable=True)
-    soil_mix: Mapped[str | None] = mapped_column(String(255), nullable=True)
-    moisture: Mapped[float | None] = mapped_column(Float, nullable=True)
-    sunshine: Mapped[float | None] = mapped_column(Float, nullable=True)
-    last_modified: Mapped[DateTime] = mapped_column(DateTime, default=func.now(), onupdate=func.now())
-
 class GardenZone(Base):
-    __tablename__ = "t_garden_zones"
+    __tablename__ = "T_garden_zones"
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, index=True)
     display_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
     color: Mapped[str] = mapped_column(String(255), nullable=False)
+    coverage: Mapped[dict | None] = mapped_column(JSON, nullable=True)
     border_path: Mapped[List[Tuple[int, int]]] = mapped_column(JSON, nullable=False)
     ph: Mapped[float | None] = mapped_column(Float, nullable=True)
     temp: Mapped[float | None] = mapped_column(Float, nullable=True)
-    fert_date: Mapped[DateTime | None] = mapped_column(DateTime, nullable=True)
-    water_date: Mapped[DateTime | None] = mapped_column(DateTime, nullable=True)
-    water_amount: Mapped[float | None] = mapped_column(Float, nullable=True)
-    fert_type: Mapped[str | None] = mapped_column(String(255), nullable=True)
-    soil_mix: Mapped[str | None] = mapped_column(String(255), nullable=True)
     moisture: Mapped[float | None] = mapped_column(Float, nullable=True)
     sunshine: Mapped[float | None] = mapped_column(Float, nullable=True)
+    compaction: Mapped[float | None] = mapped_column(Float, nullable=True)
+    soil_mix: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    t_watered: Mapped[DateTime | None] = mapped_column(DateTime, nullable=True)
+    dt_watered: Mapped[float] = mapped_column(Float, nullable=True)
+    q_watered: Mapped[float | None] = mapped_column(Float, nullable=True)
+    t_amended: Mapped[DateTime | None] = mapped_column(DateTime, nullable=True)
+    q_amended: Mapped[float | None] = mapped_column(Float, nullable=True)
     last_modified: Mapped[DateTime] = mapped_column(DateTime, default=func.now(), onupdate=func.now())
 
 
@@ -121,15 +89,36 @@ class GardenZone(Base):
         cascade="all, delete-orphan"
     )
 
+class GardenZoneHistory(Base):
+    __tablename__ = "T_garden_zones_history"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid4()))
+    zone_id: Mapped[str] = mapped_column(String(36), index=True)
+    display_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    color: Mapped[str] = mapped_column(String(255), nullable=False)
+    coverage: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    border_path: Mapped[List[Tuple[int, int]]] = mapped_column(JSON, nullable=False)
+    ph: Mapped[float | None] = mapped_column(Float, nullable=True)
+    temp: Mapped[float | None] = mapped_column(Float, nullable=True)
+    moisture: Mapped[float | None] = mapped_column(Float, nullable=True)
+    sunshine: Mapped[float | None] = mapped_column(Float, nullable=True)
+    compaction: Mapped[float | None] = mapped_column(Float, nullable=True)
+    soil_mix: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    t_watered: Mapped[DateTime | None] = mapped_column(DateTime, nullable=True)
+    dt_watered: Mapped[float] = mapped_column(Float, nullable=True)
+    q_watered: Mapped[float | None] = mapped_column(Float, nullable=True)
+    t_amended: Mapped[DateTime | None] = mapped_column(DateTime, nullable=True)
+    q_amended: Mapped[float | None] = mapped_column(Float, nullable=True)
+    last_modified: Mapped[DateTime] = mapped_column(DateTime, default=func.now(), onupdate=func.now())
 
 class Cell(Base):
-    __tablename__ = "t_colored_cells"
+    __tablename__ = "T_cells"
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, index=True)
     col: Mapped[float] = mapped_column(Float, nullable=False)
     row: Mapped[float] = mapped_column(Float, nullable=False)
     color: Mapped[str] = mapped_column(String(20), nullable=True)
-    menu_element_id: Mapped[str] = mapped_column(String(50), nullable=True)
+    palette_item_id: Mapped[str] = mapped_column(String(50), nullable=True)
 
     zone_id: Mapped[str] = mapped_column(ForeignKey("t_garden_zones.id"))
     zone: Mapped["GardenZone"] = relationship(back_populates="coverage")
