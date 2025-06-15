@@ -12,12 +12,12 @@ export function useSideBarActions() {
     const handleItemClick = (item: PaletteItem) => {
         log("useMenuActions handleItemClick triggered with: ", item)
         setSelectedItemId(item.id)
-        switch (item.metadata?.kind) {
-            case 'element':
+        switch (item.category) {
+            case 'vegetation':
                 initPlacement(item);
                 break
             case 'zone':
-                setDrawing(item.metadata.brushColor)
+                setDrawing(item.color)
         }
     }
     return { handleItemClick }

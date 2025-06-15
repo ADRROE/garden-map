@@ -21,7 +21,7 @@ type SelectionStore = {
   setPendingPosition: (pos: Vec2) => void;
   setEditing: (obj: GardenItem | InteractiveZone) => void;
   setConfirming: () => void;
-  setDrawing: (color: string) => void;
+  setDrawing: (color?: string) => void;
   clear: () => void;
 };
 
@@ -80,6 +80,7 @@ export const useSelectionStore = create<SelectionStore>()(
 
     setDrawing: (color) => {
       if (useUIStore.getState().isMapLocked) return;
+      if (!color) return;
       set({
         selection: { kind: 'drawing', color },
       })

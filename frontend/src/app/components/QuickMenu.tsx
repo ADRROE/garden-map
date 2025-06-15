@@ -35,7 +35,7 @@ const QuickMenu = () => {
         {
             src: "/icons/layers.png", alt: "Layers", onClick: () => { }, submenu: [
                 { src: "/icons/top-layer.png", alt: "Toplayer", onClick: () => { 
-                    uidispatch({type: 'TOGGLE_LAYER', layer: 'elements'});
+                    uidispatch({type: 'TOGGLE_LAYER', layer: 'items'});
                     setActiveDropdown(null);
                 }},
                 { src: "/icons/bottom-layer.png", alt: "Bottomlayer", onClick: () => { 

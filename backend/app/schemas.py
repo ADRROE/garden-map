@@ -9,7 +9,7 @@ class Vec2(BaseModel):
 class Cell(BaseModel):
     col: int
     row: int
-    color: str
+    color: str | None = None
     palette_item_id: str | None = None
 
     class Config:
@@ -22,10 +22,10 @@ class GardenItemBase(BaseModel):
     display_name: str | None = None
     position: Vec2
     location: str
-    width: int
-    height: int
+    width: float
+    height: float
     rotation: float | None = None
-    coverage: list[Cell] | None = None
+    coverage: List[str] | None = None
     category: str
     sub_category: str | None = None
     wcvp_id: str | None = None
@@ -54,10 +54,10 @@ class GardenItemHistory(BaseModel):
     display_name: str | None = None
     position: Vec2
     location: str
-    width: int
-    height: int
+    width: float
+    height: float
     rotation: float | None = None
-    coverage: list[Cell] | None = None
+    coverage: List[str] | None = None
     category: str
     sub_category: str | None = None
     wcvp_id: str | None = None
@@ -77,6 +77,33 @@ class GardenItemHistory(BaseModel):
         from_attributes = True
         populate_by_name = True
 
+class GardenItemRead(BaseModel):
+    id: str
+    position: Vec2
+    palette_item_id: str
+    display_name: str | None = None
+    location: str
+    width: float
+    height: float
+    rotation: float | None = None
+    coverage: List[str] | None = None
+    category: str
+    sub_category: str | None = None
+    wcvp_id: str | None = None
+    rhs_id: str | None = None
+    species: str | None = None
+    genus: str | None = None
+    circumference: int | None = None
+    price: float | None = None
+    t_watered: datetime | None = None
+    dt_watered: int | None = None
+    q_watered: float | None = None
+    t_amended: datetime | None = None
+    q_amended: datetime | None = None
+
+    class Config:
+        orm_mode = True
+
 
 class GardenItemCreate(GardenItemBase):
     pass
@@ -92,10 +119,10 @@ class GardenItemUpdate(BaseModel):
     display_name: str | None = None
     position: Vec2 | None = None
     location: str
-    width: int | None = None
-    height: int | None = None
+    width: float | None = None
+    height: float | None = None
     rotation: float | None = None
-    coverage: list[Cell] | None = None
+    coverage: List[str] | None = None
     wcvp_id: str | None = None
     rhs_id: str | None = None
     species: str | None = None

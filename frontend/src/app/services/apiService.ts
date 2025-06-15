@@ -11,6 +11,7 @@ const API_BASE_ZONES = process.env.NEXT_PUBLIC_API_URL + "/api/zones/";
 export async function fetchItems(): Promise<GardenItem[]> {
     const res = await fetch(API_BASE_ITEMS);
     const responseData = camelcaseKeys(await res.json(), { deep: true });
+    console.log("responseData: ", responseData)
     return responseData;
 }
 

@@ -8,6 +8,7 @@ export function useInteractiveZones(): InteractiveZone[] {
   
   const enrichedZones = useMemo(() => {
     return zones.map(zone => ({
+      interface: zone.interface,
       id: zone.id,
       displayName: zone.displayName,
       color: zone.color,

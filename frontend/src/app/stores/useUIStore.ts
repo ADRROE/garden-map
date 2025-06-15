@@ -20,7 +20,7 @@ export const useUIStore = create<UIState>()(
     (set, get) => ({
       isMapLocked: true,
       isLoading: true,
-      activeLayers: ["background", "zones", "elements"],
+      activeLayers: ["background", "zones", "items"],
       cursor: "default",
 
       setActiveLayers: (activeLayers: LayerName[]) => get().dispatch({ type: 'SET_ACTIVE_LAYERS', activeLayers }),

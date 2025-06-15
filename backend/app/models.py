@@ -120,5 +120,5 @@ class Cell(Base):
     color: Mapped[str] = mapped_column(String(20), nullable=True)
     palette_item_id: Mapped[str] = mapped_column(String(50), nullable=True)
 
-    zone_id: Mapped[str] = mapped_column(ForeignKey("t_garden_zones.id"))
+    zone_id: Mapped[str] = mapped_column(ForeignKey("T_garden_zones.id"))
     zone: Mapped["GardenZone"] = relationship(back_populates="coverage")

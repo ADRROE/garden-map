@@ -4,15 +4,26 @@ from typing import Literal
 from app import models, schemas, algorithms
 import uuid
 
-def get_items(db: Session):
-    return db.query(models.GardenItem).all()
+def to_garden_item_read(item: schemas.GardenItem) -> schemas.GardenItemRead:
+    data = item.__dict__.copy()
+    data['position'] = {'x': data.pop('x'), 'y': data.pop('y')}
+    return schemas.GardenItemRead(**data)
+
+def get_items(db: Session) -> list[schemas.GardenItemRead]:
+    items = db.query(models.GardenItem).all()
+
+    return [to_garden_item_read(item) for item in items]
 
 def create_item(db: Session, item: schemas.GardenItemCreate):
-    db_item = models.GardenItem(**item.dict())
+    data = item.dict()
+    x = data['position']['x']
+    y = data['position']['y']
+    data.pop('position')
+    db_item = models.GardenItem(**data, x=x, y=y)
     db.add(db_item)
     db.commit()
     db.refresh(db_item)
-    return db_item
+    return to_garden_item_read(db_item)
 
 def update_item(
     db: Session, 
@@ -22,9 +33,12 @@ def update_item(
 ):
     timestamp = datetime.now()
     updates_data = updates.dict(exclude_unset=True)
+    x = updates_data['position']['x']
+    y = updates_data['position']['y']
+    updates_data.pop('position')
 
     # Always update the main item
-    db_item = db.query(models.GardenItem).filter(models.GardenItem.id == id).first()
+    db_item = db.query(models.GardenItem(**updates_data, x=x, y=y)).filter(models.GardenItem.id == id).first()
     if not db_item:
         return None
 

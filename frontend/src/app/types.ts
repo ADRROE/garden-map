@@ -1,8 +1,6 @@
 import { FabricImage } from "fabric";
 
-export type MapEntity =
-  | { type: 'item', object: GardenItem }
-  | { type: 'zone', object: InteractiveZone }
+export type Item = PaletteItem | GardenItem;
 
 export type GardenAction =
   | { type: 'plant', subject: GardenItem, form: 'root' | 'seed' | 'seedling' | 'sapling' }
@@ -12,23 +10,27 @@ export type GardenAction =
   | { type: 'water', subject: GardenItem | GardenZone }
   | { type: 'harvest', subject: GardenItem }
 
-export interface PaletteItem {
+interface BaseItem {
   id: string;
   label: string;
   icon: string;
-  color?: string,
+  color?: string;
   width: number;
   height: number;
   cursor?: string;
   category: string;
   subCategory?: string;
+  kind: Item;
+}
+
+export interface PaletteItem extends BaseItem {
+  interface: 'PaletteItem';
   children?: PaletteItem[];
   onClick?: () => void;
 }
 
-export interface GardenItem extends PaletteItem {
-  id: string;
-
+export interface GardenItem extends BaseItem {
+  interface: 'GardenItem';
   paletteItemId?: string;
   displayName?: string;
   position: Vec2;
@@ -36,8 +38,6 @@ export interface GardenItem extends PaletteItem {
   rotation?: number;
   coverage?: Cell[];
   layer?: LayerName;
-  kind?: MapEntity
-
   species?: string;
   genus?: string;
   wcvpId?: string;
@@ -57,6 +57,7 @@ export interface InteractiveImage extends FabricImage {
 }
 
 export interface GardenZone {
+  interface: 'GardenZone';
   id: string;
   displayName?: string;
   color: string;
@@ -79,7 +80,7 @@ export interface InteractiveZone extends GardenZone {
   path: Path2D | null;
   isSelected?: boolean;
   isHovered?: boolean;
-  kind?: MapEntity
+  kind?: Item
 };
 
 export type Cell = {

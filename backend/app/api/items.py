@@ -14,12 +14,12 @@ def get_db():
     finally:
         db.close()
 
-@router.post("/", response_model=schemas.GardenItem)
+@router.post("/", response_model=schemas.GardenItemRead)
 def create_item(item: schemas.GardenItemCreate, db: Session = Depends(get_db)):
     print("CREATE ELEMENT CALLED with", item)
     return crud.create_item(db, item)
 
-@router.get("/", response_model=list[schemas.GardenItem])
+@router.get("/", response_model=list[schemas.GardenItemRead])
 def get_items(db: Session = Depends(get_db)):
     print("GET ELEMENTS CALLED with response:", crud.get_items(db))
     return crud.get_items(db)

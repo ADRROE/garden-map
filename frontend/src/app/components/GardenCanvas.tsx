@@ -10,7 +10,7 @@ import { useCanvasInteraction } from '../hooks/useCanvasInteraction';
 import PropMenu from './PropMenu';
 import { useSelectionStore } from '../stores/useSelectionStore';
 import { useGardenItem } from '../hooks/useGardenItem';
-import { fetchItems, fetchZones, updateItemAPI } from '../services/apiService';
+import { fetchItems, fetchZones } from '../services/apiService';
 import { useUIStore } from '../stores/useUIStore';
 import { useColorBuffer } from '@/hooks/useColorBuffer';
 import { useGardenZone } from '@/hooks/useCells';
@@ -127,7 +127,7 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
   const { confirmPlacement: confirmZoneCreation } = useGardenZone();
   const { onCanvasHover } = useCanvasInteraction({
     onHoverChange: (el) => {
-      if (el && el.kind?.type === 'item') {
+      if (el && el.category === 'vegetation') {
         setFloatingLabel(el.displayName || el.id);
         setFloatingLabelPosition({ x: el.position.x, y: el.position.y });
       } else {
@@ -392,7 +392,7 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
         <UpdateModal
           onEditConfirm={(operation) => {
             useSelectionStore.getState().clear()
-            if(lastPropMenuRef.current && lastPropMenuRef.current?.kind?.type === 'item')
+            if(lastPropMenuRef.current && lastPropMenuRef.current?.interface === 'GardenItem')
                confirmUpdate(lastPropMenuRef.current.id, lastPropMenuRef.current, operation)
           }
           }

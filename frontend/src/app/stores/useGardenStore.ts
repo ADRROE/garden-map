@@ -7,6 +7,7 @@ import {
   GardenZone,
   HistoryState,
   Cell,
+  InteractiveZone,
 } from '@/types';
 import {
   updateItemAPI,
@@ -19,7 +20,7 @@ import { log, error } from '@/utils/utils';
 interface GardenDataState {
   items: GardenItem[];
   zones: GardenZone[];
-  interactiveZones: GardenZone[];
+  interactiveZones: InteractiveZone[];
   cells: Record<string, Cell>;
 }
 

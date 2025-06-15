@@ -8,7 +8,7 @@ Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
-app.include_router(items.router, prefix="/api/items", tags=["Elements"])
+app.include_router(items.router, prefix="/api/items", tags=["Items"])
 app.include_router(zones.router, prefix="/api/zones", tags=["Zones"])
 
 app.add_middleware(
