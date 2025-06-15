@@ -25,7 +25,7 @@ export function useCanvasInteraction({
   const hoveredElementRef = useRef<GardenItem | null>(null);
 
   const datastate = useGardenStore(state => state.present);
-  const elements = useGardenStore(state => state.present.elements);
+  const elements = useGardenStore(state => state.present.items);
 
   const uidispatch = useUIStore(state => state.dispatch)
 
@@ -120,11 +120,11 @@ export function useCanvasInteraction({
   }, [selectedItem])
 
   const onCanvasClick = (worldX: number, worldY: number, ctx?: CanvasRenderingContext2D): GardenItem | InteractiveZone | null => {
-    const clickedEl = datastate.elements.find(el =>
+    const clickedEl = datastate.items.find(el =>
       worldX >= el.position.x &&
-      worldX <= el.position.x + el.dimensions.width &&
+      worldX <= el.position.x + el.width &&
       worldY >= el.position.y &&
-      worldY <= el.position.y + el.dimensions.height
+      worldY <= el.position.y + el.height
     );
     const zone = zoneObjects.find(zoneObj => {
       return zoneObj.path && ctx?.isPointInPath(zoneObj.path, worldX, worldY);
@@ -149,9 +149,9 @@ export function useCanvasInteraction({
   const onCanvasHover = (worldX: number, worldY: number): GardenItem | null => {
     const hoveredEl = elements.find(el =>
       worldX >= el.position.x &&
-      worldX <= el.position.x + el.dimensions.width &&
+      worldX <= el.position.x + el.width &&
       worldY >= el.position.y &&
-      worldY <= el.position.y + el.dimensions.height
+      worldY <= el.position.y + el.height
     ) || null;
 
     // Only trigger callback if value changed

@@ -4,7 +4,7 @@ export type MapEntity =
   | { type: 'item', object: GardenItem }
   | { type: 'zone', object: InteractiveZone }
 
-export type GardenAction = 
+export type GardenAction =
   | { type: 'plant', subject: GardenItem, form: 'root' | 'seed' | 'seedling' | 'sapling' }
   | { type: 'transplant', subject: GardenItem }
   | { type: 'prune', subject: GardenItem, degree: 'hard' | 'medium' | 'light' }
@@ -27,30 +27,28 @@ export interface PaletteItem {
 }
 
 export interface GardenItem extends PaletteItem {
-  id: string; 
+  id: string;
 
-    paletteItemId?: string;
-    displayName?: string;
-    position: Vec2;
-    location: string;
-    rotation?: number;
-    coverage?: Cell[];
-    layer?: LayerName;
-    kind?: MapEntity
+  paletteItemId?: string;
+  displayName?: string;
+  position: Vec2;
+  location: string;
+  rotation?: number;
+  coverage?: Cell[];
+  layer?: LayerName;
+  kind?: MapEntity
 
   species?: string;
   genus?: string;
   wcvpId?: string;
   rhsId?: string;
-  metrics?: {
-    circumference?: number;
-    price?: number;
+  circumference?: number;
+  price?: number;
   tWatered?: Date;
   dtWatered?: number;
   qWatered?: number;
   tAmended?: Date;
   qAmended?: string;
-  }
 }
 
 export interface InteractiveImage extends FabricImage {
@@ -60,19 +58,15 @@ export interface InteractiveImage extends FabricImage {
 
 export interface GardenZone {
   id: string;
-  metadata: {
-    displayName?: string;
-    color: string;
-    coverage: Cell[];
-    borderPath: Point[];
-  };
-  metrics?: {
-    ph?: number;
-    temp?: number;
-    moisture?: number;
-    sunshine?: number;
-    compaction?: number;
-  };
+  displayName?: string;
+  color: string;
+  coverage: Cell[];
+  borderPath: Point[];
+  ph?: number;
+  temp?: number;
+  moisture?: number;
+  sunshine?: number;
+  compaction?: number;
   soilMix?: string;
   tWatered?: Date;
   dtWatered?: number;
@@ -96,13 +90,6 @@ export type Cell = {
   zoneId?: string;
 };
 
-export interface GardenDataState {
-  elements: GardenItem[];
-  zones: GardenZone[];
-  interactiveZones: InteractiveZone[];
-  cells: Record<string, Cell>;
-}
-
 export type GardenLayerState = {
   visibleLayers: LayerName[];
 };
@@ -123,7 +110,7 @@ export type LineSegment = [Point, Point];
 
 export type ItemType = GardenItem | PaletteItem;
 
-export type LayerName = 'background' | 'elements' | 'zones';
+export type LayerName = 'background' | 'items' | 'zones';
 
 export type CanvasLayer = {
   name: string;

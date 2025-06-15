@@ -5,48 +5,48 @@ import { toColumnLetter } from "@/utils/utils";
 import camelcaseKeys from 'camelcase-keys';
 import snakecaseKeys from 'snakecase-keys';
 
-const API_BASE_ELEMENTS = process.env.NEXT_PUBLIC_API_URL + "/api/elements/";
+const API_BASE_ITEMS = process.env.NEXT_PUBLIC_API_URL + "/api/items/";
 const API_BASE_ZONES = process.env.NEXT_PUBLIC_API_URL + "/api/zones/";
 
-export async function fetchElements(): Promise<GardenItem[]> {
-    const res = await fetch(API_BASE_ELEMENTS);
+export async function fetchItems(): Promise<GardenItem[]> {
+    const res = await fetch(API_BASE_ITEMS);
     const responseData = camelcaseKeys(await res.json(), { deep: true });
     return responseData;
 }
 
-export async function createElementAPI(newElement: GardenItem) {
-    const newElementForBackend = snakecaseKeys({
-        ...newElement,
-        coverage: newElement.coverage ? serializeCells(newElement.coverage) : null
+export async function createItemAPI(newItem: GardenItem) {
+    const newItemForBackend = snakecaseKeys({
+        ...newItem,
+        coverage: newItem.coverage ? serializeCells(newItem.coverage) : null
     }, { deep: true })
-    await fetch(API_BASE_ELEMENTS, {
+    await fetch(API_BASE_ITEMS, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newElementForBackend),
+        body: JSON.stringify(newItemForBackend),
     });
 }
 
-export async function updateElementAPI(updates: Partial<GardenItem> & { id: string }, operation: 'create' | 'modify') {
+export async function updateItemAPI(id: string, updates: Partial<GardenItem>, operation: 'create' | 'modify') {
     const updatesForBackend = snakecaseKeys({
         ...updates,
         coverage: updates.coverage ? serializeCells(updates.coverage) : null
     }, { deep: true })
 
-    await fetch(`${API_BASE_ELEMENTS}${updates.id}`, {
+    await fetch(`${API_BASE_ITEMS}${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({updates: updatesForBackend, operation})
     });
 }
 
-export async function deleteElementAPI(id: string) {
-    await fetch(`${API_BASE_ELEMENTS}${id}`, { method: "DELETE" });
+export async function deleteItemAPI(id: string) {
+    await fetch(`${API_BASE_ITEMS}${id}`, { method: "DELETE" });
 }
 
 function deserializeCell(cell: any): Cell {
     return {
         ...cell,
-        paletteId: cell.menu_element_id,
+        paletteId: cell.palette_item_id,
     };
 }
 
@@ -76,13 +76,10 @@ export async function createZoneAPI(cells: Cell[], display_name: string) {
   });
 }
 
-export async function updateZoneAPI(
-  updatedZone: { id: string } & Partial<GardenZone>,
-  operation: 'create' | 'modify'
-) {
-  const payload = snakecaseKeys({ updatedZone, operation }, { deep: true });
+export async function updateZoneAPI(id: string, updates: Partial<GardenZone>, operation: 'create' | 'modify') {
+  const payload = snakecaseKeys({ updates, operation }, { deep: true });
 
-  await fetch(`${API_BASE_ZONES}${updatedZone.id}`, {
+  await fetch(`${API_BASE_ZONES}${id}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),

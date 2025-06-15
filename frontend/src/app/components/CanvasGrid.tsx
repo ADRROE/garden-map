@@ -14,7 +14,7 @@ const HEIGHT = NUM_ROWS * CELL_SIZE;
 
 
 export interface CanvasGridHandle {
-  getTransformedElementObj: () => GardenItem | null;
+  getTransformedItem: () => GardenItem | null;
   colorCell: (cell: Partial<Cell>) => void;
   uncolorCell: (col: number, row: number) => void;
   clearColoring: () => void;
@@ -29,14 +29,14 @@ export interface CanvasGridHandle {
 
 interface CanvasGridProps {
   layers: CanvasLayer[];
-  selectedElement: GardenItem | null;
+  selectedItem: GardenItem | null;
   selectedZone: InteractiveZone | null;
   onWorldClick: (row: number, col: number) => void;
   onWorldMove: (row: number, col: number) => void;
 }
 
 const CanvasGrid = forwardRef<CanvasGridHandle, CanvasGridProps>(
-  ({ layers, selectedElement, onWorldClick, onWorldMove }, ref) => {
+  ({ layers, selectedItem: selectedElement, onWorldClick, onWorldMove }, ref) => {
     const fabricCanvasRef = useRef<Canvas | null>(null);
     const fabricObjectRef = useRef<FabricObject | null>(null);
     const colorCtxRef = useRef<CanvasRenderingContext2D | null>(null);
@@ -45,7 +45,7 @@ const CanvasGrid = forwardRef<CanvasGridHandle, CanvasGridProps>(
     const colorCanvasRef = useRef<HTMLCanvasElement>(null);
 
     useImperativeHandle(ref, () => ({
-      getTransformedElementObj: () => {
+      getTransformedItem: () => {
         if (!selectedElement) return null;
         const obj = fabricObjectRef.current;
         if (!obj) return null;

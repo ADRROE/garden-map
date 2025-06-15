@@ -22,8 +22,8 @@ export async function createFabricElement(
   img.set({
     left: element.position.x,
     top: element.position.y,
-    scaleX: element.iconWidth / img.width!,
-    scaleY: element.iconHeight / img.height!,
+    scaleX: element.width / img.width!,
+    scaleY: element.height / img.height!,
     selectable: true,
     hasControls: true,
     objectCaching: false,

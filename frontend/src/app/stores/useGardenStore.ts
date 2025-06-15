@@ -5,59 +5,62 @@ import isEqual from 'lodash.isequal';
 import {
   GardenItem,
   GardenZone,
-  GardenDataState,
   HistoryState,
   Cell,
-  InteractiveZone,
 } from '@/types';
 import {
-  updateElementAPI,
-  deleteElementAPI,
+  updateItemAPI,
+  deleteItemAPI,
   fetchZones,
   updateZoneAPI,
 } from '@/services/apiService';
 import { log, error } from '@/utils/utils';
 
+interface GardenDataState {
+  items: GardenItem[];
+  zones: GardenZone[];
+  interactiveZones: GardenZone[];
+  cells: Record<string, Cell>;
+}
+
 type GardenActions = {
   undo: () => void;
   redo: () => void;
   dispatch: (action: GardenDataAction) => void;
-  createElement: (element: GardenItem) => void;
-  deleteElement: (id: string) => Promise<void>;
-  updateElement: (update: { id: string } & Partial<GardenItem>, record: 'create' | 'modify') => Promise<void>;
-  updateZone: (updatedZone: GardenZone, record: 'create' | 'modify') => Promise<void>;
+  createItem: (item: GardenItem) => void;
+  deleteItem: (id: string) => Promise<void>;
+  updateItem: (id: string, updates: Partial<GardenItem>, record: 'create' | 'modify') => Promise<void>;
+  updateZone: (id: string, updates: Partial<GardenZone>, record: 'create' | 'modify') => Promise<void>;
 };
 
 type GardenStore = HistoryState<GardenDataState> & GardenActions;
 
 const initialPresent: GardenDataState = {
-  elements: [],
+  items: [],
   zones: [],
   interactiveZones: [],
   cells: {},
 };
 
 export type GardenDataAction =
-    | { type: 'CREATE_ELEMENT'; element: GardenItem }
-    | { type: 'UPDATE_ELEMENT'; id: string; updates: Partial<GardenItem>; record: 'create' | 'modify' }
-    | { type: 'DELETE_ELEMENT'; id: string }
-    | { type: 'UPDATE_ZONE'; updatedZone: { id: string } & Partial<GardenZone>; record: 'create' | 'modify' }
-    | { type: 'SET_ELEMENTS'; elements: GardenItem[] }
+    | { type: 'CREATE_ITEM'; item: GardenItem }
+    | { type: 'UPDATE_ITEM'; id: string; updates: Partial<GardenItem>; record: 'create' | 'modify' }
+    | { type: 'DELETE_ITEM'; id: string }
+    | { type: 'SET_ITEMS'; items: GardenItem[] }
+    | { type: 'UPDATE_ZONE'; id: string;  updates: Partial<GardenZone>; record: 'create' | 'modify'}
     | { type: 'SET_ZONES'; zones: GardenZone[] }
-    | { type: 'SET_ZONE_OBJECTS'; zoneObjects: InteractiveZone[] }
     | { type: 'SET_COLORED_CELLS'; cells: Record<string, Cell> }
     | { type: 'TOGGLE_MAP_LOCK' }
     | { type: 'UNDO' }
     | { type: 'REDO' }
 
 const undoableActions = new Set<GardenDataAction['type']>([
-  'CREATE_ELEMENT',
-  'UPDATE_ELEMENT',
-  'DELETE_ELEMENT',
+  'CREATE_ITEM',
+  'UPDATE_ITEM',
+  'DELETE_ITEM',
   'UPDATE_ZONE',
-  'SET_ELEMENTS',
+  'SET_ITEMS',
   'SET_ZONES',
-  'SET_ZONE_OBJECTS',
   'SET_COLORED_CELLS',
 ]);
 
@@ -108,33 +111,36 @@ export const useGardenStore = create<GardenStore>()(
       });
     },
 
-    createElement: (element) => {
-      get().dispatch({ type: 'CREATE_ELEMENT', element });
+    createItem: (item) => {
+      get().dispatch({ type: 'CREATE_ITEM', item });
     },
 
-    updateElement: async (update, record) => {
-      get().dispatch({ type: 'UPDATE_ELEMENT', id: update.id, updates: update, record: record });
+    updateItem: async (id: string, updates: Partial<GardenItem>, record: 'create' | 'modify') => {
+      if (!updates.id) throw new Error("ID is required but was undefined.");
+      get().dispatch({ type: 'UPDATE_ITEM', id, updates, record });
       try {
-        await updateElementAPI(update, record);
+        await updateItemAPI(id, updates, record);
       } catch (err) {
-        error('Failed to update element:', err);
+        error('Failed to update item:', err);
       }
     },
 
-    deleteElement: async (id) => {
-      get().dispatch({ type: 'DELETE_ELEMENT', id });
+    deleteItem: async (id) => {
+      get().dispatch({ type: 'DELETE_ITEM', id });
       try {
-        await deleteElementAPI(id);
+        await deleteItemAPI(id);
       } catch (err) {
-        error('Failed to delete element:', err);
+        error('Failed to delete item:', err);
       }
     },
 
-    updateZone: async (updatedZone, record) => {
-      get().dispatch({ type: 'UPDATE_ZONE', updatedZone, record });
+    updateZone: async (id: string, updates: Partial<GardenZone>, record: 'create' | 'modify') => {
+            if (!updates.id) throw new Error("ID is required but was undefined.");
+
+      get().dispatch({ type: 'UPDATE_ZONE', id, updates, record });
       try {
-        console.log("updateZoneAPI called with: ", updatedZone, record);
-        await updateZoneAPI(updatedZone, record);
+        console.log("updateZoneAPI called with: ", updates, record);
+        await updateZoneAPI(id, updates, record);
         const zones = await fetchZones();
         get().dispatch({ type: 'SET_ZONES', zones });
       } catch (err) {
@@ -148,42 +154,39 @@ export const useGardenStore = create<GardenStore>()(
 
 function baseReducer(state: GardenDataState, action: GardenDataAction): GardenDataState {
   switch (action.type) {
-    case 'CREATE_ELEMENT':
+    case 'CREATE_ITEM':
       return {
         ...state,
-        elements: [...state.elements, action.element],
+        items: [...state.items, action.item],
       };
 
-    case 'UPDATE_ELEMENT':
+    case 'UPDATE_ITEM':
       return {
         ...state,
-        elements: state.elements.map(el =>
+        items: state.items.map(el =>
           el.id === action.id ? { ...el, ...action.updates } : el
         ),
       };
 
-    case 'DELETE_ELEMENT':
+    case 'DELETE_ITEM':
       return {
         ...state,
-        elements: state.elements.filter(el => el.id !== action.id),
+        items: state.items.filter(el => el.id !== action.id),
       };
 
     case 'UPDATE_ZONE':
       return {
         ...state,
         zones: state.zones.map(z =>
-          z.id === action.updatedZone.id ? { ...z, ...action.updatedZone } : z
+          z.id === action.id ? { ...z, ...action.updates } : z
         ),
       };
 
     case 'SET_ZONES':
       return { ...state, zones: action.zones };
-    
-        case 'SET_ZONE_OBJECTS':
-      return { ...state, interactiveZones: action.zoneObjects };
 
-    case 'SET_ELEMENTS':
-      return { ...state, elements: action.elements };
+    case 'SET_ITEMS':
+      return { ...state, items: action.items };
     
     case "SET_COLORED_CELLS":
         log("16 - Reducer received coloredCells:", action.cells);

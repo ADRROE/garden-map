@@ -20,16 +20,16 @@ export default function Home() {
     const fabricCanvas = canvasGridRef.current?.fabricCanvas;
     useCursorSync(fabricCanvas);
 
-  const updateElement = useGardenStore((s) => s.updateElement);
+  const updateItem = useGardenStore((s) => s.updateItem);
 
   const handleEditConfirm = (operation: 'create' | 'modify') => {
     log("9 - handleEditConfirm triggered in page via Overlay onEditConfirm prop.")
-    const updatedElement = canvasGridRef.current?.getTransformedElementObj();
-    log("10 - updatedElement as seen by page: ", updatedElement)
-    if (updatedElement) {
-      log("11 - ✅ Calling updateElement from within page with: ", updatedElement);
-      if (updatedElement)
-      updateElement(updatedElement, operation);
+    const updatedItem = canvasGridRef.current?.getTransformedItem();
+    log("10 - updatedItem as seen by page: ", updatedItem)
+    if (updatedItem) {
+      log("11 - ✅ Calling updateElement from within page with: ", updatedItem);
+      if (updatedItem)
+      updateItem(updatedItem.id, updatedItem, operation);
     };
     if (canvasGridRef.current?.handleEditConfirm) {
       log("11 - canvasGridRef.current.handleConfirm is not null: ", canvasGridRef.current);

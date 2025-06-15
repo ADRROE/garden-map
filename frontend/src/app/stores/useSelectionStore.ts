@@ -37,7 +37,7 @@ export const useSelectionStore = create<SelectionStore>()(
       }),
 
     setSelectedObjId: (id: string | null) => {
-      const elObj = useGardenStore.getState().present.elements.find(e => e.id === id);
+      const elObj = useGardenStore.getState().present.items.find(e => e.id === id);
       if (elObj) {
         set({ selectedObjId: id, selectedObj: elObj });
       }
