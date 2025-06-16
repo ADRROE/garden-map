@@ -20,7 +20,7 @@ const QuickMenu = () => {
     const handleLockClick = () => {
         toggleMapLock()
     }
-    const handleElementClick = () => menudispatch({ type: 'TOGGLE_MENU', menu: 'picker' })
+    const handleItemClick = () => menudispatch({ type: 'TOGGLE_MENU', menu: 'picker' })
     const handleZoneClick = () => {
         menudispatch({ type: 'SHOW_MENU', menu: 'picker'});
         useUIStore.getState().dispatch({type: 'SET_MAP_LOCK', value: false})
@@ -45,7 +45,7 @@ const QuickMenu = () => {
             ],
         },
         { src: "/zone.png", alt: "Zones", onClick: handleZoneClick },
-        { src: "/element.png", alt: "Elements", onClick: handleElementClick },
+        { src: "/item.png", alt: "Items", onClick: handleItemClick },
         { src: isMapLocked ? "/icons/locked.png" : "/icons/unlocked.png", alt: "Lock", onClick: handleLockClick },
     ];
 

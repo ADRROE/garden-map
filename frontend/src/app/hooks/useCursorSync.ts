@@ -1,14 +1,14 @@
 import { useEffect } from "react";
 import { useUIStore } from "@/stores/useUIStore";
 import { useSelectionStore } from "@/stores/useSelectionStore";
-import { useMenuElement } from "@/hooks/usePaletteItem";
+import { useMenuItem } from "@/hooks/usePaletteItem";
 import { Canvas } from "fabric";
 import { useSelectionState } from "./useSelectionState";
 import { resolveCursor } from "@/lib/cursorMappings";
 
 export function useCursorSync(fabricCanvas?: Canvas | null, naming?: boolean) {
     const selectedItemId = useSelectionStore((s) => s.selectedItemId);
-    const menuItem = useMenuElement(selectedItemId);
+    const menuItem = useMenuItem(selectedItemId);
     const selection = useSelectionState();
 
     // 1. Handle high-level cursor intent logic

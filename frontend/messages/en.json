@@ -1,6 +1,6 @@
 {
   "Overlay": {
-    "elementchooser": "Element Chooser"
+    "itemchooser": "Item Chooser"
   },
   "PropMenu": {
     "rhsId": "RHS ID",

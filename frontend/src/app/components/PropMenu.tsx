@@ -1,20 +1,20 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
-import { ElementFormData } from "@/lib/elementSchema";
+import { ItemFormData } from "@/lib/itemSchema";
 import { FieldConfigItem } from "@/lib/fieldConfig";
 import { ZoneFormData } from "@/lib/zoneSchema";
 
 interface PropMenuProps {
-  data: (Partial<ElementFormData> | Partial<ZoneFormData>) & { id: string; name?: string };
-  onUpdate: (updated: ElementFormData | ZoneFormData & { id: string }) => void;
+  data: (Partial<ItemFormData> | Partial<ZoneFormData>) & { id: string; name?: string };
+  onUpdate: (updated: ItemFormData | ZoneFormData & { id: string }) => void;
   onClose: () => void;
   fieldConfig: readonly FieldConfigItem[];
 }
 
 const PropMenu: React.FC<PropMenuProps> = ({ data, onUpdate, onClose, fieldConfig }) => {
   const t = useTranslations("PropMenu");
-  const [formData, setFormData] = useState<Partial<ElementFormData & ZoneFormData>>({});
+  const [formData, setFormData] = useState<Partial<ItemFormData & ZoneFormData>>({});
   const applicableFields = fieldConfig.filter(field => field.name in data);
   const readOnlyFields = applicableFields.filter(f => f.readOnly);
   const editableFields = applicableFields.filter(f => !f.readOnly);
@@ -30,7 +30,7 @@ const PropMenu: React.FC<PropMenuProps> = ({ data, onUpdate, onClose, fieldConfi
         initial[name] = value;
       }
     });
-    setFormData(initial as Partial<ElementFormData & ZoneFormData>);
+    setFormData(initial as Partial<ItemFormData & ZoneFormData>);
   }, [data, fieldConfig]);
 
   const handleChange = (name: string, value: string | number) => {
@@ -43,7 +43,7 @@ const PropMenu: React.FC<PropMenuProps> = ({ data, onUpdate, onClose, fieldConfi
   const handleSave = () => {
     onUpdate({
       id: data.id,
-      ...(formData as ElementFormData | (ZoneFormData & { id: string })),
+      ...(formData as ItemFormData | (ZoneFormData & { id: string })),
     });
     onClose();
   };

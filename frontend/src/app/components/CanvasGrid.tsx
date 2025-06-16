@@ -2,7 +2,7 @@ import React, { forwardRef, useImperativeHandle, useRef, useEffect } from 'react
 import { LayerManager } from '../utils/LayerManager';
 import { CanvasLayer, Cell, GardenItem, InteractiveZone } from '../types';
 import { Canvas, FabricObject } from 'fabric';
-import { createFabricElement } from '../utils/FabricHelpers';
+import { createFabricItem } from '../utils/FabricHelpers';
 import { constrainMatrix, getCoveredCells, log, toColumnLetter } from "@/utils/utils";
 import { useViewportStore } from "@/stores/useViewportStore";
 
@@ -36,7 +36,7 @@ interface CanvasGridProps {
 }
 
 const CanvasGrid = forwardRef<CanvasGridHandle, CanvasGridProps>(
-  ({ layers, selectedItem: selectedElement, onWorldClick, onWorldMove }, ref) => {
+  ({ layers, selectedItem, onWorldClick, onWorldMove }, ref) => {
     const fabricCanvasRef = useRef<Canvas | null>(null);
     const fabricObjectRef = useRef<FabricObject | null>(null);
     const colorCtxRef = useRef<CanvasRenderingContext2D | null>(null);
@@ -46,12 +46,12 @@ const CanvasGrid = forwardRef<CanvasGridHandle, CanvasGridProps>(
 
     useImperativeHandle(ref, () => ({
       getTransformedItem: () => {
-        if (!selectedElement) return null;
+        if (!selectedItem) return null;
         const obj = fabricObjectRef.current;
         if (!obj) return null;
 
-        const x = obj.left ?? selectedElement.position.x
-        const y = obj.top ?? selectedElement.position.y
+        const x = obj.left ?? selectedItem.position.x
+        const y = obj.top ?? selectedItem.position.y
 
         const width = obj.width! * obj.scaleX!
         const height = obj.height! * obj.scaleY!
@@ -61,11 +61,10 @@ const CanvasGrid = forwardRef<CanvasGridHandle, CanvasGridProps>(
         const coverage = getCoveredCells(computedPosition[0], computedPosition[1], width / 20, height / 20);
 
         return {
-          ...selectedElement,
-          x: x,
-          y: y,
-          iconWidth: obj.width! * obj.scaleX!,
-          iconHeight: obj.height! * obj.scaleY!,
+          ...selectedItem,
+          position: { x, y },
+          width: obj.width! * obj.scaleX!,
+          height: obj.height! * obj.scaleY!,
           location: location,
           coverage: coverage
         };
@@ -258,10 +257,10 @@ const CanvasGrid = forwardRef<CanvasGridHandle, CanvasGridProps>(
 
       canvas.clear();
 
-      if (selectedElement) {
-        log("selectedObj as seen in canvasGrid:", selectedElement)
+      if (selectedItem) {
+        log("selectedObj as seen in canvasGrid:", selectedItem)
 
-        createFabricElement(selectedElement, true).then(fabricEl => {
+        createFabricItem(selectedItem, true).then(fabricEl => {
           fabricObjectRef.current = fabricEl;
           canvas.add(fabricEl);
           canvas.setActiveObject(fabricEl);
@@ -269,7 +268,7 @@ const CanvasGrid = forwardRef<CanvasGridHandle, CanvasGridProps>(
           canvas.renderAll();
         });
       }
-    }, [selectedElement]);
+    }, [selectedItem]);
 
     const handleMouseDown = (e: React.MouseEvent) => {
       const rect = containerRef.current!.getBoundingClientRect();

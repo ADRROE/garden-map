@@ -2,28 +2,29 @@ import { FabricImage } from 'fabric';
 import { GardenItem, PaletteItem } from '../types';
 import { log } from './utils';
 
-export function isGardenElement(el: GardenItem | PaletteItem): el is GardenItem {
+export function isGardenItem(el: GardenItem | PaletteItem): el is GardenItem {
   return 'x' in el && 'y' in el;
 }
 
-export async function createFabricElement(
-  element: GardenItem | PaletteItem,
+export async function createFabricItem(
+  item: GardenItem | PaletteItem,
   isSelected: boolean,
 ): Promise<FabricImage> {
-  log("Creating fabric element...")
-  if (!isGardenElement(element)) {
-    throw new Error('Unsupported element type');
+  log("Creating fabric item...")
+  if (!isGardenItem(item)) {
+    console.log('item: ', item)
+    throw new Error('Unsupported item type');
   }
 
-  const img = await FabricImage.fromURL(element.icon, {
+  const img = await FabricImage.fromURL(item.icon, {
     crossOrigin: 'anonymous'
   });
 
   img.set({
-    left: element.position.x,
-    top: element.position.y,
-    scaleX: element.width / img.width!,
-    scaleY: element.height / img.height!,
+    left: item.position.x,
+    top: item.position.y,
+    scaleX: item.width / img.width!,
+    scaleY: item.height / img.height!,
     selectable: true,
     hasControls: true,
     objectCaching: false,
@@ -44,10 +45,10 @@ export async function createFabricElement(
     mb: false  // middle bottom
   });
   img.on('selected', () => {
-    log('Fabric image selected:', element.id);
+    log('Fabric image selected:', item.id);
   });
   img.on('mousedown', () => {
-    log('Mouse down on image:', element.id);
+    log('Mouse down on image:', item.id);
   });
 
   return img;

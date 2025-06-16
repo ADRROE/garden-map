@@ -20,7 +20,7 @@ import UpdateModal from './UpdateModal';
 import { fieldConfig } from '../lib/fieldConfig';
 import { useMenuStore } from '@/stores/useMenuStore';
 import { useInteractiveZones } from '@/hooks/useInteractiveZones';
-import { useMenuElement } from '@/hooks/usePaletteItem';
+import { useMenuItem } from '@/hooks/usePaletteItem';
 import { useCursorSync } from '@/hooks/useCursorSync';
 
 const CELL_SIZE = 20;
@@ -88,7 +88,7 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
   const isPlacing = useSelectionStore((s) => s.selection.kind === 'placing');
   const isConfirming = useSelectionStore((s) => s.selection.kind === 'confirming');
   const selectedItemId = useSelectionStore((s) => s.selection.kind ? s.selectedItemId : null);
-  const selectedPaletteItem = useMenuElement(selectedItemId);
+  const selectedPaletteItem = useMenuItem(selectedItemId);
   const selectedObj = useSelectionStore((s) => s.selectedObj);
   const setSelectedObjId = useSelectionStore((s) => s.setSelectedObjId);
   const clearSelection = useSelectionStore((s) => s.clear);
@@ -226,9 +226,7 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
           const cache = selectedObj ? null : imageCacheRef.current;
 
           items.forEach(el => {
-            const paletteItem = menuItems.find(i => i.id === el.paletteItemId);
-            if (!paletteItem) return
-            const iconSrc = paletteItem.icon
+            const iconSrc = el.icon
 
             let img = cache?.get(iconSrc);
 

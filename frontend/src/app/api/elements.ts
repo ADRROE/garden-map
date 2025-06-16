@@ -1,40 +1,40 @@
-// /pages/api/elements.ts
+// /pages/api/items.ts
 import fs from "fs";
 import path from "path";
 import { NextApiRequest, NextApiResponse } from "next";
 import { GardenItem } from "../types"; // Adjust this path as needed
 
-const dataFilePath = path.resolve("data", "elements.json");
+const dataFilePath = path.resolve("data", "items.json");
 
-function readElements(): GardenItem[] {
+function readItems(): GardenItem[] {
   if (!fs.existsSync(dataFilePath)) return [];
   const content = fs.readFileSync(dataFilePath, "utf-8");
   return JSON.parse(content);
 }
 
-function saveElements(elements: GardenItem[]) {
-  fs.writeFileSync(dataFilePath, JSON.stringify(elements, null, 2));
+function saveItems(items: GardenItem[]) {
+  fs.writeFileSync(dataFilePath, JSON.stringify(items, null, 2));
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  let elements = readElements();
+  let items = readItems();
 
   switch (req.method) {
     case "GET":
-      return res.status(200).json(elements);
+      return res.status(200).json(items);
 
     case "POST":
-      const newElement: GardenItem = req.body;
-      elements.push(newElement);
-      saveElements(elements);
-      return res.status(201).json(newElement);
+      const newItem: GardenItem = req.body;
+      items.push(newItem);
+      saveItems(items);
+      return res.status(201).json(newItem);
 
     case "PUT":
       const updated: GardenItem = req.body;
-      elements = elements.map(el =>
+      items = items.map(el =>
         el.id === updated.id ? { ...el, ...updated } : el
       );
-      saveElements(elements);
+      saveItems(items);
       return res.status(200).json(updated);
 
     case "DELETE":
@@ -42,8 +42,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       if (typeof id !== "string") {
         return res.status(400).json({ error: "Invalid ID" });
       }
-      elements = elements.filter(el => el.id !== id);
-      saveElements(elements);
+      items = items.filter(el => el.id !== id);
+      saveItems(items);
       return res.status(200).json({ success: true });
 
     default:

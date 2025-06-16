@@ -16,12 +16,12 @@ def get_db():
 
 @router.post("/", response_model=schemas.GardenItemRead)
 def create_item(item: schemas.GardenItemCreate, db: Session = Depends(get_db)):
-    print("CREATE ELEMENT CALLED with", item)
+    print("CREATE ITEM CALLED with", item)
     return crud.create_item(db, item)
 
 @router.get("/", response_model=list[schemas.GardenItemRead])
 def get_items(db: Session = Depends(get_db)):
-    print("GET ELEMENTS CALLED with response:", crud.get_items(db))
+    print("GET ITEMS CALLED with response:", crud.get_items(db))
     return crud.get_items(db)
 
 @router.get("/{id}/history", response_model=list[schemas.GardenItemHistory])
@@ -38,7 +38,7 @@ def update_item(
 
 @router.delete("/{id}", response_model=schemas.GardenItem)
 def delete_item(id: str, db: Session = Depends(get_db)):
-    print(f"DELETE ELEMENT CALLED with id={id}")
+    print(f"DELETE ITEM CALLED with id={id}")
     return crud.delete_item(db, id)
 
 

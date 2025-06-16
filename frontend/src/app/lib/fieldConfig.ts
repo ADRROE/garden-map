@@ -1,4 +1,4 @@
-import { ElementFormData } from "./elementSchema";
+import { ItemFormData } from "./itemSchema";
 import { ZoneFormData } from "./zoneSchema";
 
 type FieldType = "text" | "number" | "date" | "ratio";
@@ -10,15 +10,15 @@ type BaseFieldConfigItem = {
   readOnly?: boolean;
 };
 
-type ElementFieldConfigItem = BaseFieldConfigItem & {
-  name: keyof ElementFormData;
+type ItemFieldConfigItem = BaseFieldConfigItem & {
+  name: keyof ItemFormData;
 };
 
 type ZoneFieldConfigItem = BaseFieldConfigItem & {
   name: keyof ZoneFormData;
 };
 
-export type FieldConfigItem = ElementFieldConfigItem | ZoneFieldConfigItem;
+export type FieldConfigItem = ItemFieldConfigItem | ZoneFieldConfigItem;
 
 export const fieldConfig: readonly FieldConfigItem[] = [
   { name: "rhsId", labelKey: "rhsId", type: "text", readOnly: false },

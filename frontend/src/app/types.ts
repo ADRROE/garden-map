@@ -31,7 +31,7 @@ export interface PaletteItem extends BaseItem {
 
 export interface GardenItem extends BaseItem {
   interface: 'GardenItem';
-  paletteItemId?: string;
+  paletteItemId: string;
   displayName?: string;
   position: Vec2;
   location: string;
@@ -53,7 +53,7 @@ export interface GardenItem extends BaseItem {
 
 export interface InteractiveImage extends FabricImage {
   id: string;
-  customType: 'element';
+  customType: 'item';
 }
 
 export interface GardenZone {

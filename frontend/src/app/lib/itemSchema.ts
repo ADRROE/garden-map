@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const elementSchema = z.object({
+export const itemSchema = z.object({
     rhsId: z.string().min(1).max(6),
     wcvpId: z.string().min(1).max(8),
     displayName: z.string().min(1),
@@ -23,4 +23,4 @@ export const elementSchema = z.object({
     circumference: z.number(),
 });
 
-export type ElementFormData = z.infer<typeof elementSchema>;
+export type ItemFormData = z.infer<typeof itemSchema>;

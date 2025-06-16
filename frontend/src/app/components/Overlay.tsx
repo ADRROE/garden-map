@@ -1,7 +1,7 @@
 
 import QuickMenu from "./QuickMenu";
 import { SideBar } from "./SideBar";
-import { useMenuElements } from "../hooks/usePaletteItems";
+import { useMenuItems } from "../hooks/usePaletteItems";
 import { useSelectionStore } from "../stores/useSelectionStore";
 import { useTranslations } from "next-intl";
 import LanguageSwitcher from "./LanguageSwitcher";
@@ -23,7 +23,7 @@ export default function Overlay({ onEditConfirm, onEditAbort }: { onEditConfirm:
     'w-12 h-12 flex items-center justify-center bg-white rounded-full p-2 shadow-lg hover:bg-gray-100 transition';
 
 
-  const { data: menuElements = [] } = useMenuElements();
+  const { data: menuItems = [] } = useMenuItems();
   const [confirming, setConfirming] = useState(false);
 
   const selection = useSelectionStore((s) => s.selection);
@@ -35,16 +35,16 @@ export default function Overlay({ onEditConfirm, onEditAbort }: { onEditConfirm:
   const sideBarSections: MenuSection[] = [{
     id: "s1",
     title: "Vegetation",
-    items: menuElements.filter(element => element.category === "vegetation")
+    items: menuItems.filter(item => item.category === "vegetation")
 
   }, {
     id: "s2",
     title: "Material",
-    items: menuElements.filter(element => element.category === "pavement")
+    items: menuItems.filter(item => item.category === "pavement")
   }, {
     id: "s3",
     title: "Soil",
-    items: menuElements.filter(element => element.category === "soil")
+    items: menuItems.filter(item => item.category === "soil")
   }]
 
   return (
@@ -73,7 +73,7 @@ export default function Overlay({ onEditConfirm, onEditAbort }: { onEditConfirm:
       {process.env.NODE_ENV === "development" && <MatrixDebugger />}
       {showSideBar && !isInteracting &&
         <SideBar
-          title={t('elementchooser')}
+          title={t('itemchooser')}
           sections={sideBarSections}>
         </SideBar>
       }

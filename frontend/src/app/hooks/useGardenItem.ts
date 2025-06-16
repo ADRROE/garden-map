@@ -5,19 +5,19 @@ import { Vec2, GardenItem } from "../types";
 import { toColumnLetter, getCoveredCells } from "../utils/utils";
 import { v4 as uuidv4 } from 'uuid';
 import { log, error } from "@/utils/utils";
-import { useMenuElement } from "./usePaletteItem";
+import { useMenuItem } from "./usePaletteItem";
 
 
 export function useGardenItem() {
   const { setPendingPosition, clear } = useSelectionStore();
   const selectedPaletteItemId = useSelectionStore((s) => s.selection.kind === "placing" ? s.selectedItemId : null);
-  const selectedPaletteItem = useMenuElement(selectedPaletteItemId);
+  const selectedPaletteItem = useMenuItem(selectedPaletteItemId);
 
   const createGardenItem = useGardenStore((s) => s.createItem);
   const dispatch = useGardenStore((s) => s.dispatch);
 
   const initPlacement = (position: Vec2) => {
-    log("8 - place triggered in useGardenElement-hook with menuItem", selectedPaletteItem);
+    log("8 - place triggered in useGardenItem-hook with menuItem", selectedPaletteItem);
     if (!selectedPaletteItem) return;
     log("9 - Calling setPendingPosition in hook with position: ", position);
     setPendingPosition(position);
@@ -39,7 +39,7 @@ export function useGardenItem() {
     const computedPosition = [Math.floor(centeredX / 20) + 1, Math.floor(centeredY / 20) + 1];
     const location = `${toColumnLetter(computedPosition[0])}${computedPosition[1]}`;
     const coverage = getCoveredCells(computedPosition[0], computedPosition[1], width / 20, height / 20);
-    const newElement: GardenItem = {
+    const newItem: GardenItem = {
       ...selectedPaletteItem,
       interface: 'GardenItem',
       paletteItemId: selectedPaletteItem.id,
@@ -55,10 +55,10 @@ export function useGardenItem() {
       coverage,
     };
 
-    createGardenItem(newElement);
+    createGardenItem(newItem);
 
     try {
-      await createItemAPI(newElement);
+      await createItemAPI(newItem);
       const fetched = await fetchItems();
       dispatch({ type: 'SET_ITEMS', items: fetched });
     } catch (e) {

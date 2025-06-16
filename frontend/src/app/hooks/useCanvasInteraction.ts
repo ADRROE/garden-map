@@ -6,7 +6,7 @@ import { useEffect, useRef } from "react";
 import { useUIStore } from "@/stores/useUIStore";
 import { useMenuStore } from "@/stores/useMenuStore";
 import { useInteractiveZones } from "./useInteractiveZones";
-import { useMenuElement } from "./usePaletteItem";
+import { useMenuItem } from "./usePaletteItem";
 
 type CanvasInteractionOptions = {
   onSelect?: (obj: GardenItem | InteractiveZone) => void;
@@ -22,19 +22,19 @@ export function useCanvasInteraction({
 
   const isMouseDownRef = useRef(false);
   const isModifierKeyDown = useRef(false);
-  const hoveredElementRef = useRef<GardenItem | null>(null);
+  const hoveredItemRef = useRef<GardenItem | null>(null);
 
   const datastate = useGardenStore(state => state.present);
-  const elements = useGardenStore(state => state.present.items);
+  const items = useGardenStore(state => state.present.items);
 
   const uidispatch = useUIStore(state => state.dispatch)
 
   const zoneObjects = useInteractiveZones()
 
-  const selectElement = (element: GardenItem) => {
-    useSelectionStore.getState().setEditing(element);
-    useMenuStore.getState().setOpenPropMenu(element.id)
-    log("CanvasInteraction now setting Editing with el: ", element);
+  const selectItem = (item: GardenItem) => {
+    useSelectionStore.getState().setEditing(item);
+    useMenuStore.getState().setOpenPropMenu(item.id)
+    log("CanvasInteraction now setting Editing with el: ", item);
   };
   const selectZoneObject = (zone: InteractiveZone) => {
     useSelectionStore.getState().setEditing(zone);
@@ -42,7 +42,7 @@ export function useCanvasInteraction({
   }
   const isDrawing = useSelectionStore((s) => s.selection.kind === 'drawing');
   const selectedItemId = useSelectionStore((s) => s.selection.kind ? s.selectedItemId : null);
-  const selectedItem = useMenuElement(selectedItemId);
+  const selectedItem = useMenuItem(selectedItemId);
   const clearSelection = useSelectionStore((s) => s.clear);
 
   useEffect(() => {
@@ -131,7 +131,7 @@ export function useCanvasInteraction({
 
     });
     if (clickedEl) {
-      selectElement(clickedEl);
+      selectItem(clickedEl);
       onSelect?.(clickedEl);
       return clickedEl;
     }
@@ -147,7 +147,7 @@ export function useCanvasInteraction({
   };
 
   const onCanvasHover = (worldX: number, worldY: number): GardenItem | null => {
-    const hoveredEl = elements.find(el =>
+    const hoveredEl = items.find(el =>
       worldX >= el.position.x &&
       worldX <= el.position.x + el.width &&
       worldY >= el.position.y &&
@@ -155,8 +155,8 @@ export function useCanvasInteraction({
     ) || null;
 
     // Only trigger callback if value changed
-    if (hoveredElementRef.current?.id !== hoveredEl?.id) {
-      hoveredElementRef.current = hoveredEl;
+    if (hoveredItemRef.current?.id !== hoveredEl?.id) {
+      hoveredItemRef.current = hoveredEl;
       onHoverChange?.(hoveredEl); // 🆕 notify parent
     }
 

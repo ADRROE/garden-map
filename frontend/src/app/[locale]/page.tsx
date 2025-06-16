@@ -27,7 +27,7 @@ export default function Home() {
     const updatedItem = canvasGridRef.current?.getTransformedItem();
     log("10 - updatedItem as seen by page: ", updatedItem)
     if (updatedItem) {
-      log("11 - ✅ Calling updateElement from within page with: ", updatedItem);
+      log("11 - ✅ Calling updateItem from within page with: ", updatedItem);
       if (updatedItem)
       updateItem(updatedItem.id, updatedItem, operation);
     };

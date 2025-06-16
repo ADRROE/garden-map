@@ -1,13 +1,13 @@
 import { PaletteItem } from "@/types";
 import { useMemo } from "react";
-import { useMenuElements } from "./usePaletteItems";
+import { useMenuItems } from "./usePaletteItems";
 
-export function useMenuElement(id: string | null): PaletteItem | null {
-    const { data: menuElements = [] } = useMenuElements();
+export function useMenuItem(id: string | null): PaletteItem | null {
+    const { data: menuItems = [] } = useMenuItems();
     return useMemo(() => {
         if (!id) return null;
-        const element = menuElements.find((el) => id === el.id)
-        if (element) return element;
+        const item = menuItems.find((el) => id === el.id)
+        if (item) return item;
         return null
-    }, [id, menuElements])
+    }, [id, menuItems])
 }
