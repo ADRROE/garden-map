@@ -38,13 +38,15 @@ def update_item(
     updates_data.pop('position')
 
     # Always update the main item
-    db_item = db.query(models.GardenItem(**updates_data, x=x, y=y)).filter(models.GardenItem.id == id).first()
+    db_item = db.query(models.GardenItem).filter(models.GardenItem.id == id).first()
     if not db_item:
         return None
 
     for key, value in updates_data.items():
         setattr(db_item, key, value)
 
+    db_item.x = x
+    db_item.y = y
     db_item.last_modified = timestamp
 
     # Add to history if requested
@@ -54,6 +56,8 @@ def update_item(
         history_data = updates_data.copy()
         history_data.pop("id", None)  # 🚨 remove existing id
         history_data["garden_item_id"] = id
+        history_data["x"] = x
+        history_data["y"] = y
         history_data["last_modified"] = timestamp
 
         db_history = models.GardenItemHistory(**history_data)
@@ -73,7 +77,9 @@ def update_item(
         # Apply changes
         for key, value in updates_data.items():
             setattr(db_item, key, value)
-
+            
+        db_item.x = x
+        db_item.y = y
         db_item.last_modified = timestamp
 
         db.commit()

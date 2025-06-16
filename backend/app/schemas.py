@@ -19,6 +19,7 @@ class Cell(BaseModel):
 class GardenItemBase(BaseModel):
     id: str
     palette_item_id: str
+    icon: str
     display_name: str | None = None
     position: Vec2
     location: str
@@ -51,6 +52,7 @@ class GardenItemHistory(BaseModel):
     id: str
     garden_item_id: str
     palette_item_id: str
+    icon: str
     display_name: str | None = None
     position: Vec2
     location: str
@@ -81,6 +83,7 @@ class GardenItemRead(BaseModel):
     id: str
     position: Vec2
     palette_item_id: str
+    icon: str
     display_name: str | None = None
     location: str
     width: float
@@ -117,6 +120,7 @@ class GardenItemUpdate(BaseModel):
     id: str
     palette_item_id: str
     display_name: str | None = None
+    icon: str | None = None
     position: Vec2 | None = None
     location: str
     width: float | None = None

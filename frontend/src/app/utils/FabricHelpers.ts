@@ -3,7 +3,7 @@ import { GardenItem, PaletteItem } from '../types';
 import { log } from './utils';
 
 export function isGardenItem(el: GardenItem | PaletteItem): el is GardenItem {
-  return 'x' in el && 'y' in el;
+  return 'position' in el;
 }
 
 export async function createFabricItem(

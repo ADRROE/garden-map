@@ -20,11 +20,13 @@ export async function createItemAPI(newItem: GardenItem) {
         ...newItem,
         coverage: newItem.coverage ? serializeCells(newItem.coverage) : null
     }, { deep: true })
-    await fetch(API_BASE_ITEMS, {
+    const res = await fetch(API_BASE_ITEMS, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newItemForBackend),
     });
+    const createdItem = await res.json();
+    return camelcaseKeys(createdItem, { deep: true });
 }
 
 export async function updateItemAPI(id: string, updates: Partial<GardenItem>, operation: 'create' | 'modify') {
