@@ -43,7 +43,7 @@ const PropMenu: React.FC<PropMenuProps> = ({ data, onUpdate, onClose, fieldConfi
   const handleSave = () => {
     onUpdate({
       id: data.id,
-      ...(formData as ItemFormData | (ZoneFormData & { id: string })),
+      ...(formData as ItemFormData | ZoneFormData),
     });
     onClose();
   };

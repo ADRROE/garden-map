@@ -49,7 +49,7 @@ export async function deleteItemAPI(id: string) {
 function deserializeCell(cell: any): Cell {
     return {
         ...cell,
-        paletteId: cell.palette_item_id,
+        paletteItemId: cell.palette_item_id,
     };
 }
 

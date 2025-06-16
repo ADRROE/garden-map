@@ -97,7 +97,7 @@ def delete_item(db: Session, id: str):
 def get_zones(db: Session):
     return db.query(models.GardenZone).all()
 
-def create_zone_with_cells(db: Session, zone: schemas.GardenZone):
+def create_zone_with_cells(db: Session, zone: schemas.GardenZoneCreate):
     # Convert Pydantic cells to SQLAlchemy models
     db_cells = [
         models.Cell(

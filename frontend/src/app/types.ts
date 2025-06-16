@@ -48,7 +48,7 @@ export interface GardenItem extends BaseItem {
   dtWatered?: number;
   qWatered?: number;
   tAmended?: Date;
-  qAmended?: string;
+  qAmended?: number;
 }
 
 export interface InteractiveImage extends FabricImage {
@@ -73,7 +73,7 @@ export interface GardenZone {
   dtWatered?: number;
   qWatered?: number;
   tAmended?: Date;
-  qAmended?: string;
+  qAmended?: number;
 }
 
 export interface InteractiveZone extends GardenZone {
@@ -87,7 +87,7 @@ export type Cell = {
   col: number;
   row: number;
   color?: string;
-  paletteId?: string;
+  paletteItemId?: string;
   zoneId?: string;
 };
 

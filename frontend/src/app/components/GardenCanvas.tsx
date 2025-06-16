@@ -155,7 +155,7 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
           col: col,
           row: row,
           color: cell.color ?? "",
-          paletteId: selectedPaletteItem!.id
+          paletteItemId: selectedPaletteItem!.id
         };
         log('8 - 🧠 Adding fullCell to color buffer:', fullCell);
         colorBuffer.addCell(fullCell);
@@ -202,7 +202,7 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
           col: col,
           row: row,
           color: cell.color ?? "",
-          paletteId: selectedPaletteItem!.id
+          paletteItemId: selectedPaletteItem!.id
         };
         log('8 - 🧠 Adding fullCell to color buffer:', fullCell);
         colorBuffer.addCell(fullCell);
@@ -389,10 +389,11 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
       {isConfirming &&
         <UpdateModal
           onEditConfirm={(operation) => {
-            useSelectionStore.getState().clear()
             if(lastPropMenuRef.current && lastPropMenuRef.current?.interface === 'GardenItem')
-               confirmUpdate(lastPropMenuRef.current.id, lastPropMenuRef.current, operation)
+{               confirmUpdate(lastPropMenuRef.current.id, lastPropMenuRef.current, operation)
+                useSelectionStore.getState().clear()}
           }
+          
           }
           onEditAbort={() => {
             useSelectionStore.getState().clear();

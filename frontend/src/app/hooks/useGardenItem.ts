@@ -69,6 +69,7 @@ export function useGardenItem() {
   };
 
   const confirmUpdate = async(id: string, updates: Partial<GardenItem>, operation: 'create' | 'modify') => {
+    console.log("id: ", id, "updates: ", updates, "operation: ", operation)
     try {
       await updateItemAPI(id, updates, operation);
       const fetched = await fetchItems();

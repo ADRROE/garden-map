@@ -16,7 +16,7 @@ export function useSideBarActions() {
             case 'vegetation':
                 initPlacement(item);
                 break
-            case 'zone':
+            case 'soil':
                 setDrawing(item.color)
         }
     }

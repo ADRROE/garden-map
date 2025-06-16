@@ -39,7 +39,7 @@ class GardenItemBase(BaseModel):
     dt_watered: int | None = None
     q_watered: float | None = None
     t_amended: datetime | None = None
-    q_amended: datetime | None = None
+    q_amended: float | None = None
     
     class Config:
         from_attributes = True
@@ -72,7 +72,7 @@ class GardenItemHistory(BaseModel):
     dt_watered: int | None = None
     q_watered: float | None = None
     t_amended: datetime | None = None
-    q_amended: datetime | None = None
+    q_amended: float | None = None
     last_modified: datetime
 
     class Config:
@@ -102,10 +102,10 @@ class GardenItemRead(BaseModel):
     dt_watered: int | None = None
     q_watered: float | None = None
     t_amended: datetime | None = None
-    q_amended: datetime | None = None
+    q_amended: float | None = None
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class GardenItemCreate(GardenItemBase):
@@ -136,7 +136,7 @@ class GardenItemUpdate(BaseModel):
     dt_watered: int | None = None
     q_watered: float | None = None
     t_amended: datetime | None = None
-    q_amended: datetime | None = None
+    q_amended: float | None = None
     price: float | None = None
     operation: Literal["create", "modify"] | None = None
 
@@ -163,7 +163,7 @@ class GardenZoneBase(BaseModel):
     dt_watered: int | None = None
     q_watered: float | None = None
     t_amended: datetime | None = None
-    q_amended: datetime | None = None
+    q_amended: float | None = None
 
     class Config:
         from_attributes = True
@@ -186,7 +186,7 @@ class GardenZoneHistory(BaseModel):
     dt_watered: int | None = None
     q_watered: float | None = None
     t_amended: datetime | None = None
-    q_amended: datetime | None = None
+    q_amended: float | None = None
     last_modified: datetime
 
     class Config:
@@ -209,7 +209,7 @@ class GardenZoneUpdate(BaseModel):
     dt_watered: int | None = None
     q_watered: float | None = None
     t_amended: datetime | None = None
-    q_amended: datetime | None = None
+    q_amended: float | None = None
     operation: Literal["create", "modify"] | None = None
 
     class Config:
@@ -221,7 +221,27 @@ class GardenZoneUpdateWrapper(BaseModel):
     operation: Literal["create", "modify"]
 
 class GardenZoneCreate(GardenZoneBase):
-    pass
+    id: str | None = None
+    display_name: str
+    color: str | None = None
+    cells: List[Cell]
+    coverage: List[Cell] | None = None
+    border_path: List[Tuple[int, int]] | None = None
+    ph: float | None = None
+    temp: float | None = None
+    moisture: float | None = None
+    sunshine: float | None = None
+    compaction: float | None = None
+    soil_mix: str | None = None
+    t_watered: datetime | None = None
+    dt_watered: int | None = None
+    q_watered: float | None = None
+    t_amended: datetime | None = None
+    q_amended: float | None = None
+
+    class Config:
+        from_attributes = True
+        populate_by_name = True
     
 class GardenZone(GardenZoneBase):
     pass
