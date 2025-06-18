@@ -7,7 +7,7 @@ import {
   GardenZone,
   HistoryState,
   Cell,
-  InteractiveZone,
+  GardenEntity,
 } from '@/types';
 import {
   updateItemAPI,
@@ -20,7 +20,6 @@ import { log, error } from '@/utils/utils';
 interface GardenDataState {
   items: GardenItem[];
   zones: GardenZone[];
-  interactiveZones: InteractiveZone[];
   cells: Record<string, Cell>;
 }
 
@@ -28,6 +27,7 @@ type GardenActions = {
   undo: () => void;
   redo: () => void;
   dispatch: (action: GardenDataAction) => void;
+  getAll: () => GardenEntity[];
   createItem: (item: GardenItem) => void;
   deleteItem: (id: string) => Promise<void>;
   updateItem: (id: string, updates: Partial<GardenItem>, record: 'create' | 'modify') => Promise<void>;
@@ -39,21 +39,20 @@ type GardenStore = HistoryState<GardenDataState> & GardenActions;
 const initialPresent: GardenDataState = {
   items: [],
   zones: [],
-  interactiveZones: [],
   cells: {},
 };
 
 export type GardenDataAction =
-    | { type: 'CREATE_ITEM'; item: GardenItem }
-    | { type: 'UPDATE_ITEM'; id: string; updates: Partial<GardenItem>; record: 'create' | 'modify' }
-    | { type: 'DELETE_ITEM'; id: string }
-    | { type: 'SET_ITEMS'; items: GardenItem[] }
-    | { type: 'UPDATE_ZONE'; id: string;  updates: Partial<GardenZone>; record: 'create' | 'modify'}
-    | { type: 'SET_ZONES'; zones: GardenZone[] }
-    | { type: 'SET_COLORED_CELLS'; cells: Record<string, Cell> }
-    | { type: 'TOGGLE_MAP_LOCK' }
-    | { type: 'UNDO' }
-    | { type: 'REDO' }
+  | { type: 'CREATE_ITEM'; item: GardenItem }
+  | { type: 'UPDATE_ITEM'; id: string; updates: Partial<GardenItem>; record: 'create' | 'modify' }
+  | { type: 'DELETE_ITEM'; id: string }
+  | { type: 'SET_ITEMS'; items: GardenItem[] }
+  | { type: 'UPDATE_ZONE'; id: string; updates: Partial<GardenZone>; record: 'create' | 'modify' }
+  | { type: 'SET_ZONES'; zones: GardenZone[] }
+  | { type: 'SET_COLORED_CELLS'; cells: Record<string, Cell> }
+  | { type: 'TOGGLE_MAP_LOCK' }
+  | { type: 'UNDO' }
+  | { type: 'REDO' }
 
 const undoableActions = new Set<GardenDataAction['type']>([
   'CREATE_ITEM',
@@ -112,6 +111,13 @@ export const useGardenStore = create<GardenStore>()(
       });
     },
 
+    getAll: () => {
+      const { items, zones } = get().present;
+      const itemEntities: GardenEntity[] = items.map(i => ({ ...i, interface: 'GardenItem' }));
+      const zoneEntities: GardenEntity[] = zones.map(z => ({ ...z, interface: 'GardenZone' }));
+      return [...itemEntities, ...zoneEntities];
+    },
+
     createItem: (item) => {
       get().dispatch({ type: 'CREATE_ITEM', item });
     },
@@ -136,7 +142,7 @@ export const useGardenStore = create<GardenStore>()(
     },
 
     updateZone: async (id: string, updates: Partial<GardenZone>, record: 'create' | 'modify') => {
-            if (!updates.id) throw new Error("ID is required but was undefined.");
+      if (!updates.id) throw new Error("ID is required but was undefined.");
 
       get().dispatch({ type: 'UPDATE_ZONE', id, updates, record });
       try {
@@ -148,9 +154,9 @@ export const useGardenStore = create<GardenStore>()(
         error('Failed to update zone:', err);
       }
     },
-  }),     {
-      name: 'GardenStore', 
-    })
+  }), {
+    name: 'GardenStore',
+  })
 );
 
 function baseReducer(state: GardenDataState, action: GardenDataAction): GardenDataState {
@@ -188,14 +194,16 @@ function baseReducer(state: GardenDataState, action: GardenDataAction): GardenDa
 
     case 'SET_ITEMS':
       return { ...state, items: action.items };
-    
-    case "SET_COLORED_CELLS":
-        log("16 - Reducer received coloredCells:", action.cells);
 
-      return { ...state, cells: {
+    case "SET_COLORED_CELLS":
+      log("16 - Reducer received coloredCells:", action.cells);
+
+      return {
+        ...state, cells: {
           ...state.cells,
           ...action.cells,
-        }};
+        }
+      };
 
     default:
       return state;

@@ -32,8 +32,8 @@ export function useGardenItem() {
     if (!selectedPaletteItem || !currentPendingPosition) return;
 
     const { x, y } = currentPendingPosition;
-    const width = selectedPaletteItem.width ?? 40;
-    const height = selectedPaletteItem.height ?? 40;
+    const width = selectedPaletteItem.defaultWidth ?? 40;
+    const height = selectedPaletteItem.defaultHeight ?? 40;
     const centeredX = x - width / 2;
     const centeredY = y - height / 2;
     const computedPosition = [Math.floor(centeredX / 20) + 1, Math.floor(centeredY / 20) + 1];
@@ -77,7 +77,7 @@ export function useGardenItem() {
     } catch (e) {
       error(e);
     }
-
+    clear();
   }
 
 

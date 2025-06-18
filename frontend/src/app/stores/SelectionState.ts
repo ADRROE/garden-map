@@ -1,4 +1,4 @@
-import type { GardenItem, InteractiveZone, PaletteItem, Vec2 } from '../types';
+import type { GardenEntity, PaletteItem, Vec2 } from '../types';
 
 export type SelectionState =
   | { kind: null }
@@ -7,6 +7,6 @@ export type SelectionState =
       menuItem: PaletteItem;
       pendingPosition?: Vec2;
     }
-  | { kind: 'editing'; obj: InteractiveZone | GardenItem }
+  | { kind: 'editing'; obj: GardenEntity }
   | { kind: 'confirming' }
   | { kind: 'drawing'; color: string };

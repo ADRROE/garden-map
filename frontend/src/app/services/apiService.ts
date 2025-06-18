@@ -10,27 +10,26 @@ const API_BASE_ZONES = process.env.NEXT_PUBLIC_API_URL + "/api/zones/";
 
 export async function fetchItems(): Promise<GardenItem[]> {
     const res = await fetch(API_BASE_ITEMS);
-    const responseData = camelcaseKeys(await res.json(), { deep: true });
-    console.log("responseData: ", responseData)
-    return responseData;
+    const payload = camelcaseKeys(await res.json(), { deep: true });
+    return payload;
 }
 
 export async function createItemAPI(newItem: GardenItem) {
-    const newItemForBackend = snakecaseKeys({
+    const payload = snakecaseKeys({
         ...newItem,
         coverage: newItem.coverage ? serializeCells(newItem.coverage) : null
     }, { deep: true })
     const res = await fetch(API_BASE_ITEMS, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newItemForBackend),
+        body: JSON.stringify(payload),
     });
     const createdItem = await res.json();
     return camelcaseKeys(createdItem, { deep: true });
 }
 
 export async function updateItemAPI(id: string, updates: Partial<GardenItem>, operation: 'create' | 'modify') {
-    const updatesForBackend = snakecaseKeys({
+    const payload = snakecaseKeys({
         ...updates,
         coverage: updates.coverage ? serializeCells(updates.coverage) : null
     }, { deep: true })
@@ -38,7 +37,7 @@ export async function updateItemAPI(id: string, updates: Partial<GardenItem>, op
     await fetch(`${API_BASE_ITEMS}${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({updates: updatesForBackend, operation})
+        body: JSON.stringify({ updates: payload, operation })
     });
 }
 
@@ -54,7 +53,7 @@ function deserializeCell(cell: any): Cell {
 }
 
 function serializeCells(cells: Cell[]): string[] {
-  return cells.map(cell => `${toColumnLetter(cell.col)}${cell.row}`);
+    return cells.map(cell => `${toColumnLetter(cell.col)}${cell.row}`);
 }
 
 export async function fetchZones(): Promise<GardenZone[]> {
@@ -70,23 +69,26 @@ export async function fetchZones(): Promise<GardenZone[]> {
 }
 
 export async function createZoneAPI(cells: Cell[], display_name: string) {
-  const payload = snakecaseKeys({ cells, display_name }, { deep: true });
+    const payload = snakecaseKeys({ cells, display_name }, { deep: true });
 
-  await fetch(`${API_BASE_ZONES}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
+    await fetch(`${API_BASE_ZONES}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+    });
 }
 
 export async function updateZoneAPI(id: string, updates: Partial<GardenZone>, operation: 'create' | 'modify') {
-  const payload = snakecaseKeys({ updates, operation }, { deep: true });
+    const payload = snakecaseKeys({
+        ...updates,
+        coverage: updates.coverage ? updates.coverage : null
+    }, { deep: true });
 
-  await fetch(`${API_BASE_ZONES}${id}`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
+    await fetch(`${API_BASE_ZONES}${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ updates: payload, operation }),
+    });
 }
 
 export async function deleteZoneAPI(id: string) {

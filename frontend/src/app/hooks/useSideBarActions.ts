@@ -3,7 +3,7 @@ import { useSelectionStore } from "@/stores/useSelectionStore";
 import { log } from "@/utils/utils";
 
 export function useSideBarActions() {
-    const { setSelectedItemId, setDrawing } = useSelectionStore()
+    const { setSelectedPaletteItemId: setSelectedItemId, setDrawing } = useSelectionStore()
 
     const initPlacement = (item: PaletteItem) => {
         useSelectionStore.getState().setPlacing(item);

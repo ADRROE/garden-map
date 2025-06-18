@@ -50,7 +50,7 @@ def update_zone(
     payload: schemas.GardenZoneUpdateWrapper,
     db: Session = Depends(get_db)
 ):
-    updated_zone = crud.update_zone(db, id, payload.updatedZone, payload.operation)
+    updated_zone = crud.update_zone(db, id, payload.updates, payload.operation)
     if not updated_zone:
         raise HTTPException(status_code=404, detail="Zone not found")
     return updated_zone

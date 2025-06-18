@@ -5,7 +5,7 @@ import React, {
 import CanvasGrid, { CanvasGridHandle } from './CanvasGrid';
 import NameModal from './NameModal';
 import { useGardenStore } from '../stores/useGardenStore';
-import { CanvasLayer, Cell, GardenItem, InteractiveZone, Vec2 } from '../types';
+import { CanvasLayer, Cell, GardenEntity, Vec2 } from '../types';
 import { useCanvasInteraction } from '../hooks/useCanvasInteraction';
 import PropMenu from './PropMenu';
 import { useSelectionStore } from '../stores/useSelectionStore';
@@ -13,7 +13,7 @@ import { useGardenItem } from '../hooks/useGardenItem';
 import { fetchItems, fetchZones } from '../services/apiService';
 import { useUIStore } from '../stores/useUIStore';
 import { useColorBuffer } from '@/hooks/useColorBuffer';
-import { useGardenZone } from '@/hooks/useCells';
+import { useGardenZone } from '@/hooks/useGardenZone';
 import { log, warn, error } from "@/utils/utils";
 import { useViewportStore } from '@/stores/useViewportStore';
 import UpdateModal from './UpdateModal';
@@ -100,13 +100,13 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
   const gdispatch = useGardenStore((s) => s.dispatch);
 
   const [naming, setNaming] = useState(false);
-  const [propMenu, setPropMenu] = useState<GardenItem | InteractiveZone | null>(null);
+  const [propMenu, setPropMenu] = useState<GardenEntity | null>(null);
   const [floatingLabel, setFloatingLabel] = useState<string | null>(null);
   const [floatingLabelPosition, setFloatingLabelPosition] = useState<{ x: number; y: number } | null>(null);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
   const imageCacheRef = useRef<Map<string, HTMLImageElement>>(new Map());
-  const lastPropMenuRef = useRef<GardenItem | InteractiveZone | null>(null);
+  const lastPropMenuRef = useRef<GardenEntity | null>(null);
 
   const matrix = useViewportStore((s) => s.matrix);
 
@@ -123,8 +123,8 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
     }
   });
 
-  const { initPlacement, confirmPlacement, confirmUpdate } = useGardenItem();
-  const { confirmPlacement: confirmZoneCreation } = useGardenZone();
+  const { initPlacement, confirmPlacement: confirmItemPlacement, confirmUpdate: confirmItemUpdate } = useGardenItem();
+  const { confirmPlacement: confirmZonePlacement, confirmUpdate: confirmZoneUpdate } = useGardenZone();
   const { onCanvasHover } = useCanvasInteraction({
     onHoverChange: (el) => {
       if (el && el.category === 'vegetation') {
@@ -300,14 +300,14 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
   useEffect(() => {
     const preloadImages = async () => {
       const uniqueIcons = [...new Set(menuItems.map(el => el.icon))];
-        Promise.all(
-          uniqueIcons.map(src => new Promise<void>((resolve) => {
-            const img = new Image();
-            img.src = src;
-            img.onload = () => resolve();
-            imageCacheRef.current.set(src, img);
-          }))
-        )
+      Promise.all(
+        uniqueIcons.map(src => new Promise<void>((resolve) => {
+          const img = new Image();
+          img.src = src;
+          img.onload = () => resolve();
+          imageCacheRef.current.set(src, img);
+        }))
+      )
     };
 
     if (items.length > 0) {
@@ -349,13 +349,13 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
           onPlacement={async (name) => {
             if (isPlacing) {
               log("10 - isPlacing, now calling await confirmPlacement(name) with name: ", name)
-              await confirmPlacement(name);
+              await confirmItemPlacement(name);
             }
             if (isDrawing) {
               const cells = colorBuffer.getCells()
               log("17 - isDrawing, colorBuffer.getCells() yields: ", cells)
               log("18 - Calling 'await confirmZoneCreation(cells, name)' with arguments: ", cells, name)
-              await confirmZoneCreation(cells, name);
+              await confirmZonePlacement(cells, name);
             }
             setNaming(false);
           }}
@@ -373,9 +373,9 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
             onUpdate={(updatedData) => {
               log("🔧 PropMenu updated item:", updatedData);
               setPropMenu((prev) => {
-                const next =
+                const next: GardenEntity | null =
                   prev && prev.id === selectedObj?.id
-                    ? { ...prev, ...updatedData }
+                    ? { ...prev, ...updatedData, interface: selectedObj.interface } as GardenEntity
                     : prev;
                 lastPropMenuRef.current = next;
                 return next;
@@ -389,11 +389,16 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
       {isConfirming &&
         <UpdateModal
           onEditConfirm={(operation) => {
-            if(lastPropMenuRef.current && lastPropMenuRef.current?.interface === 'GardenItem')
-{               confirmUpdate(lastPropMenuRef.current.id, lastPropMenuRef.current, operation)
-                useSelectionStore.getState().clear()}
+            console.log("lastPropMenuRef.current: ", lastPropMenuRef.current)
+            if (lastPropMenuRef.current && lastPropMenuRef.current?.interface === 'GardenItem') {
+              confirmItemUpdate(lastPropMenuRef.current.id, lastPropMenuRef.current, operation)
+            };
+            if (lastPropMenuRef.current && lastPropMenuRef.current?.interface === 'GardenZone'){
+              confirmZoneUpdate(lastPropMenuRef.current.id, lastPropMenuRef.current, operation)
+            };
+            useSelectionStore.getState().clear()
           }
-          
+
           }
           onEditAbort={() => {
             useSelectionStore.getState().clear();

@@ -6,7 +6,7 @@ import { FieldConfigItem } from "@/lib/fieldConfig";
 import { ZoneFormData } from "@/lib/zoneSchema";
 
 interface PropMenuProps {
-  data: (Partial<ItemFormData> | Partial<ZoneFormData>) & { id: string; name?: string };
+  data: (Partial<ItemFormData> | Partial<ZoneFormData>) & { id: string; name?: string; };
   onUpdate: (updated: ItemFormData | ZoneFormData & { id: string }) => void;
   onClose: () => void;
   fieldConfig: readonly FieldConfigItem[];

@@ -1,14 +1,14 @@
-import { createZoneAPI, fetchZones } from "@/services/apiService";
+import { createZoneAPI, fetchZones, updateZoneAPI } from "@/services/apiService";
 import { useGardenStore } from "@/stores/useGardenStore";
 import { useSelectionStore } from "@/stores/useSelectionStore";
-import { Cell } from "@/types";
+import { Cell, GardenZone } from "@/types";
 import { log, error } from "@/utils/utils";
 
 export function useGardenZone() {
     const { dispatch } = useGardenStore()
     const { clear } = useSelectionStore()
 
-    const confirmPlacement = async (cells: Record<string, Cell>,name: string) => {
+    const confirmPlacement = async (cells: Record<string, Cell>, name: string) => {
         log("19 - confirmPlacement call detected from inside useGardenZone with: ", cells, name);
         const coloredCellsArray: Cell[] = Object.values(cells); // ✅ Convert to array
         log("20 - Dispatching colored cells after conversion to array:", coloredCellsArray);
@@ -28,5 +28,17 @@ export function useGardenZone() {
         }
     }
 
-    return { confirmPlacement }
+    const confirmUpdate = async (id: string, updates: Partial<GardenZone>, operation: 'create' | 'modify') => {
+        console.log("id: ", id, "updates: ", updates, "operation: ", operation)
+        try {
+            await updateZoneAPI(id, updates, operation);
+            const fetched = await fetchZones();
+            dispatch({ type: 'SET_ZONES', zones: fetched });
+        } catch (e) {
+            error(e);
+        }
+
+    }
+
+    return { confirmUpdate, confirmPlacement }
 }
