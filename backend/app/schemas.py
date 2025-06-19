@@ -171,7 +171,7 @@ class GardenZoneBase(BaseModel):
 
 class GardenZoneHistory(BaseModel):
     id: str
-    zone_id: str
+    garden_zone_id: str
     display_name: str | None = None
     color: str
     coverage: List[Cell]

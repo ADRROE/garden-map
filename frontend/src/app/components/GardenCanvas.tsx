@@ -5,7 +5,7 @@ import React, {
 import CanvasGrid, { CanvasGridHandle } from './CanvasGrid';
 import NameModal from './NameModal';
 import { useGardenStore } from '../stores/useGardenStore';
-import { CanvasLayer, Cell, GardenEntity, Vec2 } from '../types';
+import { CanvasLayer, Cell, GardenItem, InteractiveZone, Vec2 } from '../types';
 import { useCanvasInteraction } from '../hooks/useCanvasInteraction';
 import PropMenu from './PropMenu';
 import { useSelectionStore } from '../stores/useSelectionStore';
@@ -100,13 +100,13 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
   const gdispatch = useGardenStore((s) => s.dispatch);
 
   const [naming, setNaming] = useState(false);
-  const [propMenu, setPropMenu] = useState<GardenEntity | null>(null);
+  const [propMenu, setPropMenu] = useState<GardenItem | InteractiveZone | null>(null);
   const [floatingLabel, setFloatingLabel] = useState<string | null>(null);
   const [floatingLabelPosition, setFloatingLabelPosition] = useState<{ x: number; y: number } | null>(null);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
   const imageCacheRef = useRef<Map<string, HTMLImageElement>>(new Map());
-  const lastPropMenuRef = useRef<GardenEntity | null>(null);
+  const lastPropMenuRef = useRef<GardenItem | InteractiveZone | null>(null);
 
   const matrix = useViewportStore((s) => s.matrix);
 
@@ -123,8 +123,8 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
     }
   });
 
-  const { initPlacement, confirmPlacement: confirmItemPlacement, confirmUpdate: confirmItemUpdate } = useGardenItem();
-  const { confirmPlacement: confirmZonePlacement, confirmUpdate: confirmZoneUpdate } = useGardenZone();
+  const { initPlacement, confirmPlacement, confirmUpdate: confirmItemUpdate } = useGardenItem();
+  const { confirmPlacement: confirmZoneCreation, confirmUpdate: confirmZoneUpdate } = useGardenZone();
   const { onCanvasHover } = useCanvasInteraction({
     onHoverChange: (el) => {
       if (el && el.category === 'vegetation') {
@@ -349,13 +349,13 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
           onPlacement={async (name) => {
             if (isPlacing) {
               log("10 - isPlacing, now calling await confirmPlacement(name) with name: ", name)
-              await confirmItemPlacement(name);
+              await confirmPlacement(name);
             }
             if (isDrawing) {
               const cells = colorBuffer.getCells()
               log("17 - isDrawing, colorBuffer.getCells() yields: ", cells)
               log("18 - Calling 'await confirmZoneCreation(cells, name)' with arguments: ", cells, name)
-              await confirmZonePlacement(cells, name);
+              await confirmZoneCreation(cells, name);
             }
             setNaming(false);
           }}
@@ -373,9 +373,9 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
             onUpdate={(updatedData) => {
               log("🔧 PropMenu updated item:", updatedData);
               setPropMenu((prev) => {
-                const next: GardenEntity | null =
+                const next =
                   prev && prev.id === selectedObj?.id
-                    ? { ...prev, ...updatedData, interface: selectedObj.interface } as GardenEntity
+                    ? { ...prev, ...updatedData }
                     : prev;
                 lastPropMenuRef.current = next;
                 return next;
@@ -389,16 +389,13 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
       {isConfirming &&
         <UpdateModal
           onEditConfirm={(operation) => {
-            console.log("lastPropMenuRef.current: ", lastPropMenuRef.current)
-            if (lastPropMenuRef.current && lastPropMenuRef.current?.interface === 'GardenItem') {
+            // useSelectionStore.getState().clear()
+            if (lastPropMenuRef.current && lastPropMenuRef.current?.interface === 'GardenItem')
               confirmItemUpdate(lastPropMenuRef.current.id, lastPropMenuRef.current, operation)
-            };
-            if (lastPropMenuRef.current && lastPropMenuRef.current?.interface === 'GardenZone'){
+            if (lastPropMenuRef.current && lastPropMenuRef.current?.interface === 'GardenZone') {
               confirmZoneUpdate(lastPropMenuRef.current.id, lastPropMenuRef.current, operation)
-            };
-            useSelectionStore.getState().clear()
+            }
           }
-
           }
           onEditAbort={() => {
             useSelectionStore.getState().clear();

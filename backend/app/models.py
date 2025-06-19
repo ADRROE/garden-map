@@ -95,7 +95,7 @@ class GardenZoneHistory(Base):
     __tablename__ = "T_garden_zones_history"
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid4()))
-    zone_id: Mapped[str] = mapped_column(String(36), index=True)
+    garden_zone_id: Mapped[str] = mapped_column(String(36), index=True)
     display_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
     color: Mapped[str] = mapped_column(String(255), nullable=False)
     coverage: Mapped[dict | None] = mapped_column(JSON, nullable=True)
@@ -122,5 +122,5 @@ class Cell(Base):
     color: Mapped[str] = mapped_column(String(20), nullable=True)
     palette_item_id: Mapped[str] = mapped_column(String(50), nullable=True)
 
-    zone_id: Mapped[str] = mapped_column(ForeignKey("T_garden_zones.id"))
+    garden_zone_id: Mapped[str] = mapped_column(ForeignKey("T_garden_zones.id"))
     zone: Mapped["GardenZone"] = relationship(back_populates="coverage")

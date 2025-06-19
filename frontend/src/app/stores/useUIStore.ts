@@ -18,7 +18,7 @@ type UIState = {
 export const useUIStore = create<UIState>()(
   devtools(
     (set, get) => ({
-      isMapLocked: true,
+      isMapLocked: false,
       isLoading: true,
       activeLayers: ["background", "zones", "items"],
       cursor: "default",

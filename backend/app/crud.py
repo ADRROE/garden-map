@@ -157,7 +157,7 @@ def update_zone(
 
         # Handle coverage update (Cells)
         if "coverage" in updates_data:
-            db.query(models.Cell).filter(models.Cell.zone_id == db_zone.id).delete()
+            db.query(models.Cell).filter(models.Cell.garden_zone_id == db_zone.id).delete()
             new_cells = [
                 models.Cell(
                     id=str(uuid.uuid4()),
@@ -165,7 +165,7 @@ def update_zone(
                     row=cell["row"],
                     color=cell["color"],
                     palette_item_id=cell["palette_item_id"],
-                    zone_id=db_zone.id
+                    garden_zone_id=db_zone.id
                 )
                 for cell in updates_data["coverage"]
             ]
@@ -208,7 +208,7 @@ def deduplicate_cells(cells: list[schemas.Cell]) -> list[schemas.Cell]:
 
 def merge_cells_into_existing_zone(db: Session, existing_zone: models.GardenZone, new_zone: schemas.GardenZone):
     # 1. Delete existing colored cells
-    db.query(models.Cell).filter(models.Cell.zone_id == existing_zone.id).delete()
+    db.query(models.Cell).filter(models.Cell.garden_zone_id == existing_zone.id).delete()
 
     # 2. Merge and deduplicate cells
     all_cells = [
@@ -239,7 +239,7 @@ def merge_cells_into_existing_zone(db: Session, existing_zone: models.GardenZone
             row=cell.row,
             color=cell.color,
             palette_item_id=cell.palette_item_id,
-            zone_id=existing_zone.id
+            garden_zone_id=existing_zone.id
         )
         for cell in all_cells
     ]
