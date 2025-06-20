@@ -7,7 +7,6 @@ import {
   GardenZone,
   HistoryState,
   Cell,
-  GardenEntity,
 } from '@/types';
 import {
   updateItemAPI,
@@ -27,7 +26,6 @@ type GardenActions = {
   undo: () => void;
   redo: () => void;
   dispatch: (action: GardenDataAction) => void;
-  getAll: () => GardenEntity[];
   createItem: (item: GardenItem) => void;
   deleteItem: (id: string) => Promise<void>;
   updateItem: (id: string, updates: Partial<GardenItem>, record: 'create' | 'modify') => Promise<void>;
@@ -109,13 +107,6 @@ export const useGardenStore = create<GardenStore>()(
         present: next,
         future: [],
       });
-    },
-
-    getAll: () => {
-      const { items, zones } = get().present;
-      const itemEntities: GardenEntity[] = items.map(i => ({ ...i, interface: 'GardenItem' }));
-      const zoneEntities: GardenEntity[] = zones.map(z => ({ ...z, interface: 'GardenZone' }));
-      return [...itemEntities, ...zoneEntities];
     },
 
     createItem: (item) => {

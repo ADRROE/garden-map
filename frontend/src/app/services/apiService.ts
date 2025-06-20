@@ -45,25 +45,13 @@ export async function deleteItemAPI(id: string) {
     await fetch(`${API_BASE_ITEMS}${id}`, { method: "DELETE" });
 }
 
-function deserializeCell(cell: any): Cell {
-    return {
-        ...cell,
-        paletteItemId: cell.palette_item_id,
-    };
-}
-
 function serializeCells(cells: Cell[]): string[] {
     return cells.map(cell => `${toColumnLetter(cell.col)}${cell.row}`);
 }
 
 export async function fetchZones(): Promise<GardenZone[]> {
     const res = await fetch(API_BASE_ZONES);
-    const zonesFromBackend = camelcaseKeys(await res.json(), { deep: true });
-
-    const zones: GardenZone[] = zonesFromBackend.map((zone: GardenZone) => ({
-        ...zone,
-        coverage: zone.coverage.map(deserializeCell),
-    }));
+    const zones = camelcaseKeys(await res.json(), { deep: true });
 
     return zones;
 }
@@ -79,10 +67,10 @@ export async function createZoneAPI(cells: Cell[], display_name: string) {
 }
 
 export async function updateZoneAPI(id: string, updates: Partial<GardenZone>, operation: 'create' | 'modify') {
-    const payload = snakecaseKeys({
-        ...updates,
-        coverage: updates.coverage ? updates.coverage : null
-    }, { deep: true });
+    const {coverage, ...rest} = updates
+    const payload = snakecaseKeys(
+        rest
+    , { deep: true });
 
     await fetch(`${API_BASE_ZONES}${id}`, {
         method: "PUT",

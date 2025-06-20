@@ -22,6 +22,8 @@ import { useMenuStore } from '@/stores/useMenuStore';
 import { useInteractiveZones } from '@/hooks/useInteractiveZones';
 import { useMenuItem } from '@/hooks/usePaletteItem';
 import { useCursorSync } from '@/hooks/useCursorSync';
+import { ZoneFormData } from '@/lib/zoneSchema';
+import { ItemFormData } from '@/lib/itemSchema';
 
 const CELL_SIZE = 20;
 
@@ -106,7 +108,7 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
   const imageCacheRef = useRef<Map<string, HTMLImageElement>>(new Map());
-  const lastPropMenuRef = useRef<GardenItem | InteractiveZone | null>(null);
+  const lastPropMenuRef = useRef<Partial<ItemFormData> | Partial<ZoneFormData> | null>(null);
 
   const matrix = useViewportStore((s) => s.matrix);
 
@@ -389,10 +391,16 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
       {isConfirming &&
         <UpdateModal
           onEditConfirm={(operation) => {
+            console.log("lastPropMenuRef.current: ", lastPropMenuRef.current);
+            console.log("selectedObj: ", selectedObj)
             // useSelectionStore.getState().clear()
-            if (lastPropMenuRef.current && lastPropMenuRef.current?.interface === 'GardenItem')
+            if (lastPropMenuRef.current && selectedObj?.kind === 'GardenItem')
+              console.log("lastPropMenuRef.current: ", lastPropMenuRef.current);
+            console.log("selectedObj: ", selectedObj)
               confirmItemUpdate(lastPropMenuRef.current.id, lastPropMenuRef.current, operation)
-            if (lastPropMenuRef.current && lastPropMenuRef.current?.interface === 'GardenZone') {
+            if (lastPropMenuRef.current && selectedObj?.kind === 'GardenZone') {
+              console.log("lastPropMenuRef.current: ", lastPropMenuRef.current);
+              console.log("selectedObj: ", selectedObj)
               confirmZoneUpdate(lastPropMenuRef.current.id, lastPropMenuRef.current, operation)
             }
           }

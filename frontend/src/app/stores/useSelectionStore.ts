@@ -2,9 +2,9 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import { SelectionState } from './SelectionState';
-import { PaletteItem, Vec2, GardenEntity } from '../types';
-import { useGardenStore } from './useGardenStore';
+import { GardenEntity, PaletteItem, Vec2 } from '../types';
 import { useUIStore } from './useUIStore';
+
 
 type SelectionStore = {
   selection: SelectionState;
@@ -37,9 +37,7 @@ export const useSelectionStore = create<SelectionStore>()(
       }),
 
     setSelectedObjId: (id: string | null) => {
-      const allObj = useGardenStore.getState().getAll();
-      const selectedObj = allObj.find(o => o.id === id);
-      set({ selectedObjId: id, selectedObj: selectedObj });     
+      set({ selectedObjId: id });     
     },
 
     setSelectedPaletteItemId: (id: string | null) => {

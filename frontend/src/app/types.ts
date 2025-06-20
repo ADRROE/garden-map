@@ -1,7 +1,6 @@
 import { FabricImage } from "fabric";
 
-export type Item = PaletteItem | GardenItem;
-export type GardenEntity = (GardenItem | GardenZone) & { interface: 'GardenItem' | 'GardenZone' };
+export type GardenEntity = GardenItem | InteractiveZone
 
 export type GardenAction =
   | { type: 'plant', subject: GardenItem, form: 'root' | 'seed' | 'seedling' | 'sapling' }
@@ -18,11 +17,10 @@ interface BaseItem {
   cursor?: string;
   category: string;
   subCategory?: string;
-  kind: Item;
 }
 
 export interface PaletteItem extends BaseItem {
-  interface: 'PaletteItem';
+  kind: 'PaletteItem';
   label: string;
   defaultWidth: number;
   defaultHeight: number;
@@ -31,7 +29,7 @@ export interface PaletteItem extends BaseItem {
 }
 
 export interface GardenItem extends BaseItem {
-  interface: 'GardenItem';
+  kind: 'GardenItem';
   paletteItemId: string;
   displayName?: string;
   position: Vec2;
@@ -55,7 +53,7 @@ export interface GardenItem extends BaseItem {
 }
 
 export interface GardenZone {
-  interface: 'GardenZone';
+  kind: 'GardenZone';
   id: string;
   displayName?: string;
   color: string;
@@ -78,7 +76,6 @@ export interface InteractiveZone extends GardenZone {
   path: Path2D | null;
   isSelected?: boolean;
   isHovered?: boolean;
-  kind?: Item
 };
 export interface InteractiveImage extends FabricImage {
   id: string;

@@ -41,7 +41,7 @@ export function useGardenItem() {
     const coverage = getCoveredCells(computedPosition[0], computedPosition[1], width / 20, height / 20);
     const newItem: GardenItem = {
       ...selectedPaletteItem,
-      interface: 'GardenItem',
+      kind: 'GardenItem',
       paletteItemId: selectedPaletteItem.id,
       id: uuidv4(),
       displayName: name,

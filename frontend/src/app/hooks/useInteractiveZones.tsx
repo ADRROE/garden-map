@@ -6,9 +6,9 @@ import { makeZonePath } from "@/utils/DrawZone";
 export function useInteractiveZones(): InteractiveZone[] {
   const zones = useGardenStore(state => state.present.zones);
   
-  const enrichedZones = useMemo(() => {
+  const enrichedZones = useMemo((): InteractiveZone[] => {
     return zones.map(zone => ({
-      interface: zone.interface,
+      kind: 'GardenZone',
       id: zone.id,
       displayName: zone.displayName,
       color: zone.color,
