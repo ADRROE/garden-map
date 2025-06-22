@@ -34,17 +34,25 @@ export default function Overlay({ onEditConfirm, onEditAbort }: { onEditConfirm:
 
   const sideBarSections: MenuSection[] = [{
     id: "s1",
-    title: "Vegetation",
-    items: menuItems.filter(item => item.category === "vegetation")
+    title: "Canopies",
+    items: menuItems.filter(item => item.subCategory === "canopies")
 
   }, {
     id: "s2",
-    title: "Material",
-    items: menuItems.filter(item => item.category === "pavement")
+    title: "Hedges",
+    items: menuItems.filter(item => item.subCategory === "hedges")
   }, {
     id: "s3",
+    title: "Shrubs",
+    items: menuItems.filter(item => item.subCategory === "shrubs")
+  }, {
+    id: "s4",
     title: "Soil",
     items: menuItems.filter(item => item.category === "soil")
+  }, {
+    id: "s5",
+    title: "Pavement",
+    items: menuItems.filter(item => item.category === "pavement")
   }]
 
   return (

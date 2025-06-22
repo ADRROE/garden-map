@@ -3,6 +3,7 @@ import { PaletteItem } from "../types";
 export const menuItems: Partial<PaletteItem>[] =
 
     [
+        { "id": "0", "label": "placeholder", "icon": "/icons/placeholder.png", "defaultWidth": 100, "defaultHeight": 100, "cursor": "/icons/placeholder-sm.png", "category": "vegetation", "subCategory": "canopies" },
         { "id": "1", "label": "canopy1", "icon": "/icons/greencanopy1.png", "defaultWidth": 100, "defaultHeight": 100, "cursor": "/icons/greencanopy1-sm.png", "category": "vegetation", "subCategory": "canopies" },
         { "id": "2", "label": "canopy2", "icon": "/icons/greencanopy2.png", "defaultWidth": 100, "defaultHeight": 100, "cursor": "/icons/greencanopy2-sm.png", "category": "vegetation", "subCategory": "canopies" },
         { "id": "3", "label": "canopy3", "icon": "/icons/greencanopy3.png", "defaultWidth": 100, "defaultHeight": 100, "cursor": "/icons/greencanopy3-sm.png", "category": "vegetation", "subCategory": "canopies" },

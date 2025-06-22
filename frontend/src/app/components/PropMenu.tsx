@@ -77,26 +77,34 @@ const PropMenu: React.FC<PropMenuProps> = ({ data, onUpdate, onClose, fieldConfi
           <hr className="my-2 border-gray-200" />
         </div>
       )}
-      {editableFields.map((field) => (
-        <div key={field.name} className="mb-2">
-          <label className="block text-sm text-black font-medium">
-            {t(field.labelKey)} {field.unit && `(${field.unit})`}
-          </label>
-          <input
-            type={field.type === "date" ? "date" : "text"}
-            value={getInputValue(field.name)}
-            className="w-full p-2 border rounded"
-            onChange={(e) =>
-              handleChange(
-                field.name,
-                field.type === "number"
-                  ? parseFloat(e.target.value)
-                  : e.target.value
-              )
-            }
-          />
-        </div>
-      ))}
+      {editableFields.map((field) => {
+        const isDate = field.type === "date";
+        const value = getInputValue(field.name);
+        const hasValue = Boolean(value);
+
+        return (
+          <div key={field.name} className="mb-2">
+            <label className="block text-sm text-black font-medium">
+              {t(field.labelKey)} {field.unit && `(${field.unit})`}
+            </label>
+            <input
+              type={isDate && !hasValue ? "text" : field.type}
+              inputMode={isDate && !hasValue ? "none" : undefined}
+              placeholder={isDate ? "dd-mm-yyyy" : undefined}
+              value={value}
+              className="w-full p-2 border rounded"
+              onChange={(e) =>
+                handleChange(
+                  field.name,
+                  field.type === "number"
+                    ? parseFloat(e.target.value)
+                    : e.target.value
+                )
+              }
+            />
+          </div>
+        );
+      })}
 
       <form
         onSubmit={(e) => {

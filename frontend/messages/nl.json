@@ -1,7 +1,7 @@
 {
-    "Overlay": {
-        "itemchooser": "Item Kiezer"
-    },
+  "Overlay": {
+    "itemchooser": "Item Kiezer"
+  },
   "PropMenu": {
     "rhsId": "RHS ID",
     "wcvpId": "WCVP ID",
@@ -12,30 +12,31 @@
     "ph": "pH",
     "temp": "Temperatuur",
     "datePlanted": "Datum Aanplanting",
-    "dateFertilized": "Datum Bemest",
-    "dateHarvested": "Datum Geoogst",
-    "dateWatered": "Datum Bewaterd",
-    "amountWatered": "Hoeveelheid Bewaterd",
-    "datePruned": "Datum Gesnoeid",
+    "tAmended": "Datum Bemest",
+    "tHarvested": "Datum Geoogst",
+    "tWatered": "Datum Bewaterd",
+    "qWatered": "Hoeveelheid Bewaterd",
+    "tPruned": "Datum Gesnoeid",
     "fertilizerType": "Meststof",
     "plantForm": "Vorm Aanplanting",
     "status": "Status",
-    "dateStatus": "Datum Status",
-    "width": "Breedte",
-    "height": "Hoogte",
     "circumference": "Omtrek",
     "mix": "Verhouding",
     "moisture": "Vochtigheidsgraad",
     "sunshine": "Zonneschijn",
     "saveChanges": "Wijzigingen Opslaan"
   },
-    "NameModal": {
-        "name": "Naam",
-        "place": "Plaats"
-    },
-    "Menu": {
-        "Vegetation": "Vegetatie",
-        "Material": "Materiaal",
-        "Soil": "Grond"
-    }
+  "NameModal": {
+    "name": "Naam",
+    "place": "Plaats"
+  },
+  "Menu": {
+    "Vegetation": "Vegetatie",
+    "Canopies": "Kruinen",
+    "Hedges": "Hagen",
+    "Shrubs": "Struiken",
+    "Pavement": "Bestrating",
+    "Material": "Materiaal",
+    "Soil": "Grond"
+  }
 }

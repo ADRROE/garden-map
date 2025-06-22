@@ -1,5 +1,7 @@
 import { GardenZone, InteractiveZone } from "@/types";
 import { darkenColor } from "./utils";
+import polylabel from 'polylabel';
+
 
 const CELL_SIZE = 20; // adjust if needed
 const RADIUS = 6
@@ -88,17 +90,15 @@ CanvasRenderingContext2D.prototype.drawZone = function (
   this.stroke();
 
   if (zoneObj.displayName && zoneObj.coverage.length > 0) {
-    const minX = Math.min(...zoneObj.coverage.map(c => c.col));
-    const maxX = Math.max(...zoneObj.coverage.map(c => c.col));
-    const minY = Math.min(...zoneObj.coverage.map(c => c.row));
-    const maxY = Math.max(...zoneObj.coverage.map(c => c.row));
-    const centerX = ((minX + maxX + 1) / 2) * CELL_SIZE;
-    const centerY = ((minY + maxY + 1) / 2) * CELL_SIZE;
+const scaled = zoneObj.borderPath.map(([x, y]) => [x * CELL_SIZE, y * CELL_SIZE] as [number, number]);
+const poly = [scaled]; // polylabel expects a nested array for possible holes
+
+const [labelX, labelY] = polylabel(poly, 1.0);
 
     this.font = 'bold 14px sans-serif';
     this.fillStyle = darkenColor(zoneObj.color, 0.6);
     this.textAlign = 'center';
     this.textBaseline = 'middle';
-    this.fillText(zoneObj.displayName, centerX, centerY);
+    this.fillText(zoneObj.displayName, labelX, labelY);
   }
 }};
