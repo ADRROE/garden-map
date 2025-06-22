@@ -53,7 +53,7 @@ export function makeZonePath(zone: GardenZone): Path2D {
   }
   return path;
 }
-
+if (typeof window !== 'undefined' && typeof CanvasRenderingContext2D !== 'undefined') {
 CanvasRenderingContext2D.prototype.drawZone = function (
   zoneObj: InteractiveZone,
   isSelected: boolean = false
@@ -87,8 +87,6 @@ CanvasRenderingContext2D.prototype.drawZone = function (
 
   this.stroke();
 
-  console.log("zoneObj: ", zoneObj)
-
   if (zoneObj.displayName && zoneObj.coverage.length > 0) {
     const minX = Math.min(...zoneObj.coverage.map(c => c.col));
     const maxX = Math.max(...zoneObj.coverage.map(c => c.col));
@@ -103,4 +101,4 @@ CanvasRenderingContext2D.prototype.drawZone = function (
     this.textBaseline = 'middle';
     this.fillText(zoneObj.displayName, centerX, centerY);
   }
-};
+}};

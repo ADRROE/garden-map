@@ -58,7 +58,7 @@ const PropMenu: React.FC<PropMenuProps> = ({ data, onUpdate, onClose, fieldConfi
   return (
     <div className="absolute right-4 top-4 w-64 bg-white shadow-lg p-4 border z-50 rounded mb-1 max-h-[80vh] overflow-y-auto">
       <div className="flex justify-between mb-4">
-        <h2 className="text-lg text-black font-semibold">{data.name}</h2>
+        <h2 className="text-lg text-black font-semibold">{data.displayName}</h2>
         <button onClick={onClose} className="text-gray-900 hover:text-black">✕</button>
       </div>
 

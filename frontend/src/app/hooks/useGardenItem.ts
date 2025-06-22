@@ -14,6 +14,7 @@ export function useGardenItem() {
   const selectedPaletteItem = useMenuItem(selectedPaletteItemId);
 
   const createGardenItem = useGardenStore((s) => s.createItem);
+  const updateItemLocally = useGardenStore((s) => s.updateItemLocally);
   const dispatch = useGardenStore((s) => s.dispatch);
 
   const initPlacement = (position: Vec2) => {
@@ -69,7 +70,7 @@ export function useGardenItem() {
   };
 
   const confirmUpdate = async(id: string, updates: Partial<GardenItem>, operation: 'create' | 'modify') => {
-    console.log("id: ", id, "updates: ", updates, "operation: ", operation)
+    updateItemLocally(id, updates);
     try {
       await updateItemAPI(id, updates, operation);
       const fetched = await fetchItems();

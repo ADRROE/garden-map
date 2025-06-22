@@ -1,12 +1,29 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { createZoneAPI, fetchZones, updateZoneAPI } from "@/services/apiService";
 import { useGardenStore } from "@/stores/useGardenStore";
 import { useSelectionStore } from "@/stores/useSelectionStore";
-import { Cell, GardenZone } from "@/types";
+import { Cell, GardenZone, InteractiveZone } from "@/types";
 import { log, error } from "@/utils/utils";
 
 export function useGardenZone() {
-    const { dispatch } = useGardenStore()
-    const { clear } = useSelectionStore()
+    const dispatch = useGardenStore((s) => s.dispatch);
+    const updateZoneLocally = useGardenStore((s) => s.updateZoneLocally);
+    const { clear } = useSelectionStore();
+
+    function interactiveZoneToGardenZone(obj: InteractiveZone): GardenZone {
+  const gardenZoneKeys: (keyof GardenZone)[] = [
+    'kind', 'id', 'displayName', 'color', 'coverage', 'borderPath',
+    'ph', 'temp', 'moisture', 'sunshine', 'compaction', 'soilMix',
+    'tWatered', 'dtWatered', 'qWatered', 'tAmended', 'qAmended',
+  ];
+
+  const result: Partial<GardenZone> = {};
+  for (const key of gardenZoneKeys) {
+    result[key] = obj[key] as any;
+  }
+  return result as GardenZone;
+}
 
     const confirmPlacement = async (cells: Record<string, Cell>, name: string) => {
         log("19 - confirmPlacement call detected from inside useGardenZone with: ", cells, name);
@@ -29,7 +46,7 @@ export function useGardenZone() {
     }
 
     const confirmUpdate = async (id: string, updates: Partial<GardenZone>, operation: 'create' | 'modify') => {
-        console.log("id: ", id, "updates: ", updates, "operation: ", operation)
+        updateZoneLocally(id, updates);
         try {
             await updateZoneAPI(id, updates, operation);
             const fetched = await fetchZones();
@@ -40,5 +57,5 @@ export function useGardenZone() {
 
     }
 
-    return { confirmUpdate, confirmPlacement }
+    return { confirmUpdate, confirmPlacement, interactiveZoneToGardenZone }
 }

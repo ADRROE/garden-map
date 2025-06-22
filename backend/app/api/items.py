@@ -28,15 +28,16 @@ def get_items(db: Session = Depends(get_db)):
 def get_item_history(id: str, db: Session = Depends(get_db)):
     return db.query(models.GardenItemHistory).filter_by(garden_item_id=id).order_by(models.GardenItemHistory.last_modified.desc()).all()
 
-@router.put("/{id}", response_model=schemas.GardenItem)
+@router.put("/{id}", response_model=schemas.GardenItemRead)
 def update_item(
     id: str,
     payload: schemas.GardenItemUpdateWrapper,
     db: Session = Depends(get_db)
 ):
-    return crud.update_item(db, id, payload.updates, payload.operation)
+    db_item = crud.update_item(db, id, payload.updates, payload.operation)
+    return schemas.GardenItemRead.model_validate(db_item)
 
-@router.delete("/{id}", response_model=schemas.GardenItem)
+@router.delete("/{id}", response_model=schemas.GardenItemRead)
 def delete_item(id: str, db: Session = Depends(get_db)):
     print(f"DELETE ITEM CALLED with id={id}")
     return crud.delete_item(db, id)

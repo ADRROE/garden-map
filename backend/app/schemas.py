@@ -1,5 +1,5 @@
-from pydantic import BaseModel, Field
-from typing import List, Tuple, Literal
+from pydantic import BaseModel, computed_field
+from typing import List, Tuple, Literal, Any, Dict
 from datetime import datetime
 
 class Vec2(BaseModel):
@@ -26,7 +26,7 @@ class GardenItemBase(BaseModel):
     width: float
     height: float
     rotation: float | None = None
-    coverage: List[str] | None = None
+    coverage: List[Cell] | None = None
     category: str
     sub_category: str | None = None
     wcvp_id: str | None = None
@@ -59,7 +59,7 @@ class GardenItemHistory(BaseModel):
     width: float
     height: float
     rotation: float | None = None
-    coverage: List[str] | None = None
+    coverage: List[Cell] | None = None
     category: str
     sub_category: str | None = None
     wcvp_id: str | None = None
@@ -81,15 +81,16 @@ class GardenItemHistory(BaseModel):
 
 class GardenItemRead(BaseModel):
     id: str
-    position: Vec2
     palette_item_id: str
     icon: str
     display_name: str | None = None
+    x: float
+    y: float
     location: str
     width: float
     height: float
     rotation: float | None = None
-    coverage: List[str] | None = None
+    coverage: List[Cell] | None = None
     category: str
     sub_category: str | None = None
     wcvp_id: str | None = None
@@ -103,6 +104,10 @@ class GardenItemRead(BaseModel):
     q_watered: float | None = None
     t_amended: datetime | None = None
     q_amended: float | None = None
+
+    @computed_field
+    def position(self) -> Dict[str, float]:
+        return {"x": self.x, "y": self.y}
 
     class Config:
         from_attributes = True
@@ -126,7 +131,7 @@ class GardenItemUpdate(BaseModel):
     width: float | None = None
     height: float | None = None
     rotation: float | None = None
-    coverage: List[str] | None = None
+    coverage: List[Cell] | None = None
     wcvp_id: str | None = None
     rhs_id: str | None = None
     species: str | None = None

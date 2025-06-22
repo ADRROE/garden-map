@@ -1,7 +1,15 @@
 import { useViewportStore } from "@/stores/useViewportStore";
+import { useState, useEffect } from "react";
 
 export default function MatrixDebugger() {
   const matrix = useViewportStore((s) => s.matrix);
+  const [hasMounted, setHasMounted] = useState(false);
+
+  useEffect(() => {
+    setHasMounted(true);
+  }, []);
+
+  if (!hasMounted || !matrix) return null;
 
   return (
     <div

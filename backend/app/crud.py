@@ -4,26 +4,35 @@ from typing import Literal
 from app import models, schemas, algorithms
 import uuid
 
-def to_garden_item_read(item: schemas.GardenItem) -> schemas.GardenItemRead:
-    data = item.__dict__.copy()
-    data['position'] = {'x': data.pop('x'), 'y': data.pop('y')}
-    return schemas.GardenItemRead(**data)
 
 def get_items(db: Session) -> list[schemas.GardenItemRead]:
-    items = db.query(models.GardenItem).all()
-
-    return [to_garden_item_read(item) for item in items]
+    return db.query(models.GardenItem).all()
 
 def create_item(db: Session, item: schemas.GardenItemCreate):
     data = item.dict()
     x = data['position']['x']
     y = data['position']['y']
     data.pop('position')
-    db_item = models.GardenItem(**data, x=x, y=y)
+
+    # Handle coverage explicitly
+    coverage_data = data.pop('coverage', [])
+    db_cells = [
+        models.Cell(
+            id=str(uuid.uuid4()),
+            col=cell['col'],
+            row=cell['row'],
+            color=cell.get('color'),
+            palette_item_id=cell.get('palette_item_id'),
+        )
+        for cell in coverage_data
+    ]
+
+    # Now create the item
+    db_item = models.GardenItem(**data, x=x, y=y, coverage=db_cells)
     db.add(db_item)
     db.commit()
     db.refresh(db_item)
-    return to_garden_item_read(db_item)
+    return schemas.GardenItemRead.model_validate(db_item)
 
 def update_item(
     db: Session, 
@@ -31,13 +40,15 @@ def update_item(
     updates: schemas.GardenItemUpdate, 
     record: Literal["create", "modify"]
 ):
-    timestamp = datetime.now()
+    # Set the history flag for event listener
+    db.info["record_history"] = (record == "create")
+
     updates_data = updates.dict(exclude_unset=True)
     x = updates_data['position']['x']
     y = updates_data['position']['y']
-    updates_data.pop('position')
+    updates_data.pop("position")
+    coverage_data = updates_data.pop("coverage", None)
 
-    # Always update the main item
     db_item = db.query(models.GardenItem).filter(models.GardenItem.id == id).first()
     if not db_item:
         return None
@@ -47,44 +58,28 @@ def update_item(
 
     db_item.x = x
     db_item.y = y
-    db_item.last_modified = timestamp
+    db_item.last_modified = datetime.now()
 
-    # Add to history if requested
-    if record == "create":
+    if coverage_data is not None:
+        db.query(models.Cell).filter(models.Cell.garden_item_id == id).delete()
+        db_item.coverage.clear()
+        db.flush()
+        new_cells = [
+            models.Cell(
+                id=str(uuid.uuid4()),
+                col=cell['col'],
+                row=cell['row'],
+                color=cell.get('color'),
+                palette_item_id=cell.get('palette_item_id'),
+                garden_item_id=id
+            )
+            for cell in coverage_data
+        ]
+        db_item.coverage = new_cells
 
-        # Prepare history data — exclude the primary key!
-        history_data = updates_data.copy()
-        history_data.pop("id", None)  # 🚨 remove existing id
-        history_data["garden_item_id"] = id
-        history_data["x"] = x
-        history_data["y"] = y
-        history_data["last_modified"] = timestamp
-
-        db_history = models.GardenItemHistory(**history_data)
-        db.add(db_history)
-
-        db.commit()
-        db.refresh(db_item)
-        return db_item
-
-    elif record == "modify":
-        db_item = db.query(models.GardenItem).filter(models.GardenItem.id == id).first()
-        if not db_item:
-            return None
-
-        updates_data = updates.dict(exclude_unset=True)
-
-        # Apply changes
-        for key, value in updates_data.items():
-            setattr(db_item, key, value)
-            
-        db_item.x = x
-        db_item.y = y
-        db_item.last_modified = timestamp
-
-        db.commit()
-        db.refresh(db_item)
-        return db_item
+    db.commit()
+    db.refresh(db_item)
+    return db_item
 
 def delete_item(db: Session, id: str):
     db_item = db.query(models.GardenItem).filter(models.GardenItem.id == id).first()
@@ -132,68 +127,56 @@ def update_zone(
     updates: schemas.GardenZoneUpdate,
     record: Literal["create", "modify"]
 ):
+    # Set the history flag for event listener
+    db.info["record_history"] = (record == "create")
+
     timestamp = datetime.now()
+    print("CRUD now updating zone with id: ", id)
     db_zone = db.query(models.GardenZone).filter(models.GardenZone.id == id).first()
     if not db_zone:
         return None
 
     updates_data = updates.dict(exclude_unset=True)
 
-    if record == "create":
-        # Prepare history data — exclude the primary key!
-        history_data = updates_data.copy()
-        history_data.pop("id", None)  # 🚨 remove existing id
-        history_data["garden_zone_id"] = id
-        history_data["last_modified"] = timestamp
+    # Handle coverage update (Cells)
+    if "coverage" in updates_data:
+        db.query(models.Cell).filter(models.Cell.garden_zone_id == db_zone.id).delete()
+        new_cells = [
+            models.Cell(
+                id=str(uuid.uuid4()),
+                col=cell["col"],
+                row=cell["row"],
+                color=cell["color"],
+                palette_item_id=cell["palette_item_id"],
+                garden_zone_id=db_zone.id
+            )
+            for cell in updates_data["coverage"]
+        ]
+        db.add_all(new_cells)
 
-        db_history = models.GardenZoneHistory(**history_data)
-        db.add(db_history)
+        schema_cells = [
+            schemas.Cell(
+                col=cell.col,
+                row=cell.row,
+                color=cell.color,
+                palette_item_id=cell.palette_item_id
+            )
+            for cell in new_cells
+        ]
+        merged_zones = algorithms.group_cells_into_zones(schema_cells)
+        if merged_zones:
+            db_zone.border_path = merged_zones[0].border_path
 
-        db.commit()
-        db.refresh(db_zone)
-        return db_zone
+        updates_data.pop("coverage")
 
-    elif record == "modify":
+    # Apply updates
+    for key, value in updates_data.items():
+        setattr(db_zone, key, value)
 
-        # Handle coverage update (Cells)
-        if "coverage" in updates_data:
-            db.query(models.Cell).filter(models.Cell.garden_zone_id == db_zone.id).delete()
-            new_cells = [
-                models.Cell(
-                    id=str(uuid.uuid4()),
-                    col=cell["col"],
-                    row=cell["row"],
-                    color=cell["color"],
-                    palette_item_id=cell["palette_item_id"],
-                    garden_zone_id=db_zone.id
-                )
-                for cell in updates_data["coverage"]
-            ]
-            db.add_all(new_cells)
-
-            schema_cells = [
-                schemas.Cell(
-                    col=cell.col,
-                    row=cell.row,
-                    color=cell.color,
-                    palette_item_id=cell.palette_item_id
-                )
-                for cell in new_cells
-            ]
-            merged_zones = algorithms.group_cells_into_zones(schema_cells)
-            if merged_zones:
-                db_zone.border_path = merged_zones[0].border_path
-
-            updates_data.pop("coverage")
-
-        # Apply updates
-        for key, value in updates_data.items():
-            setattr(db_zone, key, value)
-
-        db_zone.last_modified = timestamp
-        db.commit()
-        db.refresh(db_zone)
-        return db_zone
+    db_zone.last_modified = timestamp
+    db.commit()
+    db.refresh(db_zone)
+    return db_zone
 
 
 def get_zone_by_name(db: Session, name: str):

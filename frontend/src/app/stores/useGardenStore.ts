@@ -29,7 +29,9 @@ type GardenActions = {
   createItem: (item: GardenItem) => void;
   deleteItem: (id: string) => Promise<void>;
   updateItem: (id: string, updates: Partial<GardenItem>, record: 'create' | 'modify') => Promise<void>;
+  updateItemLocally: (id: string, updates: Partial<GardenItem>) => void;
   updateZone: (id: string, updates: Partial<GardenZone>, record: 'create' | 'modify') => Promise<void>;
+  updateZoneLocally: (id: string, updates: Partial<GardenZone>) => void;
 };
 
 type GardenStore = HistoryState<GardenDataState> & GardenActions;
@@ -123,6 +125,16 @@ export const useGardenStore = create<GardenStore>()(
       }
     },
 
+    updateItemLocally: (id: string, updates: Partial<GardenItem>) =>
+      set((state) => ({
+        present: {
+          ...state.present,
+          items: state.present.items.map(item =>
+            item.id === id ? { ...item, ...updates } : item
+          ),
+        },
+      })),
+
     deleteItem: async (id) => {
       get().dispatch({ type: 'DELETE_ITEM', id });
       try {
@@ -137,7 +149,6 @@ export const useGardenStore = create<GardenStore>()(
 
       get().dispatch({ type: 'UPDATE_ZONE', id, updates, record });
       try {
-        console.log("updateZoneAPI called with: ", updates, record);
         await updateZoneAPI(id, updates, record);
         const zones = await fetchZones();
         get().dispatch({ type: 'SET_ZONES', zones });
@@ -145,6 +156,16 @@ export const useGardenStore = create<GardenStore>()(
         error('Failed to update zone:', err);
       }
     },
+
+    updateZoneLocally: (id: string, updates: Partial<GardenZone>) =>
+      set((state) => ({
+        present: {
+          ...state.present,
+          zones: state.present.zones.map(zone =>
+            zone.id === id ? { ...zone, ...updates } : zone
+          ),
+        },
+      })),
   }), {
     name: 'GardenStore',
   })
@@ -181,10 +202,10 @@ function baseReducer(state: GardenDataState, action: GardenDataAction): GardenDa
       };
 
     case 'SET_ZONES':
-      return { ...state, zones: action.zones };
+      return { ...state, zones: action.zones.map(zone => ({ ...zone, kind: 'GardenZone' })) };
 
     case 'SET_ITEMS':
-      return { ...state, items: action.items };
+      return { ...state, items: action.items.map(item => ({ ...item, kind: 'GardenItem' })) };
 
     case "SET_COLORED_CELLS":
       log("16 - Reducer received coloredCells:", action.cells);

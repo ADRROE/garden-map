@@ -6,14 +6,14 @@ import { Canvas } from "fabric";
 import { useSelectionState } from "./useSelectionState";
 import { resolveCursor } from "@/lib/cursorMappings";
 
-export function useCursorSync(fabricCanvas?: Canvas | null, naming?: boolean) {
+export function useCursorSync(fabricCanvas?: Canvas | null, naming?: boolean, overrideCursor?: string | null) {
     const selectedItemId = useSelectionStore((s) => s.selectedItemId);
     const menuItem = useMenuItem(selectedItemId);
     const selection = useSelectionState();
 
     // 1. Handle high-level cursor intent logic
     useEffect(() => {
-        if (!fabricCanvas) return;
+        if (!fabricCanvas || overrideCursor) return;
 
         const image = menuItem?.cursor;
         const resolved = resolveCursor(selection.selection, naming, menuItem);
@@ -35,13 +35,12 @@ export function useCursorSync(fabricCanvas?: Canvas | null, naming?: boolean) {
             // Fallback for non-image cursors or when naming is true
             useUIStore.getState().dispatch({ type: "SET_CURSOR", cursor: resolved });
         }
-    }, [fabricCanvas, naming, menuItem, selection]);
+    }, [fabricCanvas, naming, menuItem, selection, overrideCursor]);
 
     // 2. Reflect UI store cursor state to DOM and Fabric
     useEffect(() => {
         const unsubscribe = useUIStore.subscribe((state) => {
-            const cursor = state.cursor;
-
+            const cursor = overrideCursor ?? state.cursor;
             // DOM body
             document.body.style.cursor = cursor;
             if (!fabricCanvas) return;

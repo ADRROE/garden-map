@@ -23,7 +23,7 @@ export function resolveCursor(
     }
 
     case 'editing': {
-      return 'pointer';
+      return 'default';
     }
 
     case 'confirming': {

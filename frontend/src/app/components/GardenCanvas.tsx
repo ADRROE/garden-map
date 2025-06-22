@@ -5,7 +5,7 @@ import React, {
 import CanvasGrid, { CanvasGridHandle } from './CanvasGrid';
 import NameModal from './NameModal';
 import { useGardenStore } from '../stores/useGardenStore';
-import { CanvasLayer, Cell, GardenItem, InteractiveZone, Vec2 } from '../types';
+import { CanvasLayer, Cell, GardenItem, GardenZone, Vec2 } from '../types';
 import { useCanvasInteraction } from '../hooks/useCanvasInteraction';
 import PropMenu from './PropMenu';
 import { useSelectionStore } from '../stores/useSelectionStore';
@@ -95,29 +95,36 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
   const setSelectedObjId = useSelectionStore((s) => s.setSelectedObjId);
   const clearSelection = useSelectionStore((s) => s.clear);
 
-  const items = useGardenStore(state => state.present.items);
-  const selectedGardenItem = items.find(el => el.id === selectedObj?.id)
-  const zoneObjects = useInteractiveZones();
-  const selectedZone = zoneObjects.find(z => z.id === selectedObj?.id) || null
+  const gardenItems = useGardenStore(state => state.present.items);
+  const selectedGardenItem = gardenItems.find(el => el.id === selectedObj?.id)
+  const interactiveZones = useInteractiveZones();
+  const selectedZone = interactiveZones.find(z => z.id === selectedObj?.id) || null
   const gdispatch = useGardenStore((s) => s.dispatch);
 
   const [naming, setNaming] = useState(false);
-  const [propMenu, setPropMenu] = useState<GardenItem | InteractiveZone | null>(null);
+  const [propMenu, setPropMenu] = useState<GardenItem | GardenZone | null>(null);
   const [floatingLabel, setFloatingLabel] = useState<string | null>(null);
   const [floatingLabelPosition, setFloatingLabelPosition] = useState<{ x: number; y: number } | null>(null);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const [hoverCursor, setHoverCursor] = useState<string | null>(null);
 
   const imageCacheRef = useRef<Map<string, HTMLImageElement>>(new Map());
-  const lastPropMenuRef = useRef<Partial<ItemFormData> | Partial<ZoneFormData> | null>(null);
+  const lastPropMenuRef = useRef<Partial<ItemFormData> & { id: string } | Partial<ZoneFormData> & { id: string } | null>(null);
 
   const matrix = useViewportStore((s) => s.matrix);
 
   const fabricCanvas = innerCanvasGridRef.current?.fabricCanvas;
-  useCursorSync(fabricCanvas, naming);
+  useCursorSync(fabricCanvas, naming, hoverCursor);
+  const {interactiveZoneToGardenZone} = useGardenZone()
 
   const { onCanvasClick } = useCanvasInteraction({
     onSelect: (obj) => {
-      setPropMenu(obj);
+      if (obj.kind === 'GardenZone') {
+        const reduced = interactiveZoneToGardenZone(obj);
+        setPropMenu(reduced);
+      } else {
+        setPropMenu(obj)
+      }
       setSelectedObjId(obj.id);
     },
     onDeselect: () => {
@@ -129,12 +136,16 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
   const { confirmPlacement: confirmZoneCreation, confirmUpdate: confirmZoneUpdate } = useGardenZone();
   const { onCanvasHover } = useCanvasInteraction({
     onHoverChange: (el) => {
-      if (el && el.category === 'vegetation') {
-        setFloatingLabel(el.displayName || el.id);
-        setFloatingLabelPosition({ x: el.position.x, y: el.position.y });
+      if (el) {
+        setHoverCursor('pointer');
+        if (el.category === 'vegetation') {
+          setFloatingLabel(el.displayName || el.id);
+          setFloatingLabelPosition({ x: el.position.x, y: el.position.y });
+        }
       } else {
         setFloatingLabel(null);
         setFloatingLabelPosition(null); // 🧼 make sure to clear it!
+        setHoverCursor(null);
       }
     }
   });
@@ -227,7 +238,7 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
         if (layer === 'items') {
           const cache = selectedObj ? null : imageCacheRef.current;
 
-          items.forEach(el => {
+          gardenItems.forEach(el => {
             const iconSrc = el.icon
 
             let img = cache?.get(iconSrc);
@@ -259,7 +270,7 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
           });
         }
         if (layer === 'zones') {
-          zoneObjects.forEach(zone => {
+          interactiveZones.forEach(zone => {
             const isSelected = zone.id === selectedObj?.id;
             ctx.drawZone(zone, isSelected);
           });
@@ -268,7 +279,7 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
       },
       deps: [selectedObj],
     }));
-  }, [activeLayers, items, zoneObjects, selectedObj, isEditing]);
+  }, [activeLayers, gardenItems, interactiveZones, selectedObj, isEditing]);
 
   useEffect(() => {
     let mounted = true;
@@ -312,10 +323,10 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
       )
     };
 
-    if (items.length > 0) {
+    if (gardenItems.length > 0) {
       preloadImages();
     }
-  }, [items]);
+  }, [gardenItems]);
 
   return (
     <div style={{ position: 'relative' }}>
@@ -391,20 +402,14 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
       {isConfirming &&
         <UpdateModal
           onEditConfirm={(operation) => {
-            console.log("lastPropMenuRef.current: ", lastPropMenuRef.current);
-            console.log("selectedObj: ", selectedObj)
-            // useSelectionStore.getState().clear()
-            if (lastPropMenuRef.current && selectedObj?.kind === 'GardenItem')
-              console.log("lastPropMenuRef.current: ", lastPropMenuRef.current);
-            console.log("selectedObj: ", selectedObj)
-              confirmItemUpdate(lastPropMenuRef.current.id, lastPropMenuRef.current, operation)
-            if (lastPropMenuRef.current && selectedObj?.kind === 'GardenZone') {
-              console.log("lastPropMenuRef.current: ", lastPropMenuRef.current);
-              console.log("selectedObj: ", selectedObj)
-              confirmZoneUpdate(lastPropMenuRef.current.id, lastPropMenuRef.current, operation)
+            if (lastPropMenuRef.current && selectedObj?.kind === 'GardenItem') {
+              confirmItemUpdate(selectedObj.id, lastPropMenuRef.current, operation)
             }
-          }
-          }
+            if (lastPropMenuRef.current && selectedObj?.kind === 'GardenZone') {
+              confirmZoneUpdate(selectedObj.id, lastPropMenuRef.current, operation)
+            }
+            useSelectionStore.getState().clear();
+          }}
           onEditAbort={() => {
             useSelectionStore.getState().clear();
           }}

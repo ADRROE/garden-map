@@ -13,7 +13,7 @@ type SelectionKind = 'drawing' | 'editing' | 'placing' | 'confirming' | 'cancell
 const colorMap: Record<SelectionKind, string> = {
   drawing: "bg-[#F5DA5B]",
   editing: "bg-[#F5DA5B]",
-  placing: "bg-[#FF4A1C]",
+  placing: "bg-[#F5DA5B]",
   confirming: "bg-green-500",
   cancelling: "bg-red-500"
 };

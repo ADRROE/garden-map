@@ -12,7 +12,6 @@ export async function createFabricItem(
 ): Promise<FabricImage> {
   log("Creating fabric item...")
   if (!isGardenItem(item)) {
-    console.log('item: ', item)
     throw new Error('Unsupported item type');
   }
 

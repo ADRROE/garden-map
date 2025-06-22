@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { Cell, GardenItem, GardenZone } from "@/types";
-import { toColumnLetter } from "@/utils/utils";
 import camelcaseKeys from 'camelcase-keys';
 import snakecaseKeys from 'snakecase-keys';
 
@@ -16,8 +15,7 @@ export async function fetchItems(): Promise<GardenItem[]> {
 
 export async function createItemAPI(newItem: GardenItem) {
     const payload = snakecaseKeys({
-        ...newItem,
-        coverage: newItem.coverage ? serializeCells(newItem.coverage) : null
+        ...newItem
     }, { deep: true })
     const res = await fetch(API_BASE_ITEMS, {
         method: "POST",
@@ -29,10 +27,7 @@ export async function createItemAPI(newItem: GardenItem) {
 }
 
 export async function updateItemAPI(id: string, updates: Partial<GardenItem>, operation: 'create' | 'modify') {
-    const payload = snakecaseKeys({
-        ...updates,
-        coverage: updates.coverage ? serializeCells(updates.coverage) : null
-    }, { deep: true })
+    const payload = snakecaseKeys(updates, { deep: true })
 
     await fetch(`${API_BASE_ITEMS}${id}`, {
         method: "PUT",
@@ -43,10 +38,6 @@ export async function updateItemAPI(id: string, updates: Partial<GardenItem>, op
 
 export async function deleteItemAPI(id: string) {
     await fetch(`${API_BASE_ITEMS}${id}`, { method: "DELETE" });
-}
-
-function serializeCells(cells: Cell[]): string[] {
-    return cells.map(cell => `${toColumnLetter(cell.col)}${cell.row}`);
 }
 
 export async function fetchZones(): Promise<GardenZone[]> {
@@ -67,10 +58,11 @@ export async function createZoneAPI(cells: Cell[], display_name: string) {
 }
 
 export async function updateZoneAPI(id: string, updates: Partial<GardenZone>, operation: 'create' | 'modify') {
-    const {coverage, ...rest} = updates
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { coverage, ...rest } = updates
     const payload = snakecaseKeys(
         rest
-    , { deep: true });
+        , { deep: true });
 
     await fetch(`${API_BASE_ZONES}${id}`, {
         method: "PUT",
