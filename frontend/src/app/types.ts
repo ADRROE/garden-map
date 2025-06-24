@@ -26,6 +26,7 @@ export interface PaletteItem extends BaseItem {
   defaultHeight: number;
   children?: PaletteItem[];
   onClick?: () => void;
+  grade?: string;
 }
 
 export interface GardenItem extends BaseItem {
