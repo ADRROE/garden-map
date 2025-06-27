@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+
 import React, {
   useState, useRef, useEffect, useMemo, forwardRef, useImperativeHandle,
   useCallback
@@ -17,13 +19,13 @@ import { useGardenZone } from '@/hooks/useGardenZone';
 import { log, warn, error } from "@/utils/utils";
 import { useViewportStore } from '@/stores/useViewportStore';
 import UpdateModal from './UpdateModal';
-import { fieldConfig } from '../lib/fieldConfig';
 import { useMenuStore } from '@/stores/useMenuStore';
 import { useInteractiveZones } from '@/hooks/useInteractiveZones';
 import { useMenuItem } from '@/hooks/usePaletteItem';
 import { useCursorSync } from '@/hooks/useCursorSync';
 import { ZoneFormData } from '@/lib/zoneSchema';
 import { ItemFormData } from '@/lib/itemSchema';
+import { fieldConfig } from '@/lib/fieldConfig';
 
 const CELL_SIZE = 20;
 
@@ -107,6 +109,7 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
   const [floatingLabelPosition, setFloatingLabelPosition] = useState<{ x: number; y: number } | null>(null);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [hoverCursor, setHoverCursor] = useState<string | null>(null);
+  const [formData, setFormData] = useState<Partial<ItemFormData> & Partial<ZoneFormData>>();
 
   const imageCacheRef = useRef<Map<string, HTMLImageElement>>(new Map());
   const lastPropMenuRef = useRef<Partial<ItemFormData> & { id: string } | Partial<ZoneFormData> & { id: string } | null>(null);
@@ -383,6 +386,8 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
         selectedObj?.id === menu.propMenuObjectId && (
           <PropMenu
             formData={propMenu}
+            fields={fieldConfig}
+            setFormData={setFormData}
             onUpdate={(updatedData) => {
               log("🔧 PropMenu updated item:", updatedData);
               setPropMenu((prev) => {
@@ -396,7 +401,6 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
               useSelectionStore.getState().setConfirming();
             }}
             onClose={() => menudispatch({ type: "HIDE_MENU", menu: "prop" })}
-            fieldConfig={fieldConfig}
           />
         )}
       {isConfirming &&

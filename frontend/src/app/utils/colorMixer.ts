@@ -26,7 +26,7 @@ export function blendSoilMixColor(
 
     l += color.l * weight;
     c += color.c * weight;
-    h += color.h * weight;
+    h += color.h ?? 0 * weight;
   }
 
   return formatHex({ mode: 'oklch', l, c, h });

@@ -20,7 +20,7 @@ type ZoneFieldConfigItem = BaseFieldConfigItem & {
 
 export type FieldConfigItem = ItemFieldConfigItem | ZoneFieldConfigItem;
 
-export const fieldConfig: readonly FieldConfigItem[] = [
+export const fieldConfig: FieldConfigItem[] = [
   { name: "rhsId", labelKey: "rhsId", type: "text", readOnly: false },
   { name: "wcvpId", labelKey: "wcvpId", type: "text", readOnly: false },
   { name: "displayName", labelKey: "displayName", type: "text", readOnly: false },

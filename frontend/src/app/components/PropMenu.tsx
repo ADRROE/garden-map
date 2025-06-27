@@ -1,4 +1,6 @@
 "use client";
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { useForm } from 'react-hook-form';
@@ -12,11 +14,10 @@ import { FieldError, UseFormRegister } from "react-hook-form";
 
 interface PropMenuProps {
   fields: FieldConfigItem[];
-  formData: (Partial<ItemFormData> | Partial<ZoneFormData>) & { id: string; name?: string; };
+  formData: (Partial<ItemFormData> & Partial<ZoneFormData>) & { id: string; name?: string; };
   setFormData: React.Dispatch<React.SetStateAction<any>>;
-  register: UseFormRegister<FieldConfigItem>;
+  register?: UseFormRegister<FieldConfigItem>;
   error?: FieldError;
-  t: (key: string) => string;
   onUpdate: (updated: ItemFormData | ZoneFormData & { id: string }) => void;
   onClose: () => void;
 }
@@ -29,15 +30,16 @@ const PropMenu: React.FC<PropMenuProps> = ({
   onUpdate, 
   onClose, 
  }) => {
-  // const combinedSchema = zoneSchema.merge(itemSchema);
+  const combinedSchema = zoneSchema.merge(itemSchema);
+  const t = useTranslations('PropMenu');
   // const { register, handleSubmit, formState: { errors } } = useForm({ resolver: zodResolver(combinedSchema), mode: 'onChange' })
 
-  // const applicableFields = fields.filter(field => field.name in formData);
-  // const readOnlyFields = applicableFields.filter(f => f.readOnly);
-  // const editableFields = applicableFields.filter(f => !f.readOnly);
+  const applicableFields = fields.filter(field => field.name in formData);
+  const readOnlyFields = applicableFields.filter(f => f.readOnly);
+  const editableFields = applicableFields.filter(f => !f.readOnly);
 
   const handleChange = (name: string, value: string | number) => {
-    setFormData((prev) => ({
+    setFormData((prev: typeof formData) => ({
       ...prev,
       [name]: value,
     }));
@@ -46,7 +48,7 @@ const PropMenu: React.FC<PropMenuProps> = ({
   const handleSave = () => {
     onUpdate({
       id: formData.id,
-      ...(formData as ItemFormData | ZoneFormData),
+      ...(formData as ItemFormData & ZoneFormData),
     });
     onClose();
   };
@@ -67,7 +69,7 @@ const PropMenu: React.FC<PropMenuProps> = ({
   return (
     <div className="absolute right-4 top-4 w-64 bg-white shadow-lg p-4 border z-50 rounded mb-1 max-h-[80vh] overflow-y-auto">
       <div className="flex justify-between mb-4">
-        <h2 className="text-lg text-black font-semibold">{data.displayName}</h2>
+        <h2 className="text-lg text-black font-semibold">{formData.displayName}</h2>
         <button onClick={onClose} className="text-gray-900 hover:text-black">✕</button>
       </div>
 
@@ -86,7 +88,7 @@ const PropMenu: React.FC<PropMenuProps> = ({
           <hr className="my-2 border-gray-200" />
         </div>
       )}
-      {/* {editableFields.map((field) => {
+      {editableFields.map((field) => {
         const isDate = field.type === "date";
         const value = getInputValue(field.name);
         const hasValue = Boolean(value);
@@ -153,12 +155,12 @@ const PropMenu: React.FC<PropMenuProps> = ({
             />
           </div>
         );
-      })} */}
+      })}
 
       <form
-        onSubmit={handleSubmit((data) => console.log(data))}
+        // onSubmit={handleSubmit((data) => console.log(data))}
       >
-        {editableFields.map((field) => {
+        {/* {editableFields.map((field) => {
           const value = getInputValue(field.name);
           return (
             <div key={field.name}>
@@ -177,7 +179,7 @@ const PropMenu: React.FC<PropMenuProps> = ({
               </p>
 
             </div>)
-        })}
+        })} */}
         <button
           className="w-full bg-[#C5D4BC] hover:bg-[#a7b59f] text-white py-2 rounded mt-2"
           type="submit"
