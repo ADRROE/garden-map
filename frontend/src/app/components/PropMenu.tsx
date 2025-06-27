@@ -1,37 +1,40 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
+import { useForm } from 'react-hook-form';
+import { zodResolver } from "@hookform/resolvers/zod";
 import { ItemFormData } from "@/lib/itemSchema";
 import { FieldConfigItem } from "@/lib/fieldConfig";
-import { ZoneFormData } from "@/lib/zoneSchema";
+import { isSoilMix, ZoneFormData, zoneSchema } from "@/lib/zoneSchema";
+import { itemSchema } from "@/lib/itemSchema";
+import { cn } from "@/utils/utils";
+import { FieldError, UseFormRegister } from "react-hook-form";
 
 interface PropMenuProps {
-  data: (Partial<ItemFormData> | Partial<ZoneFormData>) & { id: string; name?: string; };
+  fields: FieldConfigItem[];
+  formData: (Partial<ItemFormData> | Partial<ZoneFormData>) & { id: string; name?: string; };
+  setFormData: React.Dispatch<React.SetStateAction<any>>;
+  register: UseFormRegister<FieldConfigItem>;
+  error?: FieldError;
+  t: (key: string) => string;
   onUpdate: (updated: ItemFormData | ZoneFormData & { id: string }) => void;
   onClose: () => void;
-  fieldConfig: readonly FieldConfigItem[];
 }
 
-const PropMenu: React.FC<PropMenuProps> = ({ data, onUpdate, onClose, fieldConfig }) => {
-  const t = useTranslations("PropMenu");
-  const [formData, setFormData] = useState<Partial<ItemFormData & ZoneFormData>>({});
-  const applicableFields = fieldConfig.filter(field => field.name in data);
-  const readOnlyFields = applicableFields.filter(f => f.readOnly);
-  const editableFields = applicableFields.filter(f => !f.readOnly);
+const PropMenu: React.FC<PropMenuProps> = ({ 
+  fields,
+  formData,
+  setFormData,
+  register,
+  onUpdate, 
+  onClose, 
+ }) => {
+  // const combinedSchema = zoneSchema.merge(itemSchema);
+  // const { register, handleSubmit, formState: { errors } } = useForm({ resolver: zodResolver(combinedSchema), mode: 'onChange' })
 
-  useEffect(() => {
-    const initial: Record<string, unknown> = {};
-    applicableFields.forEach(({ name, type }) => {
-      let value = data[name as keyof typeof data];
-      if (type === "date" && value) {
-        value = new Date(value).toISOString().split("T")[0];
-      }
-      if (value !== undefined) {
-        initial[name] = value;
-      }
-    });
-    setFormData(initial as Partial<ItemFormData & ZoneFormData>);
-  }, [data, fieldConfig]);
+  // const applicableFields = fields.filter(field => field.name in formData);
+  // const readOnlyFields = applicableFields.filter(f => f.readOnly);
+  // const editableFields = applicableFields.filter(f => !f.readOnly);
 
   const handleChange = (name: string, value: string | number) => {
     setFormData((prev) => ({
@@ -42,7 +45,7 @@ const PropMenu: React.FC<PropMenuProps> = ({ data, onUpdate, onClose, fieldConfi
 
   const handleSave = () => {
     onUpdate({
-      id: data.id,
+      id: formData.id,
       ...(formData as ItemFormData | ZoneFormData),
     });
     onClose();
@@ -52,6 +55,12 @@ const PropMenu: React.FC<PropMenuProps> = ({ data, onUpdate, onClose, fieldConfi
     const raw = formData[key as keyof typeof formData];
     if (raw instanceof Date) return raw.toISOString().split("T")[0];
     if (typeof raw === "number") return raw.toFixed(2);
+    if (isSoilMix(raw)) {
+      // Convert SoilMix to a compact string like "sand:25,loam:25,..."
+      return Object.entries(raw)
+        .map(([type, value]) => `${type}:${value}`)
+        .join(", ");
+    }
     return raw ?? "";
   };
 
@@ -77,10 +86,50 @@ const PropMenu: React.FC<PropMenuProps> = ({ data, onUpdate, onClose, fieldConfi
           <hr className="my-2 border-gray-200" />
         </div>
       )}
-      {editableFields.map((field) => {
+      {/* {editableFields.map((field) => {
         const isDate = field.type === "date";
         const value = getInputValue(field.name);
         const hasValue = Boolean(value);
+
+        if (field.name === "soilMix") {
+          const soilTypes = ["sand", "loam", "clay", "compost"] as const;
+          const soilMix = formData.soilMix;
+
+          const isValid = soilMix && typeof soilMix === "object" && !Array.isArray(soilMix);
+
+          const mix = isValid
+            ? soilMix
+            : { sand: 0, loam: 0, clay: 0, compost: 0 };
+          return (
+            <div key={field.name}>
+              <label className="block font-bold mb-1">Soil Mix</label>
+
+              {soilTypes.map((type) => (
+                <div key={type} className="mb-2">
+                  <label className="mr-2 capitalize">{type}</label>
+                  <input
+                    type="number"
+                    min={0}
+                    max={100}
+                    step={1}
+                    value={mix[type] ?? 0}
+                    onChange={(e) => {
+                      const updated = {
+                        ...mix,
+                        [type]: Number(e.target.value),
+                      };
+                      setFormData({
+                        ...formData,
+                        soilMix: updated,
+                      });
+                    }}
+                    className="p-1 border rounded w-24"
+                  />
+                </div>
+              ))}
+            </div>
+          );
+        }
 
         return (
           <div key={field.name} className="mb-2">
@@ -104,18 +153,34 @@ const PropMenu: React.FC<PropMenuProps> = ({ data, onUpdate, onClose, fieldConfi
             />
           </div>
         );
-      })}
+      })} */}
 
       <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          handleSave();
-        }}
+        onSubmit={handleSubmit((data) => console.log(data))}
       >
+        {editableFields.map((field) => {
+          const value = getInputValue(field.name);
+          return (
+            <div key={field.name}>
+              <div>
+                <label className="block">{t(field.labelKey)} {field.unit && `(${field.unit})`}</label>
+              </div>
+              <input
+                {...register(field.name)}
+                className={cn(
+                  "w-full p-2 border rounded",
+                  errors[field.name] ? "border-red-500" : "border-gray-300"
+                )}
+              />
+              <p className="text-xs text-red-400 mt-1">
+                {errors[field.name]?.message?.toString()}
+              </p>
+
+            </div>)
+        })}
         <button
           className="w-full bg-[#C5D4BC] hover:bg-[#a7b59f] text-white py-2 rounded mt-2"
           type="submit"
-          onClick={handleSave}
         >
           {t("saveChanges")}
         </button>

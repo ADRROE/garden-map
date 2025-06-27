@@ -78,5 +78,6 @@ export const menuItems: Partial<PaletteItem>[] =
         { "id": "1000", "label": "sand", "icon": "/icons/sand.png", "defaultWidth": 95, "defaultHeight": 95, "category": "soil", "color": "#c7b199" },
         { "id": "1001", "label": "loam", "icon": "/icons/loam.png", "defaultWidth": 95, "defaultHeight": 95, "category": "soil", "color": "#b88859" },
         { "id": "1002", "label": "clay", "icon": "/icons/clay.png", "defaultWidth": 95, "defaultHeight": 95, "category": "soil", "color": "#dad6ba" },
-        { "id": "1003", "label": "compost", "icon": "/icons/compost.png", "defaultWidth": 95, "defaultHeight": 95, "category": "soil", "color": "#5c6b73" }
+        { "id": "1003", "label": "compost", "icon": "/icons/compost.png", "defaultWidth": 95, "defaultHeight": 95, "category": "soil", "color": "#5c6b73" },
+        { "id": "1004", "label": "lawn", "icon": "/icons/grass.png", "defaultWidth": 95, "defaultHeight": 95, "category": "soil", "color": "#61af64" }
     ]

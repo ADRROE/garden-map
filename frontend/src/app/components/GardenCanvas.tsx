@@ -382,7 +382,7 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
         propMenu &&
         selectedObj?.id === menu.propMenuObjectId && (
           <PropMenu
-            data={propMenu}
+            formData={propMenu}
             onUpdate={(updatedData) => {
               log("🔧 PropMenu updated item:", updatedData);
               setPropMenu((prev) => {

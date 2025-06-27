@@ -1,6 +1,0 @@
-[
-    { "id": "1", "iconName": "sand", "icon": "/icons/sand.png", "defaultWidth": 95, "defaultHeight": 95, "category": "soil", "color": "#c7b199"},
-    { "id": "2", "iconName": "loam", "icon": "/icons/loam.png", "defaultWidth": 95, "defaultHeight": 95, "category": "soil", "color": "#b88859"}, 
-    { "id": "3", "iconName": "clay", "icon": "/icons/clay.png", "defaultWidth": 95, "defaultHeight": 95, "category": "soil", "color": "#dad6ba"},
-    { "id": "4", "iconName": "compost", "icon": "/icons/compost.png", "defaultWidth": 95, "defaultHeight": 95, "category": "soil", "color": "#000000"}
-]

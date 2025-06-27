@@ -1,6 +1,12 @@
 import { Cell } from "@/types";
+import { ClassValue, clsx } from 'clsx'
+import { twMerge } from 'tailwind-merge'
 
 const DEBUG = true; // Toggle this to false in production
+
+export const cn = (...inputs: ClassValue[]) => {
+  return twMerge(clsx(inputs))
+}
 
 export const screenToWorld = (
   x: number,
