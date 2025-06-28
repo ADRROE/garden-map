@@ -1,7 +1,7 @@
 'use client'
 import { LayerName } from "../types";
 import { create } from "zustand";
-import { devtools } from "zustand/middleware";
+import { devtools, persist } from "zustand/middleware";
 
 type UIState = {
   isMapLocked: boolean;
@@ -17,33 +17,41 @@ type UIState = {
 
 export const useUIStore = create<UIState>()(
   devtools(
-    (set, get) => ({
-      isMapLocked: false,
-      isLoading: true,
-      activeLayers: ["background", "zones", "items"],
-      cursor: "default",
+    persist(
+      (set, get) => ({
+        isMapLocked: false,
+        isLoading: true,
+        activeLayers: ["background", "zones", "items"],
+        cursor: "default",
 
-      setActiveLayers: (activeLayers: LayerName[]) => get().dispatch({ type: 'SET_ACTIVE_LAYERS', activeLayers }),
-      setIsLoading: (value) => set((state) => ({ ...state, isLoading: value })),
-      toggleMapLock: () =>
-        set((state) => ({ isMapLocked: !state.isMapLocked })),
+        setActiveLayers: (activeLayers: LayerName[]) => get().dispatch({ type: 'SET_ACTIVE_LAYERS', activeLayers }),
 
-      dispatch: (action: UIAction) =>
-        set((state) => ({
-          ...baseReducer(state, action),
-        })),
-    }),
+        setIsLoading: (value) => set((state) => ({ ...state, isLoading: value }), false, 'setIsLoading'),
+        
+        toggleMapLock: () =>
+          set((state) => ({ isMapLocked: !state.isMapLocked }), false, 'toggleMapLock'),
+
+        dispatch: (action: UIAction) =>
+          set((state) => baseReducer(state, action), false, action.type ),
+      }),
+      {
+        name: "UIStorage",
+        onRehydrateStorage: () => (state) => {
+          console.log('hydration finished', state);
+        },
+      }
+    ),
     { name: "UIStore" }
   )
 );
 
 export type UIAction =
-    | { type: 'TOGGLE_LAYER'; layer: LayerName }
-    | { type: 'SHOW_LAYER'; layer: LayerName }
-    | { type: 'HIDE_LAYER'; layer: LayerName }
-    | { type: 'SET_ACTIVE_LAYERS'; activeLayers: LayerName[] }
-    | { type: 'SET_CURSOR'; cursor: string}
-    | { type: 'SET_MAP_LOCK'; value: boolean }
+  | { type: 'TOGGLE_LAYER'; layer: LayerName }
+  | { type: 'SHOW_LAYER'; layer: LayerName }
+  | { type: 'HIDE_LAYER'; layer: LayerName }
+  | { type: 'SET_ACTIVE_LAYERS'; activeLayers: LayerName[] }
+  | { type: 'SET_CURSOR'; cursor: string }
+  | { type: 'SET_MAP_LOCK'; value: boolean }
 
 function baseReducer(state: UIState, action: UIAction): Partial<UIState> {
   switch (action.type) {

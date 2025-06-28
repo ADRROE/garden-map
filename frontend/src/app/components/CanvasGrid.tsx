@@ -310,6 +310,69 @@ const CanvasGrid = forwardRef<CanvasGridHandle, CanvasGridProps>(
       }
     };
 
+    useEffect(() => {
+      const container = containerRef.current;
+        if (!container) return;
+
+  // Make sure the element can receive focus so key events fire
+  if (container.tabIndex === -1) container.tabIndex = 0;
+
+      let raf = 0;
+
+      const onKeydown = (e: KeyboardEvent) => {
+            // Only handle the four arrow keys – bail early for everything else
+    if (!["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(e.key)) {
+      return;
+    }
+        e.preventDefault();
+        cancelAnimationFrame(raf);
+
+            const STEP_SCREEN_PX = e.shiftKey ? 120 : 40;   // hold ⇧ for faster pan
+    // Convert key → Δx / Δy in *screen* pixels, mirroring Ctrl‑drag logic
+    let dx = 0, dy = 0;
+    switch (e.key) {
+      case "ArrowLeft":  dx =  STEP_SCREEN_PX; break;   // left‑arrow = drag left
+      case "ArrowRight": dx = -STEP_SCREEN_PX; break;
+      case "ArrowUp":    dy =  STEP_SCREEN_PX; break;
+      case "ArrowDown":  dy = -STEP_SCREEN_PX; break;
+    }
+
+        raf = requestAnimationFrame(() => {
+          const { matrix: transformMatrix, setMatrix } = useViewportStore.getState(); // ✅ from store
+          if (!transformMatrix) return;
+
+          let newMatrix = new DOMMatrix([
+            transformMatrix.a,
+            transformMatrix.b,
+            transformMatrix.c,
+            transformMatrix.d,
+            transformMatrix.e,
+            transformMatrix.f,
+          ]).translate(dx, dy);
+
+
+          // ✅ Constrain the result
+          const bounds = { width: 4700, height: 4700 };
+          const viewport = { width: window.innerWidth, height: window.innerHeight };
+          const constrained = constrainMatrix(newMatrix, bounds, viewport);
+
+          // ✅ Store + visual transform
+          setMatrix(constrained);
+          wrapperRef.current!.style.transformOrigin = '0 0';
+          wrapperRef.current!.style.transform = constrained.toString();
+
+
+          throttledRedraw();
+        });
+      };
+
+      container.addEventListener("keydown", onKeydown, { passive: false })
+      return () => {
+        cancelAnimationFrame(raf);
+        container.removeEventListener("keydown", onKeydown);
+      };
+    });
+
     // 6️⃣  Wheel → update pan/scale state only
     // 3. Update wheel zoom logic to use viewport store directly
     useEffect(() => {

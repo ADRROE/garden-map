@@ -1,6 +1,6 @@
 // useSelectionStore.ts
 import { create } from 'zustand';
-import { devtools } from 'zustand/middleware';
+import { devtools, persist } from 'zustand/middleware';
 import { SelectionState } from './SelectionState';
 import { GardenEntity, PaletteItem, Vec2 } from '../types';
 import { useUIStore } from './useUIStore';
@@ -26,69 +26,82 @@ type SelectionStore = {
 };
 
 export const useSelectionStore = create<SelectionStore>()(
-  devtools((set) => ({
-    selection: { kind: null },
-    selectedObjId: null,
-    selectedObj: null,
-    selectedItemId: null,
-    setPlacing: (item) =>
-      set({
-        selection: { kind: 'placing', menuItem: item },
-      }),
+  devtools(
+    persist((set) => ({
+      selection: { kind: null },
+      selectedObjId: null,
+      selectedObj: null,
+      selectedItemId: null,
+      
+      setPlacing: (item) =>
+        set({
+          selection: { kind: 'placing', menuItem: item },
+        }, false, 'setPlacing'),
 
-    setSelectedObjId: (id: string | null) => {
-      set({ selectedObjId: id });     
-    },
+      setSelectedObjId: (id: string | null) => {
+        set({ selectedObjId: id }, false, 'setSelectedObjId');
+      },
 
-    setSelectedPaletteItemId: (id: string | null) => {
-      set({ selectedItemId: id });
-    },
+      setSelectedPaletteItemId: (id: string | null) => {
+        set({ selectedItemId: id }, false, 'setSelectedItemId');
+      },
 
-    setPendingPosition: (position: Vec2) =>
-      set((state) => {
-        if (state.selection.kind === 'placing') {
-          return {
-            selection: {
-              ...state.selection,
-              pendingPosition: position,
-            },
-          };
-        }
-        return {};
-      }),
+      setPendingPosition: (position: Vec2) =>
+        set((state) => {
+          if (state.selection.kind === 'placing') {
+            return {
+              selection: {
+                ...state.selection,
+                pendingPosition: position,
+              },
+            };
+          }
+          return {};
+        }, false, 'setPendingPosition'),
 
-    setEditing: (obj) => {
-      if (useUIStore.getState().isMapLocked) return;
-      set({
-        selection: { kind: 'editing', obj },
-        selectedObj: obj,
-        selectedObjId: obj.id
-      })
-    },
-    setConfirming: () => {
-      set({
-        selection: { kind: 'confirming' }
-      })
-    },
+      setEditing: (obj) => {
+        if (useUIStore.getState().isMapLocked) return;
+        set({
+          selection: { kind: 'editing', obj },
+          selectedObj: obj,
+          selectedObjId: obj.id
+        }, false, 'setEditing')
+      },
 
-    setDrawing: (color) => {
-      if (useUIStore.getState().isMapLocked) return;
-      if (!color) return;
-      set({
-        selection: { kind: 'drawing', color },
-      })
-    },
+      setConfirming: () => {
+        set({
+          selection: { kind: 'confirming' }
+        }, false, 'setConfirming')
+      },
 
-    clear: () =>
-      set({
-        selection: { kind: null },
-        selectedObj: null,
-        selectedItemId: null
-      }),
-    isMouseDown: false,
-    isModifierKeyDown: false,
+      setDrawing: (color) => {
+        if (useUIStore.getState().isMapLocked) return;
+        if (!color) return;
+        set({
+          selection: { kind: 'drawing', color },
+        }, false, 'setDrawing')
+      },
 
-    setMouseDown: (down) => set({ isMouseDown: down }),
-    setModifierKeyDown: (down) => set({ isModifierKeyDown: down }),
-  }), { name: 'SelectionStore' })
+      clear: () =>
+        set({
+          selection: { kind: null },
+          selectedObj: null,
+          selectedItemId: null
+        }, false, 'clear'),
+      isMouseDown: false,
+      isModifierKeyDown: false,
+
+      setMouseDown: (down) => set({ isMouseDown: down }, false, 'setMouseDown'),
+
+      setModifierKeyDown: (down) => set({ isModifierKeyDown: down }, false, 'setModifierKeyDown'),
+    }),
+      {
+        name: 'SelectionStorage',
+        onRehydrateStorage: () => (state) => {
+          console.log('hydration finished', state);
+        },
+      }
+    ),
+    { name: 'SelectionStore' }
+  )
 );

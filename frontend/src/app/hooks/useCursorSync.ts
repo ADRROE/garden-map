@@ -24,16 +24,28 @@ export function useCursorSync(fabricCanvas?: Canvas | null, naming?: boolean, ov
 
             img.onload = () => {
                 const cursorUrl = `url(${image}) 16 16, auto`;
-                useUIStore.getState().dispatch({ type: "SET_CURSOR", cursor: cursorUrl });
+                const currentCursor = useUIStore.getState().cursor;
+                if (currentCursor !== resolved) {
+                    useUIStore.getState().dispatch({ type: "SET_CURSOR", cursor: cursorUrl });
+                }
+
             };
 
             img.onerror = () => {
                 console.warn("Failed to load cursor image:", image);
-                useUIStore.getState().dispatch({ type: "SET_CURSOR", cursor: resolved });
+                const currentCursor = useUIStore.getState().cursor;
+                if (currentCursor !== resolved) {
+                    useUIStore.getState().dispatch({ type: "SET_CURSOR", cursor: resolved });
+                }
+
             };
         } else {
             // Fallback for non-image cursors or when naming is true
-            useUIStore.getState().dispatch({ type: "SET_CURSOR", cursor: resolved });
+            const currentCursor = useUIStore.getState().cursor;
+            if (currentCursor !== resolved) {
+                useUIStore.getState().dispatch({ type: "SET_CURSOR", cursor: resolved });
+            }
+
         }
     }, [fabricCanvas, naming, menuItem, selection, overrideCursor]);
 
