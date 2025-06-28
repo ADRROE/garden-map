@@ -12,6 +12,8 @@ import { log, warn } from "@/utils/utils";
 import { useUIStore } from "@/stores/useUIStore";
 import { useCursorSync } from "@/hooks/useCursorSync";
 
+(globalThis as any).DEBUG = false;
+
 export default function Home() {
 
   const colorBuffer = useColorBuffer()
