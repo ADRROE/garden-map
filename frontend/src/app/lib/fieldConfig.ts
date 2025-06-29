@@ -1,7 +1,7 @@
 import { ItemFormData } from "./itemSchema";
 import { ZoneFormData } from "./zoneSchema";
 
-type FieldType = "text" | "number" | "date" | "soilMix";
+type FieldType = "text" | "number" | "date" | "SoilMix";
 
 type BaseFieldConfigItem = {
   labelKey: string;
@@ -38,7 +38,7 @@ export const fieldConfig: FieldConfigItem[] = [
   { name: "plantForm", labelKey: "plantForm", type: "text", readOnly: false },
   { name: "status", labelKey: "status", type: "text", readOnly: false },
   { name: "circumference", labelKey: "circumference", type: "number", unit: "cm", readOnly: false },
-  { name: "soilMix", labelKey: "soilMix", type: "soilMix", readOnly: false },
+  { name: "soilMix", labelKey: "soilMix", type: "SoilMix", readOnly: false },
   { name: "moisture", labelKey: "moisture", type: "number", unit: "%", readOnly: true },
   { name: "sunshine", labelKey: "sunshine", type: "number", unit: "lux/hr", readOnly: true },
 ] as const;

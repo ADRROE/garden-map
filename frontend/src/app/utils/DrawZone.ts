@@ -1,6 +1,7 @@
 import { Cell, GardenZone, InteractiveZone } from "@/types";
 import { darkenColor } from "./utils";
 import polylabel from "polylabel";
+import { blendSoilMixColor } from "./colorMixer";
 
 const CELL_SIZE = 20;
 
@@ -157,7 +158,7 @@ if (typeof window !== "undefined" && typeof CanvasRenderingContext2D !== "undefi
     /* Draw */
     drawSmoothPolygon(this, scaled);
     this.strokeStyle = isSelected ? "orange" : darkenColor(zone.color, 0.6);
-    this.fillStyle = zone.color;
+    this.fillStyle = blendSoilMixColor(zone.soilMix, zone.color);
     this.lineWidth = isSelected ? 5 : 2;
     this.setLineDash(isSelected ? [10, 4] : []);
 

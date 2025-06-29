@@ -1,4 +1,5 @@
 import { oklch, formatHex } from 'culori';
+import { SoilMix } from '@/types';
 
 const baseSoilColors = {
   sand: '#c7b199',
@@ -10,12 +11,15 @@ const baseSoilColors = {
 type SoilType = keyof typeof baseSoilColors;
 
 export function blendSoilMixColor(
-  soilMix: Partial<Record<SoilType, number>>
+  soilMix?: SoilMix,
+  fallback: string = '#cccccc'
 ): string {
+  if (!soilMix) return fallback;
   const total = Object.values(soilMix).reduce((sum, v) => sum + (v ?? 0), 0);
-  if (total === 0) return '#cccccc';
+  if (total === 0) return fallback;
 
   let l = 0, c = 0, h = 0;
+  let validCount = 0;
 
   for (const [type, amount] of Object.entries(soilMix) as [SoilType, number][]) {
     if (!amount) continue;
@@ -26,8 +30,15 @@ export function blendSoilMixColor(
 
     l += color.l * weight;
     c += color.c * weight;
-    h += color.h ?? 0 * weight;
+    h += (color.h ?? 0) * weight;
+    validCount++;
   }
 
-  return formatHex({ mode: 'oklch', l, c, h });
+  if (validCount === 0) return fallback;
+
+  try {
+    return formatHex({ mode: 'oklch', l, c, h });
+  } catch {
+    return fallback;
+  }
 }

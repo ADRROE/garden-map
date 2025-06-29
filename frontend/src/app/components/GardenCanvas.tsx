@@ -109,7 +109,6 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
   const [floatingLabelPosition, setFloatingLabelPosition] = useState<{ x: number; y: number } | null>(null);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [hoverCursor, setHoverCursor] = useState<string | null>(null);
-  const [formData, setFormData] = useState<Partial<ItemFormData> & Partial<ZoneFormData>>();
 
   const imageCacheRef = useRef<Map<string, HTMLImageElement>>(new Map());
   const lastPropMenuRef = useRef<Partial<ItemFormData> & { id: string } | Partial<ZoneFormData> & { id: string } | null>(null);
@@ -118,16 +117,9 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
 
   const fabricCanvas = innerCanvasGridRef.current?.fabricCanvas;
   useCursorSync(fabricCanvas, naming, hoverCursor);
-  const {interactiveZoneToGardenZone} = useGardenZone()
 
   const { onCanvasClick } = useCanvasInteraction({
     onSelect: (obj) => {
-      if (obj.kind === 'GardenZone') {
-        const reduced = interactiveZoneToGardenZone(obj);
-        setPropMenu(reduced);
-      } else {
-        setPropMenu(obj)
-      }
       setSelectedObjId(obj.id);
     },
     onDeselect: () => {
@@ -382,12 +374,11 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
         />
       )}
       {menu.activeMenu === 'prop' &&
-        propMenu &&
+        selectedObj &&
         selectedObj?.id === menu.propMenuObjectId && (
           <PropMenu
-            formData={propMenu}
+            formData={selectedObj}
             fields={fieldConfig}
-            setFormData={setFormData}
             onUpdate={(updatedData) => {
               log("🔧 PropMenu updated item:", updatedData);
               setPropMenu((prev) => {
