@@ -3,9 +3,8 @@ import { SoilMix } from '@/types';
 
 const baseSoilColors = {
   sand: '#c7b199',
-  loam: '#b88859',
-  clay: '#dad6ba',
-  compost: '#5c6b73',
+  silt: '#b88859',
+  clay: '#dad6ba'
 } as const;
 
 type SoilType = keyof typeof baseSoilColors;

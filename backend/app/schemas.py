@@ -1,10 +1,34 @@
-from pydantic import BaseModel, computed_field
+from pydantic import BaseModel, Field, AliasChoices, computed_field, model_validator
 from typing import List, Tuple, Literal, Any, Dict
 from datetime import datetime
 
 class Vec2(BaseModel):
     x: float
     y: float
+
+class CoVec3(BaseModel):
+    # ┌───────────────────┐
+    # │  ALIAS MAPPINGS   │
+    # └───────────────────┘
+    # • The field will be filled with whichever alias arrives first.
+    # • `x` may come in as “x” *or* “sand”, etc.
+    x: float = Field(validation_alias=AliasChoices('x', 'sand'))
+    y: float = Field(validation_alias=AliasChoices('y', 'silt'))
+    z: float = Field(validation_alias=AliasChoices('z', 'clay'))
+
+    # ┌───────────────────┐
+    # │  NORMALISATION    │
+    # └───────────────────┘
+    @model_validator(mode='after')
+    def normalise(cls, m: "CoVec3"):
+        total = m.x + m.y + m.z
+        if total == 0:
+            raise ValueError('At least one component must be non-zero.')
+        # ── If they’re fractions already, keep them.
+        # ── Otherwise rescale so that x+y+z == 1.0
+        if abs(total - 1.0) > 1e-6:
+            m.x, m.y, m.z = (m.x / total, m.y / total, m.z / total)
+        return m
     
 class Cell(BaseModel):
     col: int
@@ -163,7 +187,7 @@ class GardenZoneBase(BaseModel):
     moisture: float | None = None
     sunshine: float | None = None
     compaction: float | None = None
-    soil_mix: str | None = None
+    soil_mix: CoVec3 | None = None
     t_watered: datetime | None = None
     dt_watered: int | None = None
     q_watered: float | None = None
@@ -186,7 +210,7 @@ class GardenZoneHistory(BaseModel):
     moisture: float | None = None
     sunshine: float | None = None
     compaction: float | None = None
-    soil_mix: str | None = None
+    soil_mix: CoVec3 | None = None
     t_watered: datetime | None = None
     dt_watered: int | None = None
     q_watered: float | None = None
@@ -209,7 +233,7 @@ class GardenZoneUpdate(BaseModel):
     moisture: float | None = None
     sunshine: float | None = None
     compaction: float | None = None
-    soil_mix: str | None = None
+    soil_mix: CoVec3 | None = None
     t_watered: datetime | None = None
     dt_watered: int | None = None
     q_watered: float | None = None
@@ -237,7 +261,7 @@ class GardenZoneCreate(GardenZoneBase):
     moisture: float | None = None
     sunshine: float | None = None
     compaction: float | None = None
-    soil_mix: str | None = None
+    soil_mix: CoVec3 | None = None
     t_watered: datetime | None = None
     dt_watered: int | None = None
     q_watered: float | None = None
@@ -247,6 +271,52 @@ class GardenZoneCreate(GardenZoneBase):
     class Config:
         from_attributes = True
         populate_by_name = True
+
+class GardenZoneRead(BaseModel):
+    id: str
+    display_name: str | None = None
+    color: str
+    coverage: List[Cell]
+    border_path: List[Tuple[int, int]] = None
+    ph: float | None = None
+    temp: float | None = None
+    moisture: float | None = None
+    sunshine: float | None = None
+    compaction: float | None = None
+    sand: float | None = None
+    silt: float | None = None
+    clay: float | None = None
+    t_watered: datetime | None = None
+    dt_watered: int | None = None
+    q_watered: float | None = None
+    t_amended: datetime | None = None
+    q_amended: float | None = None
+
+    @computed_field
+    def soil_mix(self) -> Dict[str, float] | None:
+        if self.sand is None and self.silt is None and self.clay is None:
+            return None
+        return {
+            "sand": round((self.sand or 0) * 100, 2),
+            "silt": round((self.silt or 0) * 100, 2),
+            "clay": round((self.clay or 0) * 100, 2),
+        }
+
+    class Config:
+        from_attributes = True
+        fields = {
+            "sand": {"exclude": True},
+            "silt": {"exclude": True},
+            "clay": {"exclude": True},
+        }
+
+    class Config:
+        from_attributes = True
+        fields = {
+            "x": {"exclude": True},
+            "y": {"exclude": True},
+            "z": {"exclude": True},
+        }
     
 class GardenZone(GardenZoneBase):
     pass

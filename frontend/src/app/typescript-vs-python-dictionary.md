@@ -21,12 +21,12 @@ When working in TypeScript, you can often relate `objects` to Python's `dictiona
 
 ```python
 color_map = {
-    "loam": "#b88859",
+    "silt": "#b88859",
     "sand": "#c7b199",
     "clay": "#dad6ba"
 }
 
-value = color_map["loam"]  # str
+value = color_map["silt"]  # str
 ```
 
 ---
@@ -35,7 +35,7 @@ value = color_map["loam"]  # str
 
 ```ts
 const colorMap = {
-    loam: "#b88859",
+    silt: "#b88859",
     sand: "#c7b199",
     clay: "#dad6ba"
 };
@@ -46,23 +46,23 @@ const colorMap = {
 ```ts
 type ColorMap = typeof colorMap;
 // {
-//   loam: string;
+//   silt: string;
 //   sand: string;
 //   clay: string;
 // }
 ```
 
-### Get the Type of One Value (e.g. for "loam")
+### Get the Type of One Value (e.g. for "silt")
 
 ```ts
-type OneColor = ColorMap["loam"]; // string
+type OneColor = ColorMap["silt"]; // string
 ```
 
 ### Get All Possible Keys (as a union)
 
 ```ts
 type SoilType = keyof typeof colorMap;
-// => "loam" | "sand" | "clay"
+// => "silt" | "sand" | "clay"
 ```
 
 ### Get All Possible Values (as a union)
@@ -87,12 +87,12 @@ If you want to preserve literal values (not widen to `string`), use `as const`:
 
 ```ts
 const colorMap = {
-    loam: "#b88859",
+    silt: "#b88859",
     sand: "#c7b199",
     clay: "#dad6ba"
 } as const;
 
-type OneColor = typeof colorMap["loam"]; // "#b88859"
+type OneColor = typeof colorMap["silt"]; // "#b88859"
 type ColorValues = typeof colorMap[keyof typeof colorMap]; // "#b88859" | "#c7b199" | "#dad6ba"
 
 # Understanding TypeScript State Types via Python Dictionary Analogy

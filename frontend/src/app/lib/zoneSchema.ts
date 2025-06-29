@@ -3,13 +3,12 @@ import { z } from "zod";
 const SoilMixSchema = z
   .object({
     sand:    z.number().min(0).max(100),
-    loam:    z.number().min(0).max(100),
-    clay:    z.number().min(0).max(100),
-    compost: z.number().min(0).max(100)
+    silt:    z.number().min(0).max(100),
+    clay:    z.number().min(0).max(100)
   })
   .refine(
     (mix) =>
-      mix.sand + mix.loam + mix.clay + mix.compost === 100,
+      mix.sand + mix.silt + mix.clay === 100,
     {
       message: "Soil mix must add up to 100 %",
       path: []            // <- attaches error to the object itself

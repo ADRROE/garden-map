@@ -4,7 +4,6 @@ from app import schemas, models
 from app import crud
 from app.database import SessionLocal
 from app import algorithms
-import uuid
 
 
 router = APIRouter()
@@ -16,7 +15,7 @@ def get_db():
     finally:
         db.close()
 
-@router.get("/", response_model=list[schemas.GardenZone])
+@router.get("/", response_model=list[schemas.GardenZoneRead])
 def get_zones(db: Session = Depends(get_db)):
     print("GET ZONES CALLED with response:", crud.get_zones(db))
     return crud.get_zones(db)
@@ -25,7 +24,7 @@ def get_zones(db: Session = Depends(get_db)):
 def get_zone_history(id: str, db: Session = Depends(get_db)):
     return db.query(models.GardenZoneHistory).filter_by(garden_zone_id=id).order_by(models.GardenZoneHistory.last_modified.desc()).all()
 
-@router.post("/", response_model=list[schemas.GardenZone])
+@router.post("/", response_model=list[schemas.GardenZoneRead])
 def calculate_zones(
     payload: schemas.GardenZoneCreate,
     db: Session = Depends(get_db)
@@ -44,7 +43,7 @@ def calculate_zones(
 
         return saved_zones
 
-@router.put("/{id}", response_model=schemas.GardenZone)
+@router.put("/{id}", response_model=schemas.GardenZoneRead)
 def update_zone(
     id: str,
     payload: schemas.GardenZoneUpdateWrapper,
@@ -55,7 +54,7 @@ def update_zone(
         raise HTTPException(status_code=404, detail="Zone not found")
     return updated_zone
 
-@router.delete("/{id}", response_model=schemas.GardenZone)
+@router.delete("/{id}", response_model=schemas.GardenZoneRead)
 def delete_zone(id: str, db: Session = Depends(get_db)):
     print(f"DELETE ZONE CALLED with id={id}")
     return crud.delete_zone(db, id)

@@ -118,7 +118,7 @@ def create_zone_with_cells(db: Session, zone: schemas.GardenZoneCreate):
     db.commit()
     db.refresh(db_zone)
 
-    return db_zone
+    return schemas.GardenZoneRead.model_validate(db_zone)
 
 
 def update_zone(
@@ -137,6 +137,12 @@ def update_zone(
         return None
 
     updates_data = updates.dict(exclude_unset=True)
+
+    x = updates_data['soil_mix']['x']
+    y = updates_data['soil_mix']['y']
+    z = updates_data['soil_mix']['z']
+
+    updates_data.pop('soil_mix')
 
     # Handle coverage update (Cells)
     if "coverage" in updates_data:
@@ -173,7 +179,11 @@ def update_zone(
     for key, value in updates_data.items():
         setattr(db_zone, key, value)
 
+    db_zone.sand = x
+    db_zone.silt = y
+    db_zone.clay = z
     db_zone.last_modified = timestamp
+
     db.commit()
     db.refresh(db_zone)
     return db_zone

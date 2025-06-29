@@ -1,7 +1,7 @@
 "use client";
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { useTranslations } from "next-intl";
 import { useForm } from 'react-hook-form';
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -30,18 +30,29 @@ const PropMenu: React.FC<PropMenuProps> = ({
   type FormShape = z.infer<typeof formSchema>;
 
   const t = useTranslations('PropMenu');
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<FormShape>({ resolver: zodResolver(formSchema), mode: 'onChange', defaultValues: formData })
 
   const applicableFields = fields.filter(field => field.name in formData);
   const readOnlyFields = applicableFields.filter(f => f.readOnly);
   const editableFields = applicableFields.filter(f => !f.readOnly);
+const editableFieldNames = fields
+  .filter((f) => !f.readOnly)
+  .map((f) => f.name as keyof FormShape);
+
+const filteredDefaults: Partial<FormShape> = Object.fromEntries(
+  Object.entries(formData)
+    .filter(([key]) => editableFieldNames.includes(key as keyof FormShape))
+    .map(([key, value]) => [key as keyof FormShape, value])
+);
+
+  const { register, handleSubmit, reset, formState: { errors } } = useForm<FormShape>({ resolver: zodResolver(formSchema), mode: 'onChange', defaultValues: filteredDefaults })
+
 
   const getInputValue = (key: string): string => {
     const raw = formData[key as keyof typeof formData];
     if (raw instanceof Date) return raw.toISOString().split("T")[0];
     if (typeof raw === "number") return raw.toFixed(2);
     if (isSoilMix(raw)) {
-      // Convert SoilMix to a compact string like "sand:25,loam:25,..."
+      // Convert SoilMix to a compact string like "sand:25,silt:25,..."
       return Object.entries(raw)
         .map(([type, value]) => `${type}:${value}`)
         .join(", ");
@@ -50,6 +61,8 @@ const PropMenu: React.FC<PropMenuProps> = ({
   };
 
   const onSubmit = (data: Partial<ItemFormData & ZoneFormData>) => {
+  console.log("✅ Submitted data:", data);
+  console.log("📤 Calling onUpdate");
   onUpdate({ id: formData.id, ...(data as ItemFormData & ZoneFormData) });
   onClose();
 };
@@ -78,11 +91,13 @@ const PropMenu: React.FC<PropMenuProps> = ({
           <hr className="my-2 border-gray-200" />
         </div>
       )}
-      <form onSubmit={handleSubmit(onSubmit)}>
+      <form onSubmit={handleSubmit(onSubmit, (err) => {
+  console.log("⛔ Validation failed:", err);
+})}>
         {editableFields.map((field) => {
           /* ---------- special case: SoilMix ---------- */
           if (field.name === "soilMix") {
-            const soilTypes = ["sand", "loam", "clay", "compost"] as const;
+            const soilTypes = ["sand", "silt", "clay"] as const;
 
             return (
               <fieldset key="soilMix" className="mb-4">
@@ -92,12 +107,7 @@ const PropMenu: React.FC<PropMenuProps> = ({
 
                 {soilTypes.map((type) => (
                   <div key={type} className="mb-2 flex items-center gap-2">
-                    <label
-                      htmlFor={`soilMix.${type}`}
-                      className="capitalize w-16"
-                    >
-                      {type}
-                    </label>
+{t(type)} {field.unit && `(${field.unit})`}
 
                     <input
                       id={`soilMix.${type}`}

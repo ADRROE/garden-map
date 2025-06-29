@@ -341,7 +341,7 @@ const CanvasGrid = forwardRef<CanvasGridHandle, CanvasGridProps>(
           const { matrix: transformMatrix, setMatrix } = useViewportStore.getState(); // ✅ from store
           if (!transformMatrix) return;
 
-          let newMatrix = new DOMMatrix([
+          const newMatrix = new DOMMatrix([
             transformMatrix.a,
             transformMatrix.b,
             transformMatrix.c,

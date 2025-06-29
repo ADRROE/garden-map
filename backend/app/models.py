@@ -139,7 +139,9 @@ class GardenZone(Base):
     moisture: Mapped[float | None] = mapped_column(Float, nullable=True)
     sunshine: Mapped[float | None] = mapped_column(Float, nullable=True)
     compaction: Mapped[float | None] = mapped_column(Float, nullable=True)
-    soil_mix: Mapped[str | None] = mapped_column(String(36), nullable=True)
+    sand: Mapped[float | None] = mapped_column(Float, nullable=True)
+    silt: Mapped[float | None] = mapped_column(Float, nullable=True)
+    clay: Mapped[float | None] = mapped_column(Float, nullable=True)
     t_watered: Mapped[DateTime | None] = mapped_column(DateTime, nullable=True)
     dt_watered: Mapped[float] = mapped_column(Float, nullable=True)
     q_watered: Mapped[float | None] = mapped_column(Float, nullable=True)
@@ -166,7 +168,9 @@ class GardenZoneHistory(Base):
     moisture: Mapped[float | None] = mapped_column(Float, nullable=True)
     sunshine: Mapped[float | None] = mapped_column(Float, nullable=True)
     compaction: Mapped[float | None] = mapped_column(Float, nullable=True)
-    soil_mix: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    sand: Mapped[float | None] = mapped_column(Float, nullable=True)
+    silt: Mapped[float | None] = mapped_column(Float, nullable=True)
+    clay: Mapped[float | None] = mapped_column(Float, nullable=True)
     t_watered: Mapped[DateTime | None] = mapped_column(DateTime, nullable=True)
     dt_watered: Mapped[float] = mapped_column(Float, nullable=True)
     q_watered: Mapped[float | None] = mapped_column(Float, nullable=True)
@@ -202,7 +206,9 @@ def track_garden_zone_history(mapper, connection, target: GardenZone):
         moisture=db_state.moisture,
         sunshine=db_state.sunshine,
         compaction=db_state.compaction,
-        soil_mix=db_state.soil_mix,
+        sand=db_state.sand,
+        silt=db_state.silt,
+        clay=db_state.clay,
         t_watered=db_state.t_watered,
         dt_watered=db_state.dt_watered,
         q_watered=db_state.q_watered,

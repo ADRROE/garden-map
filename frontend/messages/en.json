@@ -22,6 +22,9 @@
     "status": "Status",
     "circumference": "Circumference",
     "soilMix": "Soil Mix",
+    "sand": "Sand",
+    "silt": "Silt",
+    "clay": "Clay",
     "moisture": "Moisture",
     "sunshine": "Sunshine",
     "saveChanges": "Save Changes"

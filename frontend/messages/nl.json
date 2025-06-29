@@ -22,6 +22,9 @@
     "status": "Status",
     "circumference": "Omtrek",
     "soilMix": "Grondmengsel",
+    "sand": "Zand",
+    "silt": "Zilt",
+    "clay": "Klei",
     "moisture": "Vochtigheidsgraad",
     "sunshine": "Zonneschijn",
     "saveChanges": "Wijzigingen Opslaan"

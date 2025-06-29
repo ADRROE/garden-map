@@ -10,7 +10,7 @@ export type GardenAction =
   | { type: 'water', subject: GardenItem | GardenZone }
   | { type: 'harvest', subject: GardenItem }
 
-export type SoilType = "sand" | "loam" | "clay" | "compost";
+export type SoilType = "sand" | "silt" | "clay";
 export type SoilMix = Record<SoilType, number>;
 interface BaseItem {
   id: string;

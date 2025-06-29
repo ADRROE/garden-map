@@ -117,9 +117,16 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
 
   const fabricCanvas = innerCanvasGridRef.current?.fabricCanvas;
   useCursorSync(fabricCanvas, naming, hoverCursor);
+  const {interactiveZoneToGardenZone} = useGardenZone()
 
   const { onCanvasClick } = useCanvasInteraction({
     onSelect: (obj) => {
+      if (obj.kind === 'GardenZone') {
+        const reduced = interactiveZoneToGardenZone(obj);
+        setPropMenu(reduced);
+      } else {
+        setPropMenu(obj)
+      }
       setSelectedObjId(obj.id);
     },
     onDeselect: () => {
@@ -374,10 +381,10 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
         />
       )}
       {menu.activeMenu === 'prop' &&
-        selectedObj &&
+        propMenu &&
         selectedObj?.id === menu.propMenuObjectId && (
           <PropMenu
-            formData={selectedObj}
+            formData={propMenu}
             fields={fieldConfig}
             onUpdate={(updatedData) => {
               log("🔧 PropMenu updated item:", updatedData);

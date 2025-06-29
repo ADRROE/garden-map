@@ -11,6 +11,20 @@ export function useGardenZone() {
     const updateZoneLocally = useGardenStore((s) => s.updateZoneLocally);
     const { clear } = useSelectionStore();
 
+        function interactiveZoneToGardenZone(obj: InteractiveZone): GardenZone {
+  const gardenZoneKeys: (keyof GardenZone)[] = [
+    'kind', 'id', 'displayName', 'color', 'coverage', 'borderPath',
+    'ph', 'temp', 'moisture', 'sunshine', 'compaction', 'soilMix',
+    'tWatered', 'dtWatered', 'qWatered', 'tAmended', 'qAmended',
+  ];
+
+  const result: Partial<GardenZone> = {};
+  for (const key of gardenZoneKeys) {
+    result[key] = obj[key] as any;
+  }
+  return result as GardenZone;
+}
+
     const confirmPlacement = async (cells: Record<string, Cell>, name: string) => {
         log("19 - confirmPlacement call detected from inside useGardenZone with: ", cells, name);
         const coloredCellsArray: Cell[] = Object.values(cells); // ✅ Convert to array
@@ -43,5 +57,5 @@ export function useGardenZone() {
 
     }
 
-    return { confirmUpdate, confirmPlacement }
+    return { confirmUpdate, confirmPlacement, interactiveZoneToGardenZone }
 }
