@@ -34,15 +34,15 @@ const PropMenu: React.FC<PropMenuProps> = ({
   const applicableFields = fields.filter(field => field.name in formData);
   const readOnlyFields = applicableFields.filter(f => f.readOnly);
   const editableFields = applicableFields.filter(f => !f.readOnly);
-const editableFieldNames = fields
-  .filter((f) => !f.readOnly)
-  .map((f) => f.name as keyof FormShape);
+  const editableFieldNames = fields
+    .filter((f) => !f.readOnly)
+    .map((f) => f.name as keyof FormShape);
 
-const filteredDefaults: Partial<FormShape> = Object.fromEntries(
-  Object.entries(formData)
-    .filter(([key]) => editableFieldNames.includes(key as keyof FormShape))
-    .map(([key, value]) => [key as keyof FormShape, value])
-);
+  const filteredDefaults: Partial<FormShape> = Object.fromEntries(
+    Object.entries(formData)
+      .filter(([key]) => editableFieldNames.includes(key as keyof FormShape))
+      .map(([key, value]) => [key as keyof FormShape, value])
+  );
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm<FormShape>({ resolver: zodResolver(formSchema), mode: 'onChange', defaultValues: filteredDefaults })
 
@@ -61,11 +61,11 @@ const filteredDefaults: Partial<FormShape> = Object.fromEntries(
   };
 
   const onSubmit = (data: Partial<ItemFormData & ZoneFormData>) => {
-  console.log("✅ Submitted data:", data);
-  console.log("📤 Calling onUpdate");
-  onUpdate({ id: formData.id, ...(data as ItemFormData & ZoneFormData) });
-  onClose();
-};
+    console.log("✅ Submitted data:", data);
+    console.log("📤 Calling onUpdate");
+    onUpdate({ id: formData.id, ...(data as ItemFormData & ZoneFormData) });
+    onClose();
+  };
 
   // useEffect(() => reset(formData), [formData, reset]);
 
@@ -92,8 +92,8 @@ const filteredDefaults: Partial<FormShape> = Object.fromEntries(
         </div>
       )}
       <form onSubmit={handleSubmit(onSubmit, (err) => {
-  console.log("⛔ Validation failed:", err);
-})}>
+        console.log("⛔ Validation failed:", err);
+      })}>
         {editableFields.map((field) => {
           /* ---------- special case: SoilMix ---------- */
           if (field.name === "soilMix") {
@@ -107,8 +107,9 @@ const filteredDefaults: Partial<FormShape> = Object.fromEntries(
 
                 {soilTypes.map((type) => (
                   <div key={type} className="mb-2 flex items-center gap-2">
-{t(type)} {field.unit && `(${field.unit})`}
-
+                    <label className="block text-sm font-medium text-gray-700">
+                      {t(type)} {field.unit && `(${field.unit})`}
+                    </label>
                     <input
                       id={`soilMix.${type}`}
                       type="number"
@@ -142,7 +143,7 @@ const filteredDefaults: Partial<FormShape> = Object.fromEntries(
 
           return (
             <div key={field.name} className="mb-4">
-              <label className="block text-sm font-medium text-gray-700">
+              <label className="block font-bold text-gray-700">
                 {t(field.labelKey)} {field.unit && `(${field.unit})`}
               </label>
 

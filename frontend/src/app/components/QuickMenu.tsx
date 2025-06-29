@@ -44,8 +44,8 @@ const QuickMenu = () => {
                 } },
             ],
         },
-        { src: "/zone.png", alt: "Zones", onClick: handleZoneClick },
-        { src: "/item.png", alt: "Items", onClick: handleItemClick },
+        { src: "/digging.png", alt: "Digging", onClick: handleZoneClick },
+        { src: "/planting.png", alt: "Planting", onClick: handleItemClick },
         { src: isMapLocked ? "/icons/locked.png" : "/icons/unlocked.png", alt: "Lock", onClick: handleLockClick },
     ];
 

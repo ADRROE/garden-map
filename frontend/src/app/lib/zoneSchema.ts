@@ -33,6 +33,7 @@ export const zoneSchema = z.object({
 
   // --- water / amendment -------------
   tWatered:  z.coerce.date().optional(),
+  dtWatered:  z.number().optional(),
   qWatered:  z.number().optional(),
   tAmended:  z.coerce.date().optional(),
   qAmended:  z.number().optional(),

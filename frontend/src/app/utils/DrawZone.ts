@@ -166,7 +166,7 @@ if (typeof window !== "undefined" && typeof CanvasRenderingContext2D !== "undefi
     const scaled = contour.map(([c, r]) => [c * CELL_SIZE, r * CELL_SIZE] as Pt);
 
     drawSmoothPolygon(this, scaled);
-    this.strokeStyle = isSelected ? "orange" : darkenColor(zone.color, 0.6);
+    this.strokeStyle = isSelected ? "#0891C5" : darkenColor(zone.color, 0.6);
     this.fillStyle = blendSoilMixColor(zone.soilMix, zone.color);
     this.lineWidth = isSelected ? 5 : 2;
     this.setLineDash(isSelected ? [10, 4] : []);

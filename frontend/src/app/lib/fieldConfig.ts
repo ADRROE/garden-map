@@ -30,8 +30,10 @@ export const fieldConfig: FieldConfigItem[] = [
   { name: "ph", labelKey: "ph", type: "number", readOnly: true },
   { name: "temp", labelKey: "temp", type: "number", unit: "°C", readOnly: true },
   { name: "tAmended", labelKey: "tAmended", type: "date", readOnly: false },
+  { name: "qAmended", labelKey: "qAmended", type: "number", unit: "g", readOnly: false },
   { name: "tHarvested", labelKey: "tHarvested", type: "date", readOnly: false },
   { name: "tWatered", labelKey: "tWatered", type: "date", readOnly: false },
+  { name: "dtWatered", labelKey: "dtWatered", type: "number", unit: "min", readOnly: false },
   { name: "qWatered", labelKey: "qWatered", type: "number", unit: "l", readOnly: false },
   { name: "tPruned", labelKey: "tPruned", type: "date", readOnly: false },
   { name: "fertilizerType", labelKey: "fertilizerType", type: "text", readOnly: false },
@@ -39,6 +41,7 @@ export const fieldConfig: FieldConfigItem[] = [
   { name: "status", labelKey: "status", type: "text", readOnly: false },
   { name: "circumference", labelKey: "circumference", type: "number", unit: "cm", readOnly: false },
   { name: "soilMix", labelKey: "soilMix", type: "SoilMix", unit: "%", readOnly: false },
+  { name: "compaction", labelKey: "compaction", type: "number", unit: "kg/m3", readOnly: false },
   { name: "moisture", labelKey: "moisture", type: "number", unit: "%", readOnly: true },
   { name: "sunshine", labelKey: "sunshine", type: "number", unit: "lux/hr", readOnly: true },
 ] as const;
