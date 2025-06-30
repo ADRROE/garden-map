@@ -66,7 +66,7 @@ export function useGardenItem() {
       error(e);
     }
 
-    clear(); // end placing
+    clear();
   };
 
   const confirmUpdate = async(id: string, updates: Partial<GardenItem>, operation: 'create' | 'modify') => {

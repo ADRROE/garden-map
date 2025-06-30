@@ -1,5 +1,7 @@
 import type { GardenEntity, PaletteItem, Vec2 } from '../types';
 
+export type DrawingSource = 'new' | 'edit';
+
 export type SelectionState =
   | { kind: null }
   | {
@@ -9,4 +11,4 @@ export type SelectionState =
     }
   | { kind: 'editing'; obj: GardenEntity }
   | { kind: 'confirming' }
-  | { kind: 'drawing'; color: string };
+  | { kind: 'drawing'; color: string; source: DrawingSource };

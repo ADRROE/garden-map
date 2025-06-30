@@ -17,7 +17,7 @@ export function useSideBarActions() {
                 initPlacement(item);
                 break
             case 'soil':
-                setDrawing(item.color)
+                setDrawing('new', item.color)
         }
     }
     return { handleItemClick }

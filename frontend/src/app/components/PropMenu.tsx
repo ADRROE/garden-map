@@ -1,7 +1,8 @@
 "use client";
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React from "react";
+import Draggable from 'react-draggable'
+import React, { forwardRef } from "react";
 import { useTranslations } from "next-intl";
 import { useForm } from 'react-hook-form';
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -12,19 +13,21 @@ import { itemSchema } from "@/lib/itemSchema";
 import { cn } from "@/utils/utils";
 import { z } from "zod";
 
-interface PropMenuProps {
+export interface PropMenuProps {
   fields: FieldConfigItem[];
   formData: (Partial<ItemFormData> & Partial<ZoneFormData>) & { id: string; name?: string; };
+  isMaplocked: boolean;
   onUpdate: (updated: ItemFormData | ZoneFormData & { id: string }) => void;
   onClose: () => void;
 }
 
-const PropMenu: React.FC<PropMenuProps> = ({
+const PropMenu = forwardRef<HTMLDivElement, PropMenuProps>(({
   fields,
   formData,
+  isMaplocked,
   onUpdate,
   onClose,
-}) => {
+}, ref) => {
   const combinedSchema = zoneSchema.merge(itemSchema);
   const formSchema = combinedSchema.partial()
   type FormShape = z.infer<typeof formSchema>;
@@ -70,8 +73,8 @@ const PropMenu: React.FC<PropMenuProps> = ({
   // useEffect(() => reset(formData), [formData, reset]);
 
   return (
-    <div className="absolute right-4 top-4 w-64 bg-white shadow-lg p-4 border z-50 rounded mb-1 max-h-[80vh] overflow-y-auto">
-      <div className="flex justify-between mb-4">
+    <div ref={ref} className="right-4 top-4 w-64 bg-white shadow-lg p-4 border z-50 rounded mb-1 max-h-[80vh] overflow-y-auto">
+      <div className="flex justify-between mb-4 prop-menu-header">
         <h2 className="text-lg text-black font-semibold">{formData.displayName}</h2>
         <button onClick={onClose} className="text-gray-900 hover:text-black">✕</button>
       </div>
@@ -165,16 +168,18 @@ const PropMenu: React.FC<PropMenuProps> = ({
             </div>
           );
         })}
-
-        <button
-          type="submit"
-          className="w-full bg-[#C5D4BC] hover:bg-[#a7b59f] text-white py-2 rounded mt-2"
-        >
-          {t("saveChanges")}
-        </button>
+        {!isMaplocked &&
+          <button
+            type="submit"
+            className="w-full bg-[#C5D4BC] hover:bg-[#a7b59f] text-white py-2 rounded mt-2"
+          >
+            {t("saveChanges")}
+          </button>
+        }
       </form>
     </div>
   );
-};
+});
 
+PropMenu.displayName = "PropMenu";
 export default PropMenu;

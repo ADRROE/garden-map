@@ -2,6 +2,7 @@ import { Cell } from "@/types";
 import { ClassValue, clsx } from 'clsx'
 import { twMerge } from 'tailwind-merge'
 
+const DEBUG = process.env.NODE_ENV === "development" || false;
 
 export const cn = (...inputs: ClassValue[]) => {
   return twMerge(clsx(inputs))

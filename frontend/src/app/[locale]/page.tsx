@@ -1,5 +1,4 @@
 "use client";
-/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { useRef } from "react";
 import Overlay from "../components/Overlay";
@@ -12,8 +11,6 @@ import { useColorBuffer } from "@/hooks/useColorBuffer";
 import { log, warn } from "@/utils/utils";
 import { useUIStore } from "@/stores/useUIStore";
 import { useCursorSync } from "@/hooks/useCursorSync";
-
-(globalThis as any).DEBUG = false;
 
 export default function Home() {
 

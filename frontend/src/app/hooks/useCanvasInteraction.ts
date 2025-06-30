@@ -6,7 +6,7 @@ import { useEffect, useRef } from "react";
 import { useUIStore } from "@/stores/useUIStore";
 import { useMenuStore } from "@/stores/useMenuStore";
 import { useInteractiveZones } from "./useInteractiveZones";
-import { useMenuItem } from "./usePaletteItem";
+// import { useMenuItem } from "./usePaletteItem";
 
 type CanvasInteractionOptions = {
   onSelect?: (obj: GardenItem | InteractiveZone) => void;
@@ -41,8 +41,9 @@ export function useCanvasInteraction({
     useMenuStore.getState().setOpenPropMenu(zone.id)
   }
   const isDrawing = useSelectionStore((s) => s.selection.kind === 'drawing');
-  const selectedItemId = useSelectionStore((s) => s.selection.kind ? s.selectedItemId : null);
-  const selectedItem = useMenuItem(selectedItemId);
+  const isPlacing = useSelectionStore((s) => s.selection.kind === 'placing');
+  // const selectedItemId = useSelectionStore((s) => s.selection.kind ? s.selectedItemId : null);
+  // const selectedItem = useMenuItem(selectedItemId);
   const clearSelection = useSelectionStore((s) => s.clear);
 
   useEffect(() => {
@@ -113,11 +114,11 @@ export function useCanvasInteraction({
     };
   }, [isDrawing]);
 
-  useEffect(() => {
-    if (selectedItem?.color) {
-      useSelectionStore.getState().setDrawing(selectedItem.color);
-    }
-  }, [selectedItem])
+  // useEffect(() => {
+  //   if (selectedItem?.color) {
+  //     useSelectionStore.getState().setDrawing('new', selectedItem.color);
+  //   }
+  // }, [selectedItem])
 
   const onCanvasClick = (worldX: number, worldY: number, ctx?: CanvasRenderingContext2D): GardenItem | InteractiveZone | null => {
     const clickedEl = datastate.items.find(el =>
@@ -141,7 +142,9 @@ export function useCanvasInteraction({
       return zone;
     }
     else {
-      onDeselect?.();
+      if (!isDrawing && !isPlacing) {
+        onDeselect?.()
+      };
       return null;
     }
   };

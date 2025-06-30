@@ -4,6 +4,7 @@ import polylabel from "polylabel";
 import { blendSoilMixColor } from "./colorMixer";
 
 const CELL_SIZE = 20;
+const DEBUG = process.env.NODE_ENV === "development" || false;
 
 type Pt = [number, number];
 
@@ -172,6 +173,34 @@ if (typeof window !== "undefined" && typeof CanvasRenderingContext2D !== "undefi
     this.setLineDash(isSelected ? [10, 4] : []);
     this.stroke();
     this.fill();
+
+        // ↓↓↓ START DEBUG BLOCK ↓↓↓
+    if (DEBUG) {
+      this.save();
+
+      // 1) Draw a bright blue outline of the exact polygon points:
+      this.beginPath();
+      scaled.forEach(([x, y], i) => i === 0 ? this.moveTo(x, y) : this.lineTo(x, y));
+      this.closePath();
+      this.strokeStyle = 'blue';
+      this.lineWidth = 2;
+      this.stroke();
+
+      for (const { row, col } of zone.coverage) {
+        this.strokeStyle = 'red';
+        this.strokeRect(col * CELL_SIZE, row * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+      }
+
+      // 2) Fill that same polygon with a semi-transparent blue:
+      this.beginPath();
+      scaled.forEach(([x, y], i) => i === 0 ? this.moveTo(x, y) : this.lineTo(x, y));
+      this.closePath();
+      this.fillStyle = 'rgba(0,0,255,0.3)';
+      this.fill();
+
+      this.restore();
+    }
+    // ↓↓↓ END DEBUG BLOCK ↓↓↓
 
     if (zone.displayName) {
       const [lx, ly] = polylabel([scaled]);

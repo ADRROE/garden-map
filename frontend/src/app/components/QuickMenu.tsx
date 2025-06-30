@@ -1,6 +1,7 @@
 
 import { useUIStore } from "../stores/useUIStore";
 import { useMenuStore } from "@/stores/useMenuStore";
+import { useSelectionStore } from "@/stores/useSelectionStore";
 import { AnimatePresence, motion } from "framer-motion";
 import { useState } from "react";
 
@@ -12,6 +13,8 @@ const QuickMenu = () => {
 
     const menudispatch = useMenuStore(state => state.dispatch);
 
+    const clearSelection = useSelectionStore((s) => s.clear)
+
     const [isOpen, setIsOpen] = useState(false);
     const [activeDropdown, setActiveDropdown] = useState<number | null>(null);
 
@@ -21,7 +24,8 @@ const QuickMenu = () => {
         toggleMapLock()
     }
     const handleItemClick = () => menudispatch({ type: 'TOGGLE_MENU', menu: 'picker' })
-    const handleZoneClick = () => {
+    const handleDigClick = () => {
+        clearSelection();
         menudispatch({ type: 'SHOW_MENU', menu: 'picker'});
         useUIStore.getState().dispatch({type: 'SET_MAP_LOCK', value: false})
         useMenuStore.getState().setOpenSection('s3');
@@ -44,7 +48,7 @@ const QuickMenu = () => {
                 } },
             ],
         },
-        { src: "/digging.png", alt: "Digging", onClick: handleZoneClick },
+        { src: "/digging.png", alt: "Digging", onClick: handleDigClick },
         { src: "/planting.png", alt: "Planting", onClick: handleItemClick },
         { src: isMapLocked ? "/icons/locked.png" : "/icons/unlocked.png", alt: "Lock", onClick: handleLockClick },
     ];

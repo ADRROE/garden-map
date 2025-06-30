@@ -1,7 +1,7 @@
 // useSelectionStore.ts
 import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
-import { SelectionState } from './SelectionState';
+import { DrawingSource, SelectionState } from './SelectionState';
 import { GardenEntity, PaletteItem, Vec2 } from '../types';
 import { useUIStore } from './useUIStore';
 
@@ -21,7 +21,7 @@ type SelectionStore = {
   setPendingPosition: (pos: Vec2) => void;
   setEditing: (obj: GardenEntity) => void;
   setConfirming: () => void;
-  setDrawing: (color?: string) => void;
+  setDrawing: (source: DrawingSource, color?: string) => void;
   clear: () => void;
 };
 
@@ -74,11 +74,11 @@ export const useSelectionStore = create<SelectionStore>()(
         }, false, 'setConfirming')
       },
 
-      setDrawing: (color) => {
+      setDrawing: (source, color) => {
         if (useUIStore.getState().isMapLocked) return;
         if (!color) return;
         set({
-          selection: { kind: 'drawing', color },
+          selection: { kind: 'drawing', source, color },
         }, false, 'setDrawing')
       },
 
