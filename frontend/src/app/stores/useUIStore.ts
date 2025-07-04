@@ -36,9 +36,6 @@ export const useUIStore = create<UIState>()(
       }),
       {
         name: "UIStorage",
-        onRehydrateStorage: () => (state) => {
-          console.log('hydration finished', state);
-        },
       }
     ),
     { name: "UIStore" }

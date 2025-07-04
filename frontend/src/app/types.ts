@@ -11,7 +11,9 @@ export type GardenAction =
   | { type: 'harvest', subject: GardenItem }
 
 export type SoilType = "sand" | "silt" | "clay";
-export type SoilMix = Record<SoilType, number>;
+export type SoilMix = {
+  [key in SoilType]?: number;
+};
 interface BaseItem {
   id: string;
   icon: string;

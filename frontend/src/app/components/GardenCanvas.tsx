@@ -9,7 +9,6 @@ import NameModal from './NameModal';
 import { useGardenStore } from '../stores/useGardenStore';
 import { CanvasLayer, Cell, GardenItem, GardenZone, Vec2 } from '../types';
 import { useCanvasInteraction } from '../hooks/useCanvasInteraction';
-import PropMenu from './PropMenu';
 import { useSelectionStore } from '../stores/useSelectionStore';
 import { useGardenItem } from '../hooks/useGardenItem';
 import { fetchItems, fetchZones } from '../services/apiService';
@@ -26,8 +25,8 @@ import { useCursorSync } from '@/hooks/useCursorSync';
 import { ZoneFormData } from '@/lib/zoneSchema';
 import { ItemFormData } from '@/lib/itemSchema';
 import { fieldConfig } from '@/lib/fieldConfig';
-import PropMenuWrapper from './PropMenu';
 import DraggablePropMenu from './DraggablePropMenu';
+import useSelectedObjects from '@/hooks/useSelectedObjects';
 
 const CELL_SIZE = 20;
 
@@ -99,14 +98,13 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
   const isConfirming = useSelectionStore((s) => s.selection.kind === 'confirming');
   const selectedItemId = useSelectionStore((s) => s.selection.kind ? s.selectedItemId : null);
   const selectedPaletteItem = useMenuItem(selectedItemId);
-  const selectedObj = useSelectionStore((s) => s.selectedObj);
+const { selectedObj, selectedGardenItem, selectedGardenZone } = useSelectedObjects();
+  const interactiveZones = useInteractiveZones();
+
   const setSelectedObjId = useSelectionStore((s) => s.setSelectedObjId);
   const clearSelection = useSelectionStore((s) => s.clear);
 
   const gardenItems = useGardenStore(state => state.present.items);
-  const selectedGardenItem = gardenItems.find(el => el.id === selectedObj?.id)
-  const interactiveZones = useInteractiveZones();
-  const selectedZone = interactiveZones.find(z => z.id === selectedObj?.id) || null
   const gdispatch = useGardenStore((s) => s.dispatch);
 
   const [naming, setNaming] = useState(false);
@@ -346,7 +344,7 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
         ref={innerCanvasGridRef}
         layers={layers}
         selectedItem={selectedGardenItem ? selectedGardenItem : null}
-        selectedZone={selectedZone ? selectedZone : null}
+        selectedZone={selectedGardenZone ? selectedGardenZone : null}
         onWorldClick={handleWorldClick}
         onWorldMove={handleWorldMove}
       />
@@ -402,10 +400,9 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
             onUpdate={(updatedData) => {
               log("🔧 PropMenu updated item:", updatedData);
               setPropMenu((prev) => {
-                const next =
-                  prev && prev.id === selectedObj?.id
-                    ? { ...prev, ...updatedData }
-                    : prev;
+                if (!prev) return prev;
+                // Only merge if prev and updatedData are compatible
+                const next = { ...prev, ...updatedData } as typeof prev;
                 lastPropMenuRef.current = next;
                 return next;
               });

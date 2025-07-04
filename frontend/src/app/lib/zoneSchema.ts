@@ -1,17 +1,42 @@
 import { z } from "zod";
 
+const optionalNumber = () =>
+  z.preprocess(
+    (val) => (val === "" || val == null || Number.isNaN(val) ? undefined : Number(val)),
+    z.number().optional() // <-- key fix: move `.optional()` here
+  );
+
+const optionalNumberWithConstraints = (schema: z.ZodNumber) =>
+  z.preprocess(
+    (val) =>
+      val === "" || val == null || Number.isNaN(val) ? undefined : Number(val),
+    schema.optional()
+  );
+
 const SoilMixSchema = z
   .object({
-    sand:    z.number().min(0).max(100),
-    silt:    z.number().min(0).max(100),
-    clay:    z.number().min(0).max(100)
+    sand: optionalNumberWithConstraints(z.number().min(0).max(100)),
+    silt: optionalNumberWithConstraints(z.number().min(0).max(100)),
+    clay: optionalNumberWithConstraints(z.number().min(0).max(100)),
   })
   .refine(
-    (mix) =>
-      mix.sand + mix.silt + mix.clay === 100,
+    (mix) => {
+      if (
+        mix.sand == null &&
+        mix.silt == null &&
+        mix.clay == null
+      ) {
+        return true; // valid: entire soilMix is undefined/empty
+      }
+      return (
+        (mix.sand ?? 0) +
+          (mix.silt ?? 0) +
+          (mix.clay ?? 0) === 100
+      );
+    },
     {
       message: "Soil mix must add up to 100 %",
-      path: []            // <- attaches error to the object itself
+      path: [], // attach to object-level
     }
   );
 
@@ -25,18 +50,18 @@ export const zoneSchema = z.object({
   displayName: z.string().min(1),
 
   // --- environmental props ----------
-  ph:        z.number().min(0).max(14).optional(),
-  temp:      z.number().gte(-273.15).optional(),   // °C
-  moisture:  z.number().optional(),
-  sunshine:  z.number().optional(),
-  compaction:z.number().optional(),
+  ph:        optionalNumberWithConstraints(z.number().min(0).max(14)),
+  temp:      optionalNumberWithConstraints(z.number().gte(-273.15)).optional(),   // °C
+  moisture:  optionalNumber(),
+  sunshine:  optionalNumber(),
+  compaction:optionalNumber(),
 
   // --- water / amendment -------------
   tWatered:  z.coerce.date().optional(),
-  dtWatered:  z.number().optional(),
-  qWatered:  z.number().optional(),
+  dtWatered: optionalNumber(),
+  qWatered:  optionalNumber(),
   tAmended:  z.coerce.date().optional(),
-  qAmended:  z.number().optional(),
+  qAmended:  optionalNumber(),
 
   // --- new soil mix ------------------
   soilMix:   SoilMixSchema.optional()

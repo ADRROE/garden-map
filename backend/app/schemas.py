@@ -12,23 +12,30 @@ class CoVec3(BaseModel):
     # └───────────────────┘
     # • The field will be filled with whichever alias arrives first.
     # • `x` may come in as “x” *or* “sand”, etc.
-    x: float = Field(validation_alias=AliasChoices('x', 'sand'))
-    y: float = Field(validation_alias=AliasChoices('y', 'silt'))
-    z: float = Field(validation_alias=AliasChoices('z', 'clay'))
+    x: float | None = Field(default=None, validation_alias=AliasChoices('x', 'sand'))
+    y: float | None = Field(default=None, validation_alias=AliasChoices('y', 'silt'))
+    z: float | None = Field(default=None, validation_alias=AliasChoices('z', 'clay'))
 
     # ┌───────────────────┐
     # │  NORMALISATION    │
     # └───────────────────┘
-    @model_validator(mode='after')
-    def normalise(cls, m: "CoVec3"):
-        total = m.x + m.y + m.z
-        if total == 0:
-            raise ValueError('At least one component must be non-zero.')
-        # ── If they’re fractions already, keep them.
-        # ── Otherwise rescale so that x+y+z == 1.0
-        if abs(total - 1.0) > 1e-6:
-            m.x, m.y, m.z = (m.x / total, m.y / total, m.z / total)
+@model_validator(mode='after')
+def normalise(cls, m: "CoVec3"):
+    # If all are None or missing, that's allowed
+    if m.x is None and m.y is None and m.z is None:
         return m
+
+    # If some are missing but not all, raise error or handle
+    if None in (m.x, m.y, m.z):
+        raise ValueError("Incomplete soil mix: all of x/y/z must be provided")
+
+    total = m.x + m.y + m.z
+    if total == 0:
+        raise ValueError('At least one component must be non-zero.')
+
+    if abs(total - 1.0) > 1e-6:
+        m.x, m.y, m.z = (m.x / total, m.y / total, m.z / total)
+    return m
     
 class Cell(BaseModel):
     col: int

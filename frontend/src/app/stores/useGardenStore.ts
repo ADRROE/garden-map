@@ -217,9 +217,6 @@ export const useGardenStore = create<GardenStore>()(
       }),
       {
         name: 'GardenStorage',
-        onRehydrateStorage: () => (state) => {
-          console.log('hydration finished', state);
-        },
       }
     ),
     { name: 'GardenStore' } // <- what appears in Redux DevTools

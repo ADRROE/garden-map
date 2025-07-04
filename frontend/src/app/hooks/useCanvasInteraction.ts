@@ -6,7 +6,6 @@ import { useEffect, useRef } from "react";
 import { useUIStore } from "@/stores/useUIStore";
 import { useMenuStore } from "@/stores/useMenuStore";
 import { useInteractiveZones } from "./useInteractiveZones";
-// import { useMenuItem } from "./usePaletteItem";
 
 type CanvasInteractionOptions = {
   onSelect?: (obj: GardenItem | InteractiveZone) => void;
@@ -27,9 +26,11 @@ export function useCanvasInteraction({
   const datastate = useGardenStore(state => state.present);
   const items = useGardenStore(state => state.present.items);
 
-  const uidispatch = useUIStore(state => state.dispatch)
+  const uidispatch = useUIStore(state => state.dispatch);
 
-  const zoneObjects = useInteractiveZones()
+  // const setSelectedObjId = useSelectionStore((s) => s.setSelectedObjId);
+
+  const zoneObjects = useInteractiveZones();
 
   const selectItem = (item: GardenItem) => {
     useSelectionStore.getState().setEditing(item);
@@ -38,7 +39,7 @@ export function useCanvasInteraction({
   };
   const selectZoneObject = (zone: InteractiveZone) => {
     useSelectionStore.getState().setEditing(zone);
-    useMenuStore.getState().setOpenPropMenu(zone.id)
+    useMenuStore.getState().setOpenPropMenu(zone.id);
   }
   const isDrawing = useSelectionStore((s) => s.selection.kind === 'drawing');
   const isPlacing = useSelectionStore((s) => s.selection.kind === 'placing');
@@ -127,7 +128,7 @@ export function useCanvasInteraction({
       worldY >= el.position.y &&
       worldY <= el.position.y + el.height
     );
-    const zone = zoneObjects.find(zoneObj => {
+    const clickedZone = zoneObjects.find(zoneObj => {
       return zoneObj.path && ctx?.isPointInPath(zoneObj.path, worldX, worldY);
 
     });
@@ -136,10 +137,10 @@ export function useCanvasInteraction({
       onSelect?.(clickedEl);
       return clickedEl;
     }
-    if (zone) {
-      selectZoneObject(zone);
-      onSelect?.(zone);
-      return zone;
+    if (clickedZone) {
+      selectZoneObject(clickedZone);
+      onSelect?.(clickedZone);
+      return clickedZone;
     }
     else {
       if (!isDrawing && !isPlacing) {

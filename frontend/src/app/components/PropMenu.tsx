@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import Draggable from 'react-draggable'
-import React, { forwardRef } from "react";
+import React, { forwardRef, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { useForm } from 'react-hook-form';
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -10,7 +10,7 @@ import { ItemFormData } from "@/lib/itemSchema";
 import { FieldConfigItem } from "@/lib/fieldConfig";
 import { isSoilMix, ZoneFormData, zoneSchema } from "@/lib/zoneSchema";
 import { itemSchema } from "@/lib/itemSchema";
-import { cn } from "@/utils/utils";
+import { cn, log } from "@/utils/utils";
 import { z } from "zod";
 
 export interface PropMenuProps {
@@ -47,7 +47,7 @@ const PropMenu = forwardRef<HTMLDivElement, PropMenuProps>(({
       .map(([key, value]) => [key as keyof FormShape, value])
   );
 
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<FormShape>({ resolver: zodResolver(formSchema), mode: 'onChange', defaultValues: filteredDefaults })
+  const { register, handleSubmit, reset, formState: { errors } } = useForm({ resolver: zodResolver(formSchema), mode: 'onChange', defaultValues: filteredDefaults })
 
 
   const getInputValue = (key: string): string => {
@@ -64,13 +64,11 @@ const PropMenu = forwardRef<HTMLDivElement, PropMenuProps>(({
   };
 
   const onSubmit = (data: Partial<ItemFormData & ZoneFormData>) => {
-    console.log("✅ Submitted data:", data);
-    console.log("📤 Calling onUpdate");
     onUpdate({ id: formData.id, ...(data as ItemFormData & ZoneFormData) });
     onClose();
   };
 
-  // useEffect(() => reset(formData), [formData, reset]);
+  useEffect(() => reset(formData), [formData, reset]);
 
   return (
     <div ref={ref} className="right-4 top-4 w-64 bg-white shadow-lg p-4 border z-50 rounded mb-1 max-h-[80vh] overflow-y-auto">
@@ -95,7 +93,7 @@ const PropMenu = forwardRef<HTMLDivElement, PropMenuProps>(({
         </div>
       )}
       <form onSubmit={handleSubmit(onSubmit, (err) => {
-        console.log("⛔ Validation failed:", err);
+        log("⛔ Validation failed:", err);
       })}>
         {editableFields.map((field) => {
           /* ---------- special case: SoilMix ---------- */
@@ -119,7 +117,7 @@ const PropMenu = forwardRef<HTMLDivElement, PropMenuProps>(({
                       min={0}
                       max={100}
                       step={1}
-                      {...register(`soilMix.${type}`, { valueAsNumber: true })}
+                      {...register(`soilMix.${type}`, { valueAsNumber: true, setValueAs: (v) => v === "" ? undefined : Number(v) })}
                       className={cn(
                         "p-1 border rounded w-24",
                         errors.soilMix?.[type]
@@ -153,7 +151,7 @@ const PropMenu = forwardRef<HTMLDivElement, PropMenuProps>(({
               <input
                 type={isDate ? "date" : isNumber ? "number" : "text"}
                 /* let RHF handle coercion for numbers */
-                {...register(field.name as any, isNumber ? { valueAsNumber: true } : {})}
+                {...register(field.name as any, isNumber ? { valueAsNumber: true, setValueAs: (v) => v === "" ? undefined : Number(v)} : {})}
                 className={cn(
                   "w-full p-2 border rounded",
                   errors[field.name] ? "border-red-500" : "border-gray-300"

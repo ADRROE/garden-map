@@ -138,11 +138,12 @@ def update_zone(
 
     updates_data = updates.dict(exclude_unset=True)
 
-    x = updates_data['soil_mix']['x']
-    y = updates_data['soil_mix']['y']
-    z = updates_data['soil_mix']['z']
+    soil_mix = updates_data.pop("soil_mix", None)
 
-    updates_data.pop('soil_mix')
+    if isinstance(soil_mix, dict):
+        db_zone.sand = float(soil_mix["x"]) if "x" in soil_mix else None
+        db_zone.silt = float(soil_mix["y"]) if "y" in soil_mix else None
+        db_zone.clay = float(soil_mix["z"]) if "z" in soil_mix else None
 
     # Handle coverage update (Cells)
     if "coverage" in updates_data:
@@ -179,9 +180,6 @@ def update_zone(
     for key, value in updates_data.items():
         setattr(db_zone, key, value)
 
-    db_zone.sand = x
-    db_zone.silt = y
-    db_zone.clay = z
     db_zone.last_modified = timestamp
 
     db.commit()

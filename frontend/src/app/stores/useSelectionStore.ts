@@ -97,9 +97,6 @@ export const useSelectionStore = create<SelectionStore>()(
     }),
       {
         name: 'SelectionStorage',
-        onRehydrateStorage: () => (state) => {
-          console.log('hydration finished', state);
-        },
       }
     ),
     { name: 'SelectionStore' }
