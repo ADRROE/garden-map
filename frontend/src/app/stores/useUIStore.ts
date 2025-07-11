@@ -19,7 +19,7 @@ export const useUIStore = create<UIState>()(
   devtools(
     persist(
       (set, get) => ({
-        isMapLocked: false,
+        isMapLocked: true,
         isLoading: true,
         activeLayers: ["background", "zones", "items"],
         cursor: "default",
@@ -27,15 +27,19 @@ export const useUIStore = create<UIState>()(
         setActiveLayers: (activeLayers: LayerName[]) => get().dispatch({ type: 'SET_ACTIVE_LAYERS', activeLayers }),
 
         setIsLoading: (value) => set((state) => ({ ...state, isLoading: value }), false, 'setIsLoading'),
-        
+
         toggleMapLock: () =>
           set((state) => ({ isMapLocked: !state.isMapLocked }), false, 'toggleMapLock'),
 
         dispatch: (action: UIAction) =>
-          set((state) => baseReducer(state, action), false, action.type ),
+          set((state) => baseReducer(state, action), false, action.type),
       }),
       {
         name: "UIStorage",
+        partialize: (state) => ({
+          activeLayers: state.activeLayers,
+          cursor: state.cursor,
+        }),
       }
     ),
     { name: "UIStore" }

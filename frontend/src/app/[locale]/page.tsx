@@ -45,15 +45,7 @@ export default function Home() {
     canvasGridRef.current?.clearColoring();
     useUIStore.getState().dispatch({ type: 'SET_MAP_LOCK', value: true })
   }
-
-  // useEffect(() => {
-  //   if (process.env.NODE_ENV === "development") {
-  //     setInterval(() => {
-  //       document.querySelector("body > nextjs-portal")?.remove();
-  //     }, 10);
-  //   }
-  // }, []);
-
+  
   return (
 
     <div

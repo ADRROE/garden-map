@@ -13,6 +13,7 @@ const QuickMenu = () => {
 
     const menudispatch = useMenuStore(state => state.dispatch);
 
+    const setMoving = useSelectionStore((s) => s.setMoving);
     const clearSelection = useSelectionStore((s) => s.clear)
 
     const [isOpen, setIsOpen] = useState(false);
@@ -23,31 +24,42 @@ const QuickMenu = () => {
     const handleLockClick = () => {
         toggleMapLock()
     }
-    const handleItemClick = () => menudispatch({ type: 'TOGGLE_MENU', menu: 'picker' })
+    const handleTransplantClick = () => {
+        setMoving()
+    }
+    const handleItemClick = () => {
+        clearSelection();
+        menudispatch({ type: 'TOGGLE_MENU', menu: 'picker' });
+        useMenuStore.getState().setOpenSection('s1');
+    }
     const handleDigClick = () => {
         clearSelection();
-        menudispatch({ type: 'SHOW_MENU', menu: 'picker'});
-        useUIStore.getState().dispatch({type: 'SET_MAP_LOCK', value: false})
-        useMenuStore.getState().setOpenSection('s3');
+        menudispatch({ type: 'SHOW_MENU', menu: 'picker' });
+        useMenuStore.getState().setOpenSection('s4');
     }
 
     const buttons = [
-        { src: "/icons/cog.png", alt: "Cog", onClick: () => { setIsOpen(false) } },
-        { src: "/icons/lightbulb.png", alt: "Tool 1", onClick: () => { setIsOpen(false) } },
-        { src: "/icons/database.png", alt: "Database", onClick: () => { setIsOpen(false) } },
-        { src: "/icons/workflow.png", alt: "Workflow", onClick: () => { setIsOpen(false) } },
+        // { src: "/icons/cog.png", alt: "Cog", onClick: () => { setIsOpen(false) } },
+        // { src: "/icons/lightbulb.png", alt: "Tool 1", onClick: () => { setIsOpen(false) } },
+        // { src: "/icons/database.png", alt: "Database", onClick: () => { setIsOpen(false) } },
+        // { src: "/icons/workflow.png", alt: "Workflow", onClick: () => { setIsOpen(false) } },
         {
             src: "/icons/layers.png", alt: "Layers", onClick: () => { }, submenu: [
-                { src: "/icons/top-layer.png", alt: "Toplayer", onClick: () => { 
-                    uidispatch({type: 'TOGGLE_LAYER', layer: 'items'});
-                    setActiveDropdown(null);
-                }},
-                { src: "/icons/bottom-layer.png", alt: "Bottomlayer", onClick: () => { 
-                    uidispatch({type: 'TOGGLE_LAYER', layer: 'zones'});
-                    setActiveDropdown(null);
-                } },
+                {
+                    src: "/icons/top-layer.png", alt: "Toplayer", onClick: () => {
+                        uidispatch({ type: 'TOGGLE_LAYER', layer: 'items' });
+                        setActiveDropdown(null);
+                    }
+                },
+                {
+                    src: "/icons/bottom-layer.png", alt: "Bottomlayer", onClick: () => {
+                        uidispatch({ type: 'TOGGLE_LAYER', layer: 'zones' });
+                        setActiveDropdown(null);
+                    }
+                },
             ],
         },
+        { src: "/transplanting.png", alt: "Transplanting", onClick: handleTransplantClick },
         { src: "/digging.png", alt: "Digging", onClick: handleDigClick },
         { src: "/planting.png", alt: "Planting", onClick: handleItemClick },
         { src: isMapLocked ? "/icons/locked.png" : "/icons/unlocked.png", alt: "Lock", onClick: handleLockClick },
@@ -71,15 +83,23 @@ const QuickMenu = () => {
                                 <motion.button
                                     whileHover={{ scale: 1.1 }}
                                     whileTap={{ scale: 0.95 }}
-                                    onClick={() =>{
+                                    transition={{ duration: 0.05 }}
+
+                                    onClick={() => {
                                         setActiveDropdown((prev) => (prev === i ? null : i));
                                         btn.onClick()
                                     }
 
                                     }
-                                    className="bg-white rounded-full p-3 shadow-lg hover:bg-gray-100 transition"
+                                    className={`rounded-full p-3 shadow-lg transition ${btn.alt === "Lock"
+                                            ? isMapLocked
+                                                ? "hover:bg-[#9BB58B]"
+                                                : 
+                                                "hover:bg-[#FE7672]"
+                                            : "bg-white hover:bg-gray-100"
+                                        }`}
                                 >
-                                    <img src={btn.src} alt={btn.alt} className="w-6 h-6" />
+                                    <img src={btn.src} alt={btn.alt} className="w-[28px] h-[28px]" />
                                 </motion.button>
 
                                 {/* Submenu */}

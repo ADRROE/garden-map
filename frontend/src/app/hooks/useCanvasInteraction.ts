@@ -33,6 +33,10 @@ export function useCanvasInteraction({
   const zoneObjects = useInteractiveZones();
 
   const selectItem = (item: GardenItem) => {
+    if (isMoving) {
+      useSelectionStore.getState().setMoving(item);
+      return;
+    }
     useSelectionStore.getState().setEditing(item);
     useMenuStore.getState().setOpenPropMenu(item.id)
     log("CanvasInteraction now setting Editing with el: ", item);
@@ -43,6 +47,7 @@ export function useCanvasInteraction({
   }
   const isDrawing = useSelectionStore((s) => s.selection.kind === 'drawing');
   const isPlacing = useSelectionStore((s) => s.selection.kind === 'placing');
+  const isMoving = useSelectionStore((s) => s.selection.kind === 'moving');
   // const selectedItemId = useSelectionStore((s) => s.selection.kind ? s.selectedItemId : null);
   // const selectedItem = useMenuItem(selectedItemId);
   const clearSelection = useSelectionStore((s) => s.clear);

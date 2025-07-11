@@ -1,6 +1,6 @@
 // useSelectionStore.ts
 import { create } from 'zustand';
-import { devtools, persist } from 'zustand/middleware';
+import { devtools } from 'zustand/middleware';
 import { DrawingSource, SelectionState } from './SelectionState';
 import { GardenEntity, PaletteItem, Vec2 } from '../types';
 import { useUIStore } from './useUIStore';
@@ -20,6 +20,7 @@ type SelectionStore = {
   setPlacing: (item: PaletteItem) => void;
   setPendingPosition: (pos: Vec2) => void;
   setEditing: (obj: GardenEntity) => void;
+  setMoving: (obj?: GardenEntity) => void;
   setConfirming: () => void;
   setDrawing: (source: DrawingSource, color?: string) => void;
   clear: () => void;
@@ -27,7 +28,7 @@ type SelectionStore = {
 
 export const useSelectionStore = create<SelectionStore>()(
   devtools(
-    persist((set) => ({
+    (set) => ({
       selection: { kind: null },
       selectedObjId: null,
       selectedObj: null,
@@ -68,6 +69,15 @@ export const useSelectionStore = create<SelectionStore>()(
         }, false, 'setEditing')
       },
 
+      setMoving: (obj) => {
+        if (useUIStore.getState().isMapLocked) return;
+        set({
+          selection: { kind: 'moving', obj },
+          selectedObj: obj,
+          selectedObjId: obj?.id
+        }, false, 'setMoving')
+      },
+
       setConfirming: () => {
         set({
           selection: { kind: 'confirming' }
@@ -95,10 +105,6 @@ export const useSelectionStore = create<SelectionStore>()(
 
       setModifierKeyDown: (down) => set({ isModifierKeyDown: down }, false, 'setModifierKeyDown'),
     }),
-      {
-        name: 'SelectionStorage',
-      }
-    ),
     { name: 'SelectionStore' }
   )
 );

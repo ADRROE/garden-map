@@ -68,7 +68,6 @@ export type GardenDataAction =
     }
   | { type: 'SET_ZONES'; zones: GardenZone[] }
   | { type: 'SET_COLORED_CELLS'; cells: Record<string, Cell> }
-  | { type: 'TOGGLE_MAP_LOCK' }
   | { type: 'UNDO' }
   | { type: 'REDO' };
 
