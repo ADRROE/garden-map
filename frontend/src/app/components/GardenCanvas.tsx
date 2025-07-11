@@ -15,6 +15,7 @@ import { fetchItems, fetchZones } from '../services/apiService';
 import { useUIStore } from '../stores/useUIStore';
 import { useColorBuffer } from '@/hooks/useColorBuffer';
 import { useGardenZone } from '@/hooks/useGardenZone';
+import { useGardenItems } from '@/hooks/useGardenItems';
 import { log, warn, error } from "@/utils/utils";
 import { useViewportStore } from '@/stores/useViewportStore';
 import UpdateModal from './UpdateModal';
@@ -94,6 +95,7 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
   const selection = useSelectionStore((s) => s.selection);
   const isDrawing = useSelectionStore((s) => s.selection.kind === 'drawing');
   const isEditing = useSelectionStore((s) => s.selection.kind === 'editing');
+  const isMoving = useSelectionStore((s) => s.selection.kind === 'moving');
   const isPlacing = useSelectionStore((s) => s.selection.kind === 'placing');
   const isConfirming = useSelectionStore((s) => s.selection.kind === 'confirming');
   const selectedItemId = useSelectionStore((s) => s.selection.kind ? s.selectedItemId : null);
@@ -104,7 +106,7 @@ const { selectedObj, selectedGardenItem, selectedGardenZone } = useSelectedObjec
   const setSelectedObjId = useSelectionStore((s) => s.setSelectedObjId);
   const clearSelection = useSelectionStore((s) => s.clear);
 
-  const gardenItems = useGardenStore(state => state.present.items);
+  const { items: gardenItems, imageCache } = useGardenItems();
   const gdispatch = useGardenStore((s) => s.dispatch);
 
   const [naming, setNaming] = useState(false);
@@ -113,8 +115,6 @@ const { selectedObj, selectedGardenItem, selectedGardenZone } = useSelectedObjec
   const [floatingLabelPosition, setFloatingLabelPosition] = useState<{ x: number; y: number } | null>(null);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [hoverCursor, setHoverCursor] = useState<string | null>(null);
-
-  const imageCacheRef = useRef<Map<string, HTMLImageElement>>(new Map());
   const lastPropMenuRef = useRef<Partial<ItemFormData> & { id: string } | Partial<ZoneFormData> & { id: string } | null>(null);
 
   const matrix = useViewportStore((s) => s.matrix);
@@ -246,9 +246,9 @@ const { selectedObj, selectedGardenItem, selectedGardenZone } = useSelectedObjec
       name: layer,
       draw: (ctx) => {
         if (layer === 'items') {
-          const cache = selectedObj ? null : imageCacheRef.current;
+          const cache = selectedObj ? null : imageCache.regular;
 
-          gardenItems.forEach(el => {
+          gardenItems.forEach((el: GardenItem) => {
             const iconSrc = el.icon
 
             let img = cache?.get(iconSrc);
@@ -287,9 +287,9 @@ const { selectedObj, selectedGardenItem, selectedGardenZone } = useSelectedObjec
         }
 
       },
-      deps: [selectedObj],
+      deps: [],
     }));
-  }, [activeLayers, gardenItems, interactiveZones, selectedObj, isEditing]);
+  }, [activeLayers, gardenItems, interactiveZones, isMoving]);
 
   useEffect(() => {
     let mounted = true;
@@ -328,7 +328,7 @@ const { selectedObj, selectedGardenItem, selectedGardenZone } = useSelectedObjec
           const img = new Image();
           img.src = src;
           img.onload = () => resolve();
-          imageCacheRef.current.set(src, img);
+          imageCache.regular.set(src, img);
         }))
       )
     };
@@ -336,14 +336,14 @@ const { selectedObj, selectedGardenItem, selectedGardenZone } = useSelectedObjec
     if (gardenItems.length > 0) {
       preloadImages();
     }
-  }, [gardenItems]);
+  }, [gardenItems, imageCache.regular, menuItems]);
 
   return (
     <div style={{ position: 'relative' }}>
       <CanvasGrid
         ref={innerCanvasGridRef}
         layers={layers}
-        selectedItem={selectedGardenItem ? selectedGardenItem : null}
+        selectedItem={isMoving && selectedGardenItem ? selectedGardenItem : null}
         selectedZone={selectedGardenZone ? selectedGardenZone : null}
         onWorldClick={handleWorldClick}
         onWorldMove={handleWorldMove}

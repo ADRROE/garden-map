@@ -27,7 +27,7 @@ export default function Overlay({ onEditConfirm, onEditAbort }: { onEditConfirm:
   const [confirming, setConfirming] = useState(false);
 
   const selection = useSelectionStore((s) => s.selection);
-  const isInteracting = selection.kind === 'drawing' || selection.kind === 'editing';
+  const isInteracting = selection.kind === 'drawing' || selection.kind === 'moving';
 
   const showSideBar = useMenuStore((s) => s.activeMenu === 'picker')
   const showStatusBar = useTransientFlag(selection.kind, 2000);
@@ -60,7 +60,7 @@ export default function Overlay({ onEditConfirm, onEditAbort }: { onEditConfirm:
       <QuickMenu />
       <LanguageSwitcher />
 
-      {selection.kind === 'drawing' &&
+      {isInteracting &&
         <div className="fixed top-4 right-4 -translate-x-1/2 z-50 space-x-4 flex">
           <button onClick={() => setConfirming(true)}>
             <img src='/icons/check.png' width={30} height={30} />

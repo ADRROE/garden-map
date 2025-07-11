@@ -192,6 +192,7 @@ const CanvasGrid = forwardRef<CanvasGridHandle, CanvasGridProps>(
 
     useEffect(() => {
       lmRef.current = new LayerManager(WIDTH, HEIGHT, layers.map(l => l.name));
+      console.log("LayerManager initialized", lmRef.current);
       const scale = useViewportStore.getState().getScale()
       const bgCtx = lmRef.current.getContext('background')!;
       const renderFactor = scale ? getRenderResolution(scale) : 1;
