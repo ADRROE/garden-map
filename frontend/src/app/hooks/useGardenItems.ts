@@ -4,6 +4,7 @@ import { GardenItem } from "@/types";
 
 // Shallow equality check for GardenItems
 function shallowEqualItem(a: GardenItem, b: GardenItem): boolean {
+const getTime = (val: any) => val ? new Date(val).getTime() : undefined;
   return (
     a.id === b.id &&
     a.displayName === b.displayName &&
@@ -12,7 +13,7 @@ function shallowEqualItem(a: GardenItem, b: GardenItem): boolean {
     a.rotation === b.rotation &&
     a.width === b.width &&
     a.height === b.height &&
-    a.coverage === b.coverage && 
+    a.coverage === b.coverage &&
     a.layer === b.layer &&
     a.species === b.species &&
     a.genus === b.genus &&
@@ -20,9 +21,9 @@ function shallowEqualItem(a: GardenItem, b: GardenItem): boolean {
     a.rhsId === b.rhsId &&
     a.circumference === b.circumference &&
     a.price === b.price &&
-    a.tAmended?.getTime() === b.tAmended?.getTime() &&
+    getTime(a.tAmended) === getTime(b.tAmended) &&
     a.qAmended === b.qAmended &&
-    a.tWatered === b.tWatered &&
+    getTime(a.tWatered) === getTime(b.tWatered) &&
     a.dtWatered === b.dtWatered &&
     a.qWatered === b.qWatered
   );
