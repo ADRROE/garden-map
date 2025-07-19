@@ -1,6 +1,8 @@
 from pydantic import BaseModel, Field, AliasChoices, computed_field, model_validator
-from typing import List, Tuple, Literal, Any, Dict
+from sqlalchemy.ext.hybrid import hybrid_property
+from typing import List, Tuple, Literal, Any, Dict, ClassVar
 from datetime import datetime
+from app.utils import calculate_location
 
 class Vec2(BaseModel):
     x: float
@@ -53,7 +55,6 @@ class GardenItemBase(BaseModel):
     icon: str
     display_name: str | None = None
     position: Vec2
-    location: str
     width: float
     height: float
     rotation: float | None = None
@@ -71,6 +72,12 @@ class GardenItemBase(BaseModel):
     q_watered: float | None = None
     t_amended: datetime | None = None
     q_amended: float | None = None
+
+    @hybrid_property
+    def location(self) -> str:
+        return calculate_location(self.x, self.y)
+
+    location: ClassVar[str]  # 👈 Tell Pydantic this is NOT a field
     
     class Config:
         from_attributes = True
@@ -117,7 +124,6 @@ class GardenItemRead(BaseModel):
     display_name: str | None = None
     x: float
     y: float
-    location: str
     width: float
     height: float
     rotation: float | None = None
@@ -136,10 +142,14 @@ class GardenItemRead(BaseModel):
     t_amended: datetime | None = None
     q_amended: float | None = None
 
+    @computed_field(return_type=str)
+    @property
+    def location(self) -> str:
+        return calculate_location(self.x, self.y)
+
     @computed_field
     def position(self) -> Dict[str, float]:
         return {"x": self.x, "y": self.y}
-
     class Config:
         from_attributes = True
 

@@ -3,7 +3,7 @@ import { LayerManager } from '../utils/LayerManager';
 import { CanvasLayer, Cell, GardenItem, InteractiveZone } from '../types';
 import { Canvas, FabricObject } from 'fabric';
 import { createFabricItem } from '../utils/FabricHelpers';
-import { constrainMatrix, getCoveredCells, log, toColumnLetter } from "@/utils/utils";
+import { constrainMatrix, getCoveredCells, log } from "@/utils/utils";
 import { useViewportStore } from "@/stores/useViewportStore";
 
 const NUM_ROWS = 270;
@@ -57,7 +57,6 @@ const CanvasGrid = forwardRef<CanvasGridHandle, CanvasGridProps>(
         const height = obj.height! * obj.scaleY!
 
         const computedPosition = [Math.floor(x / 20) + 1, Math.floor(y / 20) + 1];
-        const location = `${toColumnLetter(computedPosition[0])}${computedPosition[1]}`;
         const coverage = getCoveredCells(computedPosition[0], computedPosition[1], width / 20, height / 20);
 
         return {
@@ -65,7 +64,6 @@ const CanvasGrid = forwardRef<CanvasGridHandle, CanvasGridProps>(
           position: { x, y },
           width: obj.width! * obj.scaleX!,
           height: obj.height! * obj.scaleY!,
-          location: location,
           coverage: coverage
         };
       },
