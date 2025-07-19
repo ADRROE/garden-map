@@ -195,7 +195,7 @@ const CanvasGrid = forwardRef<CanvasGridHandle, CanvasGridProps>(
       const bgCtx = lmRef.current.getContext('background')!;
       const renderFactor = scale ? getRenderResolution(scale) : 1;
       const img = new Image();
-      img.src = '/grid.png';
+      img.src = '/grid_nodots.png';
 
       img.onload = () => {
         // draw static grid
