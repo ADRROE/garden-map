@@ -4,6 +4,7 @@ import { GardenItem } from "@/types";
 
 // Shallow equality check for GardenItems
 function shallowEqualItem(a: GardenItem, b: GardenItem): boolean {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const getTime = (val: any) => val ? new Date(val).getTime() : undefined;
   return (
     a.id === b.id &&
