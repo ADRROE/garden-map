@@ -1,6 +1,6 @@
 // useSelectionStore.ts
 import { create } from 'zustand';
-import { devtools, persist } from 'zustand/middleware';
+import { devtools } from 'zustand/middleware';
 import { DrawingSource, SelectionState } from './SelectionState';
 import { GardenEntity, PaletteItem, Vec2 } from '../types';
 import { useUIStore } from './useUIStore';

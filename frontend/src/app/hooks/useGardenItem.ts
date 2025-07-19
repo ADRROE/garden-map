@@ -2,7 +2,7 @@ import { createItemAPI, fetchItems, updateItemAPI } from "../services/apiService
 import { useGardenStore } from "../stores/useGardenStore";
 import { useSelectionStore } from "../stores/useSelectionStore";
 import { Vec2, GardenItem } from "../types";
-import { toColumnLetter, getCoveredCells } from "../utils/utils";
+import { getCoveredCells } from "../utils/utils";
 import { v4 as uuidv4 } from 'uuid';
 import { log, error } from "@/utils/utils";
 import { useMenuItem } from "./usePaletteItem";
@@ -38,7 +38,6 @@ export function useGardenItem() {
     const centeredX = x - width / 2;
     const centeredY = y - height / 2;
     const computedPosition = [Math.floor(centeredX / 20) + 1, Math.floor(centeredY / 20) + 1];
-    const location = `${toColumnLetter(computedPosition[0])}${computedPosition[1]}`;
     const coverage = getCoveredCells(computedPosition[0], computedPosition[1], width / 20, height / 20);
     const newItem: GardenItem = {
       ...selectedPaletteItem,
@@ -50,7 +49,6 @@ export function useGardenItem() {
         x: centeredX,
         y: centeredY,
       },
-      location,
       width: width,
       height: height,
       coverage,

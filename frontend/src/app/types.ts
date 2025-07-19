@@ -38,7 +38,7 @@ export interface GardenItem extends BaseItem {
   paletteItemId: string;
   displayName?: string;
   position: Vec2;
-  location: string;
+  location?: string;
   rotation?: number;
   width: number;
   height: number;
