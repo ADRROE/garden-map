@@ -1,17 +1,5 @@
 import { z } from "zod";
-
-const optionalNumber = () =>
-  z.preprocess(
-    (val) => (val === "" || val == null || Number.isNaN(val) ? undefined : Number(val)),
-    z.number().optional() // <-- key fix: move `.optional()` here
-  );
-
-const optionalNumberWithConstraints = (schema: z.ZodNumber) =>
-  z.preprocess(
-    (val) =>
-      val === "" || val == null || Number.isNaN(val) ? undefined : Number(val),
-    schema.optional()
-  );
+import { optionalNumber, optionalNumberWithConstraints } from "./zodUtils";
 
 const SoilMixSchema = z
   .object({
@@ -51,7 +39,7 @@ export const zoneSchema = z.object({
 
   // --- environmental props ----------
   ph:        optionalNumberWithConstraints(z.number().min(0).max(14)),
-  temp:      optionalNumberWithConstraints(z.number().gte(-273.15)).optional(),   // °C
+  temp:      optionalNumberWithConstraints(z.number().gte(-273.15)),   // °C
   moisture:  optionalNumber(),
   sunshine:  optionalNumber(),
   compaction:optionalNumber(),
