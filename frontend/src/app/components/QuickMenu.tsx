@@ -13,7 +13,6 @@ const QuickMenu = () => {
 
     const menudispatch = useMenuStore(state => state.dispatch);
 
-    const setMoving = useSelectionStore((s) => s.setMoving);
     const clearSelection = useSelectionStore((s) => s.clear)
 
     const [isOpen, setIsOpen] = useState(false);
@@ -23,9 +22,6 @@ const QuickMenu = () => {
     // const handleZoneClick = () => datadispatch({ type: 'TOGGLE_SHOW_ZONES' });
     const handleLockClick = () => {
         toggleMapLock()
-    }
-    const handleTransplantClick = () => {
-        setMoving()
     }
     const handleItemClick = () => {
         clearSelection();
@@ -59,7 +55,6 @@ const QuickMenu = () => {
                 },
             ],
         },
-        { src: "/transplanting.png", alt: "Transplanting", onClick: handleTransplantClick },
         { src: "/digging.png", alt: "Digging", onClick: handleDigClick },
         { src: "/planting.png", alt: "Planting", onClick: handleItemClick },
         { src: isMapLocked ? "/icons/locked.png" : "/icons/unlocked.png", alt: "Lock", onClick: handleLockClick },

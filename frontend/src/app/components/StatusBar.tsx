@@ -8,12 +8,11 @@ interface StatusBarProps {
   className: string;
 }
 
-type SelectionKind = 'drawing' | 'editing'| 'moving' | 'placing' | 'confirming' | 'cancelling' ;
+type SelectionKind = 'drawing' | 'editing' | 'placing' | 'confirming' | 'cancelling' ;
 
 const colorMap: Record<SelectionKind, string> = {
   drawing: "bg-[#F5DA5B]",
   editing: "bg-[#F5DA5B]",
-  moving: "bg-[#F5DA5B]",
   placing: "bg-[#F5DA5B]",
   confirming: "bg-green-500",
   cancelling: "bg-red-500"

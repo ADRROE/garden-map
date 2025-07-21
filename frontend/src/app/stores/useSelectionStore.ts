@@ -20,7 +20,6 @@ type SelectionStore = {
   setPlacing: (item: PaletteItem) => void;
   setPendingPosition: (pos: Vec2) => void;
   setEditing: (obj: GardenEntity) => void;
-  setMoving: (obj?: GardenEntity) => void;
   setConfirming: () => void;
   setDrawing: (source: DrawingSource, color?: string) => void;
   clear: () => void;
@@ -67,15 +66,6 @@ export const useSelectionStore = create<SelectionStore>()(
           selectedObj: obj,
           selectedObjId: obj.id
         }, false, 'setEditing')
-      },
-
-      setMoving: (obj) => {
-        if (useUIStore.getState().isMapLocked) return;
-        set({
-          selection: { kind: 'moving', obj },
-          selectedObj: obj,
-          selectedObjId: obj?.id
-        }, false, 'setMoving')
       },
 
       setConfirming: () => {

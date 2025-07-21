@@ -95,12 +95,11 @@ const GardenCanvas = forwardRef<CanvasGridHandle, { colorBuffer: ReturnType<type
   const selection = useSelectionStore((s) => s.selection);
   const isDrawing = useSelectionStore((s) => s.selection.kind === 'drawing');
   const isEditing = useSelectionStore((s) => s.selection.kind === 'editing');
-  const isMoving = useSelectionStore((s) => s.selection.kind === 'moving');
   const isPlacing = useSelectionStore((s) => s.selection.kind === 'placing');
   const isConfirming = useSelectionStore((s) => s.selection.kind === 'confirming');
   const selectedItemId = useSelectionStore((s) => s.selection.kind ? s.selectedItemId : null);
   const selectedPaletteItem = useMenuItem(selectedItemId);
-const { selectedObj, selectedGardenItem, selectedGardenZone } = useSelectedObjects();
+  const { selectedObj, selectedGardenItem, selectedGardenZone } = useSelectedObjects();
   const interactiveZones = useInteractiveZones();
 
   const setSelectedObjId = useSelectionStore((s) => s.setSelectedObjId);
@@ -250,6 +249,12 @@ const { selectedObj, selectedGardenItem, selectedGardenZone } = useSelectedObjec
 
           gardenItems.forEach((el: GardenItem) => {
             const iconSrc = el.icon
+            const isSelected = el.id === selectedObj?.id;
+
+            ctx.save();
+            if (isEditing){
+              ctx.globalAlpha = 0.3;
+            }
 
             let img = cache?.get(iconSrc);
 
@@ -271,9 +276,8 @@ const { selectedObj, selectedGardenItem, selectedGardenZone } = useSelectedObjec
               }
             }
 
-            if (el.id === selectedObj?.id) {
-              ctx.globalAlpha = 0.3;
-              ctx.strokeStyle = 'blue';
+            if (isSelected && isEditing) {
+              ctx.strokeStyle = 'green';
               ctx.lineWidth = 2;
               ctx.strokeRect(el.position.x, el.position.y, el.width, el.height);
             }
@@ -287,9 +291,9 @@ const { selectedObj, selectedGardenItem, selectedGardenZone } = useSelectedObjec
         }
 
       },
-      deps: [],
+      deps: [selectedObj],
     }));
-  }, [activeLayers, gardenItems, interactiveZones, isMoving]);
+  }, [activeLayers, gardenItems, interactiveZones, isEditing]);
 
   useEffect(() => {
     let mounted = true;
@@ -343,7 +347,7 @@ const { selectedObj, selectedGardenItem, selectedGardenZone } = useSelectedObjec
       <CanvasGrid
         ref={innerCanvasGridRef}
         layers={layers}
-        selectedItem={isMoving && selectedGardenItem ? selectedGardenItem : null}
+        selectedItem={isEditing && selectedGardenItem ? selectedGardenItem : null}
         selectedZone={selectedGardenZone ? selectedGardenZone : null}
         onWorldClick={handleWorldClick}
         onWorldMove={handleWorldMove}
@@ -381,7 +385,7 @@ const { selectedObj, selectedGardenItem, selectedGardenZone } = useSelectedObjec
               await confirmZoneCreation(cells, name);
             }
             setNaming(false);
-            uiDispatch({type: 'SET_MAP_LOCK', value: true});
+            uiDispatch({ type: 'SET_MAP_LOCK', value: true });
 
           }}
           onAbort={() => {

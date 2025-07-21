@@ -27,7 +27,7 @@ export default function Overlay({ onEditConfirm, onEditAbort }: { onEditConfirm:
   const [confirming, setConfirming] = useState(false);
 
   const selection = useSelectionStore((s) => s.selection);
-  const isInteracting = selection.kind === 'drawing' || selection.kind === 'moving';
+  const isInteracting = selection.kind === 'drawing';
 
   const showSideBar = useMenuStore((s) => s.activeMenu === 'picker')
   const showStatusBar = useTransientFlag(selection.kind, 2000);

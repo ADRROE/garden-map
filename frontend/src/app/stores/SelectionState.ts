@@ -9,7 +9,6 @@ export type SelectionState =
       menuItem: PaletteItem;
       pendingPosition?: Vec2;
     }
-  | { kind: 'moving'; obj?: GardenEntity }
   | { kind: 'editing'; obj: GardenEntity }
   | { kind: 'confirming' }
   | { kind: 'drawing'; color: string; source: DrawingSource };
